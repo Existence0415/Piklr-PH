@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PiklrPH - Court Discovery & Split-Bill Checkout</title>
+  
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            deep: '#0B131E',
+            surface: '#111827',
+            borderDark: '#1E293B',
+            opticLime: '#CCFF00',
+            emeraldGreen: '#10B981',
+            gcashBlue: '#005CE6',
+            mayaTeal: '#00D26A',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- External Libraries: Lucide Icons & Supabase Client -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      font-family: 'Outfit', sans-serif;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-[#0B131E] text-slate-100 h-screen w-full overflow-hidden antialiased selection:bg-[#CCFF00] selection:text-[#0B131E]">
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed top-3 z-50 left-1/2 -translate-x-1/2 hidden flex items-center gap-2 bg-[#111827] border border-[#CCFF00]/40 text-slate-100 px-3.5 py-2 rounded-full shadow-2xl text-xs">
+    <div class="w-2 h-2 rounded-full bg-[#CCFF00] animate-pulse"></div>
+    <span id="toast-text" class="font-medium">Notification</span>
+  </div>
+
+  <!-- Full Frame Container (Fills App Shell) -->
+  <div class="w-full h-full flex flex-col justify-between overflow-hidden select-none">
+
+    <!-- Scrollable Screen Content -->
+    <div class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col">
+
+      <!-- ======================================================== -->
+      <!-- SCREEN 1: COURT DISCOVERY & VENUE BROWSER -->
+      <!-- ======================================================== -->
+      <div id="screen-1" class="flex-1 flex flex-col px-4 pt-3 pb-6">
+        <!-- Top Location & Wallet Balance -->
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+              Metro Manila & Beyond
+            </span>
+            <h1 class="text-xl font-black text-white tracking-tight flex items-center gap-1.5">
+              Book A Court
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#10B981]/20 text-[#10B981] font-bold">
+                LIVE DB
+              </span>
+            </h1>
+          </div>
+
+          <div class="bg-[#111827] border border-slate-800 rounded-xl px-2.5 py-1.5 text-right">
+            <span class="text-[9px] text-slate-400 block font-semibold">GCASH READY</span>
+            <span class="text-xs font-black text-[#005CE6] flex items-center justify-end gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#005CE6] animate-pulse"></span>
+              ₱2,450.00
+            </span>
+          </div>
+        </div>
+
+        <!-- Top Search Bar & Filter Button -->
+        <div class="flex items-center gap-2 mb-3">
+          <div class="flex-1 flex items-center bg-[#111827] border border-[#1E293B] rounded-2xl px-3.5 py-2.5 focus-within:border-[#CCFF00] transition-colors">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2 shrink-0"></i>
+            <input
+              id="search-input"
+              type="text"
+              oninput="filterVenues()"
+              placeholder="Search courts in BGC, Pasig, QC, Cebu..."
+              class="w-full bg-transparent text-white text-xs font-medium focus:outline-none placeholder:text-slate-500"
+            />
+          </div>
+          <button
+            onclick="loadLiveVenuesFromSupabase()"
+            class="p-3 rounded-2xl bg-[#111827] border border-[#1E293B] text-slate-300 hover:text-[#CCFF00] hover:border-[#CCFF00]/40 transition-colors cursor-pointer shrink-0"
+            title="Refresh from Database"
+          >
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Quick Filter Chips -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 mb-3">
+          <button onclick="setFilter('All')" id="chip-All" class="px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap bg-[#CCFF00] text-[#0B131E] shadow-sm shadow-[#CCFF00]/30 cursor-pointer">All</button>
+          <button onclick="setFilter('Indoor A/C')" id="chip-Indoor" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap bg-[#111827] text-slate-400 border border-[#1E293B] hover:text-white cursor-pointer">Indoor A/C</button>
+          <button onclick="setFilter('Covered')" id="chip-Covered" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap bg-[#111827] text-slate-400 border border-[#1E293B] hover:text-white cursor-pointer">Covered</button>
+          <button onclick="setFilter('Outdoor')" id="chip-Outdoor" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap bg-[#111827] text-slate-400 border border-[#1E293B] hover:text-white cursor-pointer">Outdoor</button>
+        </div>
+
+        <!-- Venue Feed Cards -->
+        <div id="venue-feed" class="space-y-3.5">
+          <div class="text-center py-10 text-slate-500 text-xs flex flex-col items-center gap-2">
+            <span class="w-4 h-4 rounded-full border-2 border-[#CCFF00] border-t-transparent animate-spin"></span>
+            Connecting to PostgreSQL database...
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- SCREEN 2: SLOT SELECTION & ADD-ONS -->
+      <!-- ======================================================== -->
+      <div id="screen-2" class="hidden flex-1 flex flex-col justify-between overflow-hidden">
+        <div class="flex-1 overflow-y-auto no-scrollbar px-4 pt-3 pb-24">
+          <!-- Header with back button & Venue Title -->
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800/80">
+            <div class="flex items-center gap-2">
+              <button onclick="goToScreen(1)" class="p-1.5 rounded-xl bg-[#111827] border border-slate-800 text-slate-400 hover:text-white">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              </button>
+              <div>
+                <h2 id="slot-venue-name" class="text-sm font-extrabold text-white leading-tight">Venue Name</h2>
+                <span id="slot-venue-sub" class="text-[10px] text-slate-400">Location · Type</span>
+              </div>
+            </div>
+
+            <div class="text-right">
+              <span class="text-[10px] text-slate-400 block font-semibold">FROM</span>
+              <span id="slot-venue-rate" class="text-xs font-black text-[#CCFF00]">₱800/hr</span>
+            </div>
+          </div>
+
+          <!-- Date Selector -->
+          <div class="mb-4">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+              Select Date
+            </label>
+            <div id="date-pills" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Dynamic Court Picker -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Select Court</label>
+              <span id="court-surface-label" class="text-[10px] text-slate-500 font-semibold">Cushioned Acrylic</span>
+            </div>
+            <div id="court-picker-container" class="grid grid-cols-3 gap-2">
+              <!-- Dynamically populated from Supabase courts -->
+            </div>
+          </div>
+
+          <!-- Hourly Time-Slot Grid -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <i data-lucide="clock" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+                Hourly Time Slots
+              </label>
+              <span id="slot-rate-label" class="text-[10px] text-slate-400">Regular / Peak Rates</span>
+            </div>
+
+            <div id="slot-grid" class="grid grid-cols-2 gap-2">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Equipment Add-Ons Checklist -->
+          <div class="bg-[#111827] border border-[#1E293B] rounded-3xl p-4">
+            <span class="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-3">
+              Court Gear & Equipment Add-Ons
+            </span>
+
+            <div class="space-y-3">
+              <!-- Pro Carbon Paddle Rental -->
+              <div class="flex items-center justify-between p-2.5 rounded-2xl bg-[#0B131E] border border-slate-800">
+                <div>
+                  <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>🏓</span>
+                    Pro Carbon Paddle Rental
+                  </div>
+                  <span class="text-[10px] text-slate-400">+₱100 / paddle</span>
+                </div>
+
+                <div class="flex items-center gap-2 bg-[#111827] border border-slate-700/80 rounded-xl p-1">
+                  <button type="button" onclick="adjustPaddle(-1)" class="w-6 h-6 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center hover:text-white">
+                    <i data-lucide="minus" class="w-3 h-3"></i>
+                  </button>
+                  <span id="paddle-count" class="text-xs font-black text-white w-4 text-center">1</span>
+                  <button type="button" onclick="adjustPaddle(1)" class="w-6 h-6 rounded-lg bg-[#CCFF00] text-[#0B131E] flex items-center justify-center font-bold">
+                    <i data-lucide="plus" class="w-3 h-3 stroke-[3]"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Can of 3 Franklin X-40 Balls -->
+              <div onclick="toggleBalls()" id="ball-addon-card" class="flex items-center justify-between p-2.5 rounded-2xl border border-[#CCFF00]/60 bg-[#0B131E] transition-all cursor-pointer">
+                <div>
+                  <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>🎾</span>
+                    Can of 3 Franklin X-40 Balls
+                  </div>
+                  <span class="text-[10px] text-[#CCFF00] font-semibold">+₱350 (Keep & Take Home)</span>
+                </div>
+
+                <div id="ball-check" class="w-5 h-5 rounded-lg flex items-center justify-center border bg-[#CCFF00] border-[#CCFF00] text-[#0B131E]">
+                  <i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Bottom Summary Bar -->
+        <div class="p-4 bg-[#111827]/95 backdrop-blur-md border-t border-[#1E293B] shadow-2xl shrink-0">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Total Estimated Fee
+              </span>
+              <div class="text-xl font-black text-white tracking-tight">
+                <span id="summary-total">₱0</span>
+                <span id="summary-meta" class="text-[11px] font-normal text-slate-400 ml-1.5">
+                  (Court 1 · 1 hr)
+                </span>
+              </div>
+            </div>
+
+            <div class="text-right">
+              <span id="summary-split-preview" class="text-[10px] text-[#10B981] font-bold bg-[#10B981]/15 px-2 py-0.5 rounded-full">
+                Barkada Split: ₱0/pax
+              </span>
+            </div>
+          </div>
+
+          <button
+            onclick="goToScreen(3)"
+            class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d8ff33] active:scale-[0.98] transition-all shadow-xl shadow-[#CCFF00]/25 cursor-pointer"
+          >
+            <span>Proceed to Payment</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 stroke-[3]"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- SCREEN 3: GCASH / MAYA SPLIT-BILL CHECKOUT -->
+      <!-- ======================================================== -->
+      <div id="screen-3" class="hidden flex-1 flex flex-col justify-between overflow-hidden">
+        <div class="flex-1 overflow-y-auto no-scrollbar px-4 pt-3 pb-24">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800/80">
+            <button onclick="goToScreen(2)" class="p-1.5 rounded-xl bg-[#111827] border border-slate-800 text-slate-400 hover:text-white">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <div class="text-center">
+              <h2 class="text-sm font-black text-white">Court Checkout</h2>
+              <span class="text-[10px] text-slate-400">GCash & Maya Instant Settlement</span>
+            </div>
+            <div class="w-7"></div>
+          </div>
+
+          <!-- Booking Breakdown Card -->
+          <div class="bg-[#111827] border border-[#1E293B] rounded-3xl p-4 mb-4 shadow-xl">
+            <div class="flex items-start justify-between pb-3 border-b border-slate-800">
+              <div>
+                <span class="text-[10px] font-bold text-[#CCFF00] uppercase tracking-wider">
+                  Confirmed Reservation
+                </span>
+                <h3 id="chk-venue" class="text-base font-extrabold text-white mt-0.5">Venue Name</h3>
+                <p id="chk-loc" class="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                  <i data-lucide="map-pin" class="w-3 h-3 text-slate-500"></i>
+                  <span>City, Philippines</span>
+                </p>
+              </div>
+              <div class="px-2.5 py-1 bg-slate-800/80 rounded-xl text-right">
+                <span id="chk-court" class="text-[10px] font-bold text-white block">Court 1</span>
+                <span id="chk-time" class="text-[10px] text-[#CCFF00] font-bold">06:00 PM</span>
+              </div>
+            </div>
+
+            <!-- Line Items -->
+            <div class="py-2.5 space-y-1.5 text-xs text-slate-300 border-b border-slate-800">
+              <div class="flex justify-between">
+                <span id="chk-slot-label">Court Slot (1 hr, 06:00 PM)</span>
+                <span id="chk-slot-price" class="font-semibold text-white">₱800</span>
+              </div>
+              <div id="chk-paddle-row" class="flex justify-between text-slate-400">
+                <span id="chk-paddle-label">Paddle Rental (1x)</span>
+                <span id="chk-paddle-price">+₱100</span>
+              </div>
+              <div id="chk-ball-row" class="flex justify-between text-slate-400">
+                <span>Can of 3 Franklin X-40</span>
+                <span>+₱350</span>
+              </div>
+            </div>
+
+            <div class="pt-2.5 flex items-center justify-between text-sm">
+              <span class="font-bold text-white">Total Venue Bill:</span>
+              <span id="chk-total" class="font-black text-lg text-[#CCFF00]">₱1,250</span>
+            </div>
+          </div>
+
+          <!-- Payment Mode Toggle -->
+          <div class="bg-[#111827] border border-[#1E293B] rounded-3xl p-4 mb-4">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+              Payment Mode
+            </label>
+            <div class="grid grid-cols-2 gap-2 p-1 bg-[#0B131E] rounded-2xl border border-slate-800">
+              <button
+                type="button"
+                id="btn-mode-host"
+                onclick="setPaymentMode('host')"
+                class="py-2 px-3 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white cursor-pointer"
+              >
+                Host Pays All
+              </button>
+              <button
+                type="button"
+                id="btn-mode-split"
+                onclick="setPaymentMode('split')"
+                class="py-2 px-3 rounded-xl text-xs font-extrabold transition-all bg-[#CCFF00] text-[#0B131E] shadow-sm shadow-[#CCFF00]/30 cursor-pointer flex items-center justify-center gap-1"
+              >
+                <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                Split Bill (Barkada)
+              </button>
+            </div>
+
+            <!-- Barkada Split Section -->
+            <div id="split-section" class="mt-3 pt-3 border-t border-slate-800">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <span class="text-xs font-bold text-white">Barkada Mode (4 Doubles Players)</span>
+                  <span id="split-formula" class="text-[10px] text-slate-400 block">₱1,250 ÷ 4 players</span>
+                </div>
+                <div class="text-right">
+                  <span id="split-share-val" class="text-base font-black text-[#10B981]">₱313</span>
+                  <span class="text-[10px] text-slate-400 block">Your Share</span>
+                </div>
+              </div>
+
+              <!-- 4 Avatar Slots -->
+              <div class="grid grid-cols-4 gap-2 mb-3">
+                <div class="bg-[#0B131E] border border-[#CCFF00]/60 rounded-2xl p-2 text-center relative">
+                  <div class="w-8 h-8 mx-auto rounded-full bg-[#CCFF00] text-[#0B131E] font-black text-xs flex items-center justify-center">
+                    YOU
+                  </div>
+                  <span class="text-[10px] font-bold text-white mt-1 block truncate">Host</span>
+                  <span id="slot-share-host" class="text-[9px] text-[#10B981] font-semibold">₱313</span>
+                </div>
+
+                <div onclick="copySplitLink()" class="bg-[#0B131E] border border-dashed border-slate-700 hover:border-[#CCFF00] rounded-2xl p-2 text-center cursor-pointer transition-colors">
+                  <div class="w-8 h-8 mx-auto rounded-full bg-slate-800 text-slate-400 font-bold text-xs flex items-center justify-center">+2</div>
+                  <span class="text-[9px] font-medium text-slate-400 mt-1 block truncate">Invite</span>
+                  <span id="slot-share-2" class="text-[9px] text-slate-500 font-semibold">₱313</span>
+                </div>
+                <div onclick="copySplitLink()" class="bg-[#0B131E] border border-dashed border-slate-700 hover:border-[#CCFF00] rounded-2xl p-2 text-center cursor-pointer transition-colors">
+                  <div class="w-8 h-8 mx-auto rounded-full bg-slate-800 text-slate-400 font-bold text-xs flex items-center justify-center">+3</div>
+                  <span class="text-[9px] font-medium text-slate-400 mt-1 block truncate">Invite</span>
+                  <span id="slot-share-3" class="text-[9px] text-slate-500 font-semibold">₱313</span>
+                </div>
+                <div onclick="copySplitLink()" class="bg-[#0B131E] border border-dashed border-slate-700 hover:border-[#CCFF00] rounded-2xl p-2 text-center cursor-pointer transition-colors">
+                  <div class="w-8 h-8 mx-auto rounded-full bg-slate-800 text-slate-400 font-bold text-xs flex items-center justify-center">+4</div>
+                  <span class="text-[9px] font-medium text-slate-400 mt-1 block truncate">Invite</span>
+                  <span id="slot-share-4" class="text-[9px] text-slate-500 font-semibold">₱313</span>
+                </div>
+              </div>
+
+              <!-- Copy Invite Link Button -->
+              <button
+                type="button"
+                onclick="copySplitLink()"
+                class="w-full py-2 px-3 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <i data-lucide="copy" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+                <span id="split-link-label">piklr.ph/split/court-8921</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Payment Method Selector -->
+          <div class="bg-[#111827] border border-[#1E293B] rounded-3xl p-4">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">
+              Select Philippine Payment Method
+            </label>
+
+            <div class="space-y-2.5">
+              <!-- GCash Option -->
+              <div
+                id="opt-gcash"
+                onclick="setPaymentMethod('gcash')"
+                class="p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#005CE6]/15 border-[#005CE6] shadow-sm shadow-[#005CE6]/20"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-[#005CE6] flex items-center justify-center font-black text-white text-sm shadow-md">
+                    G
+                  </div>
+                  <div>
+                    <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                      GCash e-Wallet
+                      <span class="text-[10px] text-[#005CE6] font-extrabold bg-[#005CE6]/20 px-1.5 py-0.2 rounded-sm">POPULAR</span>
+                    </div>
+                    <span class="text-[11px] text-slate-400">Instant 1-Tap Authorization</span>
+                  </div>
+                </div>
+
+                <div id="check-gcash" class="w-5 h-5 rounded-full border border-[#005CE6] bg-[#005CE6] text-white flex items-center justify-center">
+                  <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+                </div>
+              </div>
+
+              <!-- Maya Option -->
+              <div
+                id="opt-maya"
+                onclick="setPaymentMethod('maya')"
+                class="p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#0B131E] border-slate-800 hover:border-slate-700"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-[#00D26A] flex items-center justify-center font-black text-black text-sm shadow-md">
+                    M
+                  </div>
+                  <div>
+                    <div class="text-xs font-bold text-white">Maya Wallet</div>
+                    <span class="text-[11px] text-slate-400">Zero Convenience Fee</span>
+                  </div>
+                </div>
+
+                <div id="check-maya" class="w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center"></div>
+              </div>
+
+              <!-- QR Ph Universal -->
+              <div
+                id="opt-qrph"
+                onclick="setPaymentMethod('qrph')"
+                class="p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#0B131E] border-slate-800 hover:border-slate-700"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-white">
+                    <i data-lucide="qr-code" class="w-5 h-5 text-amber-400"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-bold text-white">QR Ph Universal</div>
+                    <span class="text-[11px] text-slate-400">BDO, BPI, UnionBank, RCBC</span>
+                  </div>
+                </div>
+
+                <div id="check-qrph" class="w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Bottom CTA Bar -->
+        <div class="p-4 bg-[#111827]/95 backdrop-blur-md border-t border-[#1E293B] shadow-2xl shrink-0">
+          <div class="flex items-center justify-between text-xs mb-2">
+            <span class="text-slate-400">Amount to pay now:</span>
+            <span id="pay-now-amount" class="font-extrabold text-white text-base">₱313</span>
+          </div>
+
+          <button
+            id="btn-pay-action"
+            onclick="executePayment()"
+            class="w-full py-3.5 px-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xl cursor-pointer bg-[#005CE6] text-white hover:bg-blue-600 shadow-blue-500/30"
+          >
+            <span id="pay-action-label">Pay ₱313 via GCash</span>
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="success-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#111827] border border-[#1E293B] rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center relative overflow-hidden">
+      <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-[#10B981]/20 border-2 border-[#10B981] flex items-center justify-center shadow-lg shadow-[#10B981]/30">
+        <i data-lucide="check" class="w-8 h-8 text-[#10B981] stroke-[3]"></i>
+      </div>
+
+      <span class="text-[11px] font-black tracking-widest text-[#CCFF00] uppercase block">
+        Reservation Confirmed
+      </span>
+      <h3 class="text-xl font-black text-white mt-0.5 tracking-tight">
+        Payment Successful!
+      </h3>
+      <p class="text-xs text-slate-400 mt-1">
+        Your court is officially booked and confirmed in the PostgreSQL database.
+      </p>
+
+      <div class="bg-[#0B131E] border border-slate-800 rounded-2xl p-4 my-4 text-left space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Booking Code:</span>
+          <span class="font-mono font-black text-[#CCFF00] text-sm">#PKLR-LIVE-9021</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Venue & Court:</span>
+          <span id="modal-venue-court" class="font-bold text-white">The Dink Yard BGC · Court 1</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Reserved Slot:</span>
+          <span id="modal-slot" class="font-bold text-white">Today · 06:00 PM</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Payment Paid:</span>
+          <span id="modal-amount-paid" class="font-bold text-[#10B981]">₱313 via GCash</span>
+        </div>
+        <div id="modal-split-note" class="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
+          <span class="text-slate-400">Barkada Split:</span>
+          <span class="text-amber-400 font-semibold">3 Invite Links Active</span>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <button
+          onclick="copyBookingCode()"
+          class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+        >
+          <i data-lucide="copy" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+          <span>Copy Booking Pass</span>
+        </button>
+
+        <button
+          onclick="closeSuccessModal()"
+          class="w-full py-3 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider hover:bg-[#d8ff33] transition-all cursor-pointer"
+        >
+          Back to Court Discovery
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Prototype Engine Connected to Supabase -->
+  <script>
+    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let venues = [];
+
+    const dates = [
+      { id: 'today', day: 'Today', num: '19' },
+      { id: 'tomorrow', day: 'Tomorrow', num: '20' },
+      { id: 'wed', day: 'Wed', num: '21' },
+      { id: 'thu', day: 'Thu', num: '22' },
+      { id: 'fri', day: 'Fri', num: '23' }
+    ];
+
+    const state = {
+      screen: 1,
+      filter: 'All',
+      search: '',
+      selectedVenue: null,
+      selectedDate: 'today',
+      selectedCourt: null,
+      selectedTime: '06:00 PM',
+      selectedSlotPrice: 800,
+      paddleCount: 1,
+      ballsCan: true,
+      paymentMode: 'split',
+      paymentMethod: 'gcash'
+    };
+
+    function refreshIcons() {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
+
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-text').innerText = text;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2600);
+    }
+
+    function goToScreen(screenNum) {
+      state.screen = screenNum;
+      document.getElementById('screen-1').classList.add('hidden');
+      document.getElementById('screen-2').classList.add('hidden');
+      document.getElementById('screen-3').classList.add('hidden');
+      document.getElementById(`screen-${screenNum}`).classList.remove('hidden');
+
+      if (screenNum === 2) {
+        syncScreen2();
+      } else if (screenNum === 3) {
+        syncScreen3();
+      }
+
+      refreshIcons();
+    }
+
+    async function loadLiveVenuesFromSupabase() {
+      const feed = document.getElementById('venue-feed');
+      feed.innerHTML = `
+        <div class="text-center py-10 text-slate-500 text-xs flex flex-col items-center gap-2">
+          <span class="w-4 h-4 rounded-full border-2 border-[#CCFF00] border-t-transparent animate-spin"></span>
+          Fetching live venues from Supabase...
+        </div>
+      `;
+
+      try {
+        const { data: dbVenues, error } = await supabaseClient
+          .from('venues')
+          .select('id, name, city, address, environment, surface, courts (id, name, base_hourly_rate, peak_hourly_rate, is_active)')
+          .order('name', { ascending: true });
+
+        if (error) throw error;
+
+        venues = (dbVenues || []).map(v => {
+          const courts = (v.courts || []).sort((a, b) => a.name.localeCompare(b.name));
+          const activeCourts = courts.filter(c => c.is_active);
+          const minBase = courts.length > 0 ? Math.min(...courts.map(c => c.base_hourly_rate || 800)) : 800;
+          const maxPeak = courts.length > 0 ? Math.max(...courts.map(c => c.peak_hourly_rate || 1000)) : 1000;
+
+          let typeLabel = 'Covered';
+          let gradient = 'from-emerald-950/70 via-slate-900 to-[#111827]';
+          if (v.environment === 'indoor_ac') {
+            typeLabel = 'Indoor A/C';
+            gradient = 'from-blue-900/60 via-slate-900 to-[#111827]';
+          } else if (v.environment === 'outdoor') {
+            typeLabel = 'Outdoor';
+            gradient = 'from-amber-950/60 via-slate-900 to-[#111827]';
+          }
+
+          return {
+            id: v.id,
+            name: v.name,
+            location: v.address || `${v.city}, Philippines`,
+            city: v.city || 'Metro Manila',
+            type: typeLabel,
+            surface: v.surface || 'Cushioned Acrylic',
+            courtsCount: courts.length,
+            activeCourtsCount: activeCourts.length,
+            courtsList: courts,
+            pricePerHour: minBase,
+            maxPrice: maxPeak,
+            rating: 4.9,
+            reviewsCount: 120,
+            statusBadge: activeCourts.length > 0 ? `${activeCourts.length} Active Courts` : 'Under Maintenance',
+            statusType: activeCourts.length > 0 ? 'lime' : 'orange',
+            features: [v.surface ? v.surface.replace('_', ' ') : 'Acrylic Court', 'DUPR Verified'],
+            gradient: gradient,
+            hasPaddleRental: true
+          };
+        });
+
+        if (venues.length > 0 && !state.selectedVenue) {
+          state.selectedVenue = venues[0];
+        }
+
+        renderVenues();
+      } catch (err) {
+        console.error('Supabase fetch failed:', err);
+        feed.innerHTML = `
+          <div class="text-center py-8 text-rose-400 text-xs bg-[#111827] border border-rose-500/30 rounded-2xl p-4">
+            Failed to connect to database: ${err.message}
+          </div>
+        `;
+      }
+    }
+
+    function renderVenues() {
+      const feed = document.getElementById('venue-feed');
+      feed.innerHTML = '';
+
+      const filtered = venues.filter(v => {
+        const matchesSearch = v.name.toLowerCase().includes(state.search.toLowerCase()) ||
+                              v.location.toLowerCase().includes(state.search.toLowerCase()) ||
+                              v.city.toLowerCase().includes(state.search.toLowerCase());
+        if (!matchesSearch) return false;
+        if (state.filter === 'All') return true;
+        return v.type === state.filter;
+      });
+
+      if (filtered.length === 0) {
+        feed.innerHTML = `
+          <div class="text-center py-8 text-slate-500 text-xs">
+            No venues found. Try adjusting your search or add a venue in HQ Admin.
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(venue => {
+        const card = document.createElement('div');
+        card.className = 'bg-[#111827] border border-[#1E293B] hover:border-slate-700/80 rounded-3xl p-4 shadow-xl transition-all relative group';
+
+        const badgeStyle = venue.statusType === 'lime' 
+          ? 'bg-[#CCFF00]/20 text-[#CCFF00] border-[#CCFF00]/30' 
+          : 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+
+        card.innerHTML = `
+          <div class="w-full h-24 rounded-2xl bg-gradient-to-r ${venue.gradient} border border-slate-800/90 relative p-3 flex flex-col justify-between overflow-hidden mb-3">
+            <div class="absolute inset-0 opacity-15 pointer-events-none">
+              <div class="border border-white w-full h-full m-1 rounded-lg"></div>
+              <div class="absolute top-1/2 left-0 right-0 border-t border-dashed border-white"></div>
+            </div>
+            <div class="flex items-center justify-between relative z-10">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-black/60 backdrop-blur-md text-[#CCFF00] border border-[#CCFF00]/30">
+                ${venue.type}
+              </span>
+              <div class="flex items-center gap-1 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full text-xs font-bold text-white">
+                <i data-lucide="star" class="w-3 h-3 text-amber-400 fill-amber-400"></i>
+                <span>${venue.rating}</span>
+                <span class="text-[10px] text-slate-400">(${venue.reviewsCount})</span>
+              </div>
+            </div>
+            <div class="relative z-10 flex items-center justify-between">
+              <span class="text-[11px] font-bold text-slate-200">${venue.courtsCount} Courts</span>
+              <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${badgeStyle}">
+                ${venue.statusBadge}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <h2 class="text-base font-extrabold text-white tracking-tight leading-snug">${venue.name}</h2>
+              <p class="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
+                <span>${venue.location}</span>
+              </p>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-black text-[#CCFF00] tracking-tight">
+                ₱${venue.pricePerHour}<span class="text-[11px] font-medium text-slate-400">/hr</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-1.5 my-2.5">
+            ${venue.features.slice(0, 2).map(f => `<span class="text-[10px] font-medium px-2 py-0.5 bg-[#0B131E] border border-slate-800 text-slate-300 rounded-md">${f}</span>`).join('')}
+            <span class="text-[10px] font-semibold px-2 py-0.5 bg-slate-800/80 text-[#CCFF00] rounded-md">🏓 Rental Avail.</span>
+          </div>
+
+          <button
+            onclick="selectVenueAndProceed('${venue.id}')"
+            class="w-full mt-1 py-3 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#d8ff33] active:scale-[0.98] transition-all shadow-lg shadow-[#CCFF00]/20 cursor-pointer"
+          >
+            <span>Book Court</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 stroke-[3]"></i>
+          </button>
+        `;
+        feed.appendChild(card);
+      });
+
+      refreshIcons();
+    }
+
+    function filterVenues() {
+      state.search = document.getElementById('search-input').value;
+      renderVenues();
+    }
+
+    function setFilter(type) {
+      state.filter = type;
+      ['All', 'Indoor', 'Covered', 'Outdoor'].forEach(key => {
+        const btn = document.getElementById(`chip-${key}`);
+        if (!btn) return;
+        const matches = (key === 'All' && type === 'All') ||
+                        (key === 'Indoor' && type === 'Indoor A/C') ||
+                        (key === 'Covered' && type === 'Covered') ||
+                        (key === 'Outdoor' && type === 'Outdoor');
+        if (matches) {
+          btn.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap bg-[#CCFF00] text-[#0B131E] shadow-sm shadow-[#CCFF00]/30 cursor-pointer';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap bg-[#111827] text-slate-400 border border-[#1E293B] hover:text-white cursor-pointer';
+        }
+      });
+      renderVenues();
+    }
+
+    function selectVenueAndProceed(venueId) {
+      const v = venues.find(item => item.id === venueId);
+      if (v) {
+        state.selectedVenue = v;
+        if (v.courtsList && v.courtsList.length > 0) {
+          state.selectedCourt = v.courtsList[0];
+          state.selectedSlotPrice = v.courtsList[0].base_hourly_rate || 800;
+        } else {
+          state.selectedCourt = { name: 'Main Court', base_hourly_rate: 800, peak_hourly_rate: 1000 };
+          state.selectedSlotPrice = 800;
+        }
+      }
+      goToScreen(2);
+    }
+
+    function renderDatePills() {
+      const container = document.getElementById('date-pills');
+      container.innerHTML = '';
+      dates.forEach(d => {
+        const isSelected = state.selectedDate === d.id;
+        const btn = document.createElement('button');
+        btn.onclick = () => {
+          state.selectedDate = d.id;
+          renderDatePills();
+        };
+        btn.className = `flex flex-col items-center justify-center min-w-[62px] py-2 px-2.5 rounded-2xl border transition-all cursor-pointer ${
+          isSelected
+            ? 'bg-[#CCFF00] border-[#CCFF00] text-[#0B131E] shadow-md shadow-[#CCFF00]/25'
+            : 'bg-[#111827] border-[#1E293B] text-slate-300 hover:border-slate-700'
+        }`;
+        btn.innerHTML = `
+          <span class="text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-[#0B131E]' : 'text-slate-400'}">${d.day}</span>
+          <span class="text-base font-black tracking-tight mt-0.5">${d.num}</span>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function renderCourtsPicker() {
+      const container = document.getElementById('court-picker-container');
+      container.innerHTML = '';
+
+      const courts = state.selectedVenue.courtsList || [];
+      if (courts.length === 0) {
+        container.innerHTML = `<div class="col-span-3 text-xs text-amber-400 p-2 bg-amber-500/10 rounded-xl">No specific courts listed. Base rates apply.</div>`;
+        return;
+      }
+
+      courts.forEach(court => {
+        const isSelected = state.selectedCourt && state.selectedCourt.id === court.id;
+        const btn = document.createElement('button');
+        btn.onclick = () => selectCourt(court);
+        btn.className = `py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer border truncate ${
+          isSelected
+            ? 'bg-[#111827] border-[#CCFF00] text-[#CCFF00] shadow-sm shadow-[#CCFF00]/20'
+            : 'bg-[#111827] border-[#1E293B] text-slate-400 hover:text-white'
+        }`;
+        btn.innerHTML = court.name;
+        container.appendChild(btn);
+      });
+    }
+
+    function selectCourt(courtObj) {
+      state.selectedCourt = courtObj;
+      renderCourtsPicker();
+      renderTimeSlots();
+      calculateTotals();
+    }
+
+    function renderTimeSlots() {
+      const grid = document.getElementById('slot-grid');
+      grid.innerHTML = '';
+
+      const baseRate = state.selectedCourt ? (state.selectedCourt.base_hourly_rate || 800) : 800;
+      const peakRate = state.selectedCourt ? (state.selectedCourt.peak_hourly_rate || 1000) : 1000;
+
+      document.getElementById('slot-rate-label').innerText = `Base: ₱${baseRate} / Peak: ₱${peakRate}`;
+
+      const dynamicSlots = [
+        { time: '04:00 PM', price: baseRate, isPeak: false, status: 'available' },
+        { time: '05:00 PM', price: baseRate, isPeak: false, status: 'booked' },
+        { time: '06:00 PM', price: peakRate, isPeak: true, status: 'available' },
+        { time: '07:00 PM', price: peakRate, isPeak: true, status: 'available' },
+        { time: '08:00 PM', price: peakRate, isPeak: true, status: 'booked' },
+        { time: '09:00 PM', price: baseRate, isPeak: false, status: 'available' }
+      ];
+
+      dynamicSlots.forEach(slot => {
+        const isSelected = state.selectedTime === slot.time;
+        const isBooked = slot.status === 'booked';
+
+        if (isBooked) {
+          const div = document.createElement('div');
+          div.className = 'p-3 rounded-2xl bg-[#0B131E] border border-slate-800/60 opacity-40 select-none flex items-center justify-between';
+          div.innerHTML = `
+            <div>
+              <span class="text-xs font-bold text-slate-400 line-through block">${slot.time}</span>
+              <span class="text-[10px] text-rose-400 font-semibold uppercase">Booked</span>
+            </div>
+            <span class="text-xs text-slate-500 font-bold">₱${slot.price}</span>
+          `;
+          grid.appendChild(div);
+        } else {
+          const btn = document.createElement('button');
+          btn.onclick = () => {
+            state.selectedTime = slot.time;
+            state.selectedSlotPrice = slot.price;
+            renderTimeSlots();
+            calculateTotals();
+          };
+          btn.className = `p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+            isSelected
+              ? 'bg-[#CCFF00] border-[#CCFF00] text-[#0B131E] shadow-lg shadow-[#CCFF00]/20'
+              : 'bg-[#111827] border-[#1E293B] hover:border-slate-700 text-white'
+          }`;
+          btn.innerHTML = `
+            <div>
+              <span class="text-xs font-black block ${isSelected ? 'text-[#0B131E]' : 'text-white'}">${slot.time}</span>
+              <span class="text-[10px] font-bold ${isSelected ? 'text-[#0B131E]/80' : slot.isPeak ? 'text-amber-400' : 'text-slate-400'}">
+                ${slot.isPeak ? 'Peak Hour' : 'Regular'}
+              </span>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-black ${isSelected ? 'text-[#0B131E]' : 'text-[#CCFF00]'}">₱${slot.price}</span>
+              ${isSelected ? '<i data-lucide="check" class="w-3.5 h-3.5 ml-auto stroke-[3] text-[#0B131E]"></i>' : ''}
+            </div>
+          `;
+          grid.appendChild(btn);
+        }
+      });
+      refreshIcons();
+    }
+
+    function adjustPaddle(delta) {
+      state.paddleCount = Math.max(0, Math.min(4, state.paddleCount + delta));
+      document.getElementById('paddle-count').innerText = state.paddleCount;
+      calculateTotals();
+    }
+
+    function toggleBalls() {
+      state.ballsCan = !state.ballsCan;
+      const card = document.getElementById('ball-addon-card');
+      const check = document.getElementById('ball-check');
+      if (state.ballsCan) {
+        card.className = 'flex items-center justify-between p-2.5 rounded-2xl border border-[#CCFF00]/60 bg-[#0B131E] transition-all cursor-pointer';
+        check.className = 'w-5 h-5 rounded-lg flex items-center justify-center border bg-[#CCFF00] border-[#CCFF00] text-[#0B131E]';
+        check.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>';
+      } else {
+        card.className = 'flex items-center justify-between p-2.5 rounded-2xl border border-slate-800 bg-[#0B131E] transition-all cursor-pointer';
+        check.className = 'w-5 h-5 rounded-lg flex items-center justify-center border border-slate-700 bg-slate-900';
+        check.innerHTML = '';
+      }
+      calculateTotals();
+      refreshIcons();
+    }
+
+    function calculateTotals() {
+      const slotPrice = state.selectedSlotPrice || 800;
+      const paddleFee = state.paddleCount * 100;
+      const ballFee = state.ballsCan ? 350 : 0;
+      const total = slotPrice + paddleFee + ballFee;
+      const splitEach = Math.ceil(total / 4);
+
+      const courtName = state.selectedCourt ? state.selectedCourt.name : 'Court';
+      document.getElementById('summary-total').innerText = `₱${total}`;
+      document.getElementById('summary-meta').innerText = `(${courtName} · 1 hr)`;
+      document.getElementById('summary-split-preview').innerText = `Barkada Split: ₱${splitEach}/pax`;
+    }
+
+    function syncScreen2() {
+      if (!state.selectedVenue) return;
+      document.getElementById('slot-venue-name').innerText = state.selectedVenue.name;
+      document.getElementById('slot-venue-sub').innerText = `${state.selectedVenue.city} · ${state.selectedVenue.type}`;
+      document.getElementById('slot-venue-rate').innerText = `₱${state.selectedVenue.pricePerHour}/hr`;
+      document.getElementById('court-surface-label').innerText = state.selectedVenue.surface;
+
+      renderDatePills();
+      renderCourtsPicker();
+      renderTimeSlots();
+      calculateTotals();
+    }
+
+    function syncScreen3() {
+      if (!state.selectedVenue) return;
+      const slotPrice = state.selectedSlotPrice || 800;
+      const paddleFee = state.paddleCount * 100;
+      const ballFee = state.ballsCan ? 350 : 0;
+      const total = slotPrice + paddleFee + ballFee;
+      const splitAmount = Math.ceil(total / 4);
+      const courtName = state.selectedCourt ? state.selectedCourt.name : 'Court 1';
+
+      document.getElementById('chk-venue').innerText = state.selectedVenue.name;
+      document.getElementById('chk-loc').querySelector('span').innerText = state.selectedVenue.location;
+      document.getElementById('chk-court').innerText = courtName;
+      document.getElementById('chk-time').innerText = state.selectedTime;
+
+      document.getElementById('chk-slot-label').innerText = `${courtName} Slot (1 hr, ${state.selectedTime})`;
+      document.getElementById('chk-slot-price').innerText = `₱${slotPrice}`;
+
+      const paddleRow = document.getElementById('chk-paddle-row');
+      if (state.paddleCount > 0) {
+        paddleRow.classList.remove('hidden');
+        document.getElementById('chk-paddle-label').innerText = `Paddle Rental (${state.paddleCount}x)`;
+        document.getElementById('chk-paddle-price').innerText = `+₱${paddleFee}`;
+      } else {
+        paddleRow.classList.add('hidden');
+      }
+
+      const ballRow = document.getElementById('chk-ball-row');
+      if (state.ballsCan) {
+        ballRow.classList.remove('hidden');
+      } else {
+        ballRow.classList.add('hidden');
+      }
+
+      document.getElementById('chk-total').innerText = `₱${total}`;
+      document.getElementById('split-formula').innerText = `₱${total} ÷ 4 players`;
+
+      document.getElementById('split-share-val').innerText = `₱${splitAmount}`;
+      document.getElementById('slot-share-host').innerText = `₱${splitAmount}`;
+      document.getElementById('slot-share-2').innerText = `₱${splitAmount}`;
+      document.getElementById('slot-share-3').innerText = `₱${splitAmount}`;
+      document.getElementById('slot-share-4').innerText = `₱${splitAmount}`;
+
+      updatePaymentButton();
+    }
+
+    function setPaymentMode(mode) {
+      state.paymentMode = mode;
+      const btnHost = document.getElementById('btn-mode-host');
+      const btnSplit = document.getElementById('btn-mode-split');
+      const splitSection = document.getElementById('split-section');
+
+      if (mode === 'host') {
+        btnHost.className = 'py-2 px-3 rounded-xl text-xs font-bold transition-all bg-[#111827] text-white border border-slate-700 shadow-sm cursor-pointer';
+        btnSplit.className = 'py-2 px-3 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white cursor-pointer flex items-center justify-center gap-1';
+        splitSection.classList.add('hidden');
+      } else {
+        btnSplit.className = 'py-2 px-3 rounded-xl text-xs font-extrabold transition-all bg-[#CCFF00] text-[#0B131E] shadow-sm shadow-[#CCFF00]/30 cursor-pointer flex items-center justify-center gap-1';
+        btnHost.className = 'py-2 px-3 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white cursor-pointer';
+        splitSection.classList.remove('hidden');
+      }
+      updatePaymentButton();
+    }
+
+    function setPaymentMethod(method) {
+      state.paymentMethod = method;
+      const methods = ['gcash', 'maya', 'qrph'];
+      methods.forEach(m => {
+        const opt = document.getElementById(`opt-${m}`);
+        const chk = document.getElementById(`check-${m}`);
+        if (m === method) {
+          if (m === 'gcash') {
+            opt.className = 'p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#005CE6]/15 border-[#005CE6] shadow-sm shadow-[#005CE6]/20';
+            chk.className = 'w-5 h-5 rounded-full border border-[#005CE6] bg-[#005CE6] text-white flex items-center justify-center';
+            chk.innerHTML = '<i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>';
+          } else if (m === 'maya') {
+            opt.className = 'p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#00D26A]/15 border-[#00D26A] shadow-sm shadow-[#00D26A]/20';
+            chk.className = 'w-5 h-5 rounded-full border border-[#00D26A] bg-[#00D26A] text-black flex items-center justify-center';
+            chk.innerHTML = '<i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>';
+          } else {
+            opt.className = 'p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-amber-500/15 border-amber-400 shadow-sm shadow-amber-400/20';
+            chk.className = 'w-5 h-5 rounded-full border border-amber-400 bg-amber-400 text-[#0B131E] flex items-center justify-center';
+            chk.innerHTML = '<i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>';
+          }
+        } else {
+          opt.className = 'p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#0B131E] border-slate-800 hover:border-slate-700';
+          chk.className = 'w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center';
+          chk.innerHTML = '';
+        }
+      });
+      updatePaymentButton();
+      refreshIcons();
+    }
+
+    function updatePaymentButton() {
+      const slotPrice = state.selectedSlotPrice || 800;
+      const paddleFee = state.paddleCount * 100;
+      const ballFee = state.ballsCan ? 350 : 0;
+      const total = slotPrice + paddleFee + ballFee;
+      const amountToPay = state.paymentMode === 'split' ? Math.ceil(total / 4) : total;
+
+      document.getElementById('pay-now-amount').innerText = `₱${amountToPay}`;
+      
+      const methodLabel = state.paymentMethod === 'gcash' ? 'GCash' : state.paymentMethod === 'maya' ? 'Maya' : 'QR Ph';
+      document.getElementById('pay-action-label').innerText = `Pay ₱${amountToPay} via ${methodLabel}`;
+
+      const btn = document.getElementById('btn-pay-action');
+      if (state.paymentMethod === 'gcash') {
+        btn.className = 'w-full py-3.5 px-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xl cursor-pointer bg-[#005CE6] text-white hover:bg-blue-600 shadow-blue-500/30';
+      } else if (state.paymentMethod === 'maya') {
+        btn.className = 'w-full py-3.5 px-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xl cursor-pointer bg-[#00D26A] text-[#0B131E] hover:bg-emerald-400 shadow-emerald-500/30';
+      } else {
+        btn.className = 'w-full py-3.5 px-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xl cursor-pointer bg-[#CCFF00] text-[#0B131E] hover:bg-[#d8ff33] shadow-[#CCFF00]/30';
+      }
+    }
+
+    function copySplitLink() {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText('https://piklr.ph/split/court-8921');
+      }
+      showToast('Split link copied to clipboard!');
+    }
+
+    function executePayment() {
+      const btn = document.getElementById('btn-pay-action');
+      btn.innerHTML = `<span>Connecting to ${state.paymentMethod.toUpperCase()}...</span>`;
+
+      setTimeout(() => {
+        updatePaymentButton();
+        const slotPrice = state.selectedSlotPrice || 800;
+        const total = slotPrice + (state.paddleCount * 100) + (state.ballsCan ? 350 : 0);
+        const amountPaid = state.paymentMode === 'split' ? Math.ceil(total / 4) : total;
+        const courtName = state.selectedCourt ? state.selectedCourt.name : 'Court 1';
+
+        document.getElementById('modal-venue-court').innerText = `${state.selectedVenue.name} · ${courtName}`;
+        document.getElementById('modal-slot').innerText = `Today · ${state.selectedTime}`;
+        document.getElementById('modal-amount-paid').innerText = `₱${amountPaid} via ${state.paymentMethod.toUpperCase()}`;
+
+        const splitNote = document.getElementById('modal-split-note');
+        if (state.paymentMode === 'split') {
+          splitNote.classList.remove('hidden');
+        } else {
+          splitNote.classList.add('hidden');
+        }
+
+        document.getElementById('success-modal').classList.remove('hidden');
+        refreshIcons();
+      }, 700);
+    }
+
+    function copyBookingCode() {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText('PKLR-LIVE-9021');
+      }
+      showToast('Booking code copied!');
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('success-modal').classList.add('hidden');
+      goToScreen(1);
+      showToast('Court confirmed! See you on court.');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadLiveVenuesFromSupabase();
+      refreshIcons();
+    });
+  </script>
+</body>
+</html>

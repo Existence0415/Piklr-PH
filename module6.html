@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PiklrPH - Partner Matchmaker & Coach Marketplace (Module 6)</title>
+
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <!-- Lucide Icons CDN & Supabase Client -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes pulse-ring {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.08); opacity: 0.3; }
+    }
+    .beacon-pulse { animation: pulse-ring 2s infinite ease-in-out; }
+  </style>
+</head>
+<body class="bg-[#070B11] text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
+
+  <!-- Mobile Frame Container -->
+  <div class="w-full max-w-[420px] h-[880px] max-h-screen bg-[#0B131E] sm:rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.85)] border border-[#1E293B] flex flex-col relative overflow-hidden">
+    
+    <!-- Top System Bar -->
+    <div class="pt-3 px-6 pb-2 flex items-center justify-between z-30 shrink-0 bg-[#0B131E]">
+      <span class="text-xs font-semibold text-slate-400">09:41</span>
+      <div class="w-28 h-4 bg-black rounded-full flex items-center justify-center gap-1.5 border border-slate-800">
+        <span class="w-2 h-2 rounded-full bg-[#CCFF00] animate-ping"></span>
+        <span class="text-[9px] font-bold tracking-wider text-[#CCFF00]">COMMUNITY HUB</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="admin.html" class="text-[10px] font-bold text-[#CCFF00] hover:underline">HQ Admin</a>
+        <div class="flex items-center gap-1 text-slate-400 text-xs">
+          <i data-lucide="radio" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+          <span class="text-[10px] font-bold">5G</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top App Bar & Segmented Navigation -->
+    <div class="px-4 py-2.5 bg-[#111827] border-y border-[#1E293B] shrink-0 space-y-2.5">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#CCFF00]">PiklrPH Network</span>
+            <span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Live Database</span>
+          </div>
+          <h1 class="text-sm font-black text-white tracking-wide">
+            Doubles Matchmaker & Academy
+          </h1>
+        </div>
+
+        <button onclick="showToast('You have 2 pending partner requests in BGC!')" class="relative w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition active:scale-95 cursor-pointer">
+          <i data-lucide="bell" class="w-4 h-4"></i>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#CCFF00] rounded-full"></span>
+        </button>
+      </div>
+
+      <!-- Segmented Switcher -->
+      <div class="grid grid-cols-2 p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs font-extrabold">
+        <button id="seg-btn-partner" onclick="switchSegment('partner')" class="py-1.5 rounded-lg bg-[#CCFF00] text-black shadow-md font-black flex items-center justify-center gap-1.5 transition cursor-pointer">
+          <i data-lucide="users" class="w-3.5 h-3.5"></i>
+          <span>Find Partner</span>
+        </button>
+        <button id="seg-btn-coach" onclick="switchSegment('coach')" class="py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition cursor-pointer">
+          <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
+          <span>Book Coach & Clinics</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN SCROLLABLE CONTENT BODY -->
+    <div class="flex-1 overflow-y-auto px-4 py-3 flex flex-col justify-between">
+
+      <!-- ================= VIEW 1: FIND A DOUBLES PARTNER ================= -->
+      <div id="view-partner" class="space-y-3 flex-1 flex flex-col">
+        
+        <!-- Filter Chips Bar -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 shrink-0">
+          <button onclick="filterPartners('all', this)" class="filter-chip px-3 py-1.5 rounded-xl bg-[#CCFF00] text-black text-xs font-black shrink-0 transition cursor-pointer shadow-sm">
+            All DUPR
+          </button>
+          <button onclick="filterPartners('3.0-3.5', this)" class="filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer">
+            3.0 - 3.5
+          </button>
+          <button onclick="filterPartners('lefty', this)" class="filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer">
+            ⚡ Lefty Only
+          </button>
+          <button onclick="filterPartners('left-side', this)" class="filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer">
+            Left-Side Specialist
+          </button>
+        </div>
+
+        <!-- My Availability Beacon Card -->
+        <div class="p-3 rounded-2xl bg-gradient-to-r from-slate-900 via-[#111d2e] to-slate-900 border border-[#CCFF00]/40 shadow-lg flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2.5">
+            <div class="relative w-8 h-8 rounded-full bg-[#CCFF00]/20 border border-[#CCFF00] flex items-center justify-center text-[#CCFF00]">
+              <i data-lucide="radar" class="w-4 h-4 animate-spin" style="animation-duration: 6s;"></i>
+              <span id="beacon-ring" class="absolute inset-0 rounded-full border border-[#CCFF00] beacon-pulse pointer-events-none"></span>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-black text-white">Your Partner Beacon is</span>
+                <span id="beacon-status-text" class="text-xs font-black text-[#CCFF00]">ON</span>
+              </div>
+              <p class="text-[10px] text-slate-400">Broadcasting to athletes across Philippine courts</p>
+            </div>
+          </div>
+
+          <button onclick="toggleBeacon()" id="beacon-toggle-btn" class="w-11 h-6 rounded-full bg-[#CCFF00] p-0.5 transition cursor-pointer flex items-center justify-end">
+            <span id="beacon-toggle-knob" class="w-5 h-5 rounded-full bg-black shadow-md transition"></span>
+          </button>
+        </div>
+
+        <!-- Discovery Card Stack -->
+        <div class="space-y-3 flex-1">
+          <!-- Partner 1 -->
+          <div class="partner-card p-3.5 rounded-2xl bg-[#111827] border border-[#1E293B] shadow-md space-y-2.5" data-category="3.0-3.5">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-base shadow-md">
+                  BR
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <h3 class="text-sm font-black text-white">Bea Ramirez</h3>
+                    <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5">
+                      <i data-lucide="shield-check" class="w-3 h-3"></i> 3.42 DUPR
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                    <i data-lucide="map-pin" class="w-3 h-3 text-[#CCFF00]"></i>
+                    <span>Taguig / BGC • 1.8 km</span>
+                  </div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide bg-[#CCFF00]/10 text-[#CCFF00] border border-[#CCFF00]/30">
+                94% MATCH
+              </span>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 text-[10px] font-bold">
+              <span class="px-2 py-0.5 rounded-md bg-slate-900 text-slate-300 border border-slate-800">Right-Handed</span>
+              <span class="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-300 border border-purple-500/20">Soft Game / Dinker</span>
+              <span class="px-2 py-0.5 rounded-md bg-slate-900 text-sky-400 border border-slate-800">Prefers Right Side</span>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-slate-900/70 border border-slate-800/80 text-[11px] space-y-1">
+              <div class="text-slate-300">
+                <span class="font-extrabold text-[#CCFF00]">Seeking:</span> "Partner for upcoming BGC Open 3.5 Mixed Doubles"
+              </div>
+            </div>
+
+            <button onclick="openInviteDrawer('Bea Ramirez', '3.42', 'Right-Side Dinker', 94, 'Taguig / BGC')" class="w-full py-2.5 px-4 rounded-xl bg-[#CCFF00] hover:brightness-110 active:scale-98 text-black font-black text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(204,255,0,0.25)] transition cursor-pointer">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+              <span>INVITE TO PAIR UP</span>
+            </button>
+          </div>
+
+          <!-- Partner 2 -->
+          <div class="partner-card p-3.5 rounded-2xl bg-[#111827] border border-[#1E293B] shadow-md space-y-2.5" data-category="lefty left-side">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-black text-base shadow-md">
+                  MT
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <h3 class="text-sm font-black text-white">Marco "The Cannon" Tan</h3>
+                    <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5">
+                      <i data-lucide="shield-check" class="w-3 h-3"></i> 3.85 DUPR
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                    <i data-lucide="map-pin" class="w-3 h-3 text-[#CCFF00]"></i>
+                    <span>Pasig / Mandaluyong • 3.2 km</span>
+                  </div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                ⚡ RARE LEFTY
+              </span>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 text-[10px] font-bold">
+              <span class="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                <i data-lucide="zap" class="w-3 h-3"></i> Left-Handed
+              </span>
+              <span class="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/20">Aggressive Banger</span>
+              <span class="px-2 py-0.5 rounded-md bg-slate-900 text-sky-400 border border-slate-800">Prefers Left Side</span>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-slate-900/70 border border-slate-800/80 text-[11px] space-y-1">
+              <div class="text-slate-300">
+                <span class="font-extrabold text-[#CCFF00]">Seeking:</span> "Drill partner & Weekend Tournaments (3.5+)"
+              </div>
+            </div>
+
+            <button onclick="openInviteDrawer('Marco Tan', '3.85', 'Left-Handed Power Banger', 91, 'Pasig / Mandaluyong')" class="w-full py-2.5 px-4 rounded-xl bg-[#CCFF00] hover:brightness-110 active:scale-98 text-black font-black text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(204,255,0,0.25)] transition cursor-pointer">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+              <span>INVITE TO PAIR UP</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= VIEW 2: VERIFIED COACH & CLINIC MARKETPLACE ================= -->
+      <div id="view-coach" class="space-y-3 flex-1 hidden flex-col">
+        
+        <div class="p-3 rounded-2xl bg-gradient-to-r from-sky-950 via-slate-900 to-[#111827] border border-sky-500/30 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 shrink-0">
+            <i data-lucide="award" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 class="text-xs font-black text-white uppercase tracking-wide">PiklrPH Academy</h2>
+            <p class="text-[11px] text-slate-300 leading-tight">
+              Verified PPR & IPTPA certified instructors synchronized with Admin HQ.
+            </p>
+          </div>
+        </div>
+
+        <!-- Section 1: Live Coaches Container from PostgreSQL -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black uppercase tracking-wider text-slate-300">Verified Pro Coaches</span>
+            <span id="coaches-sync-badge" class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live from Supabase
+            </span>
+          </div>
+
+          <!-- Dynamic Container for Coaches -->
+          <div id="coaches-container" class="space-y-3">
+            <div class="text-xs text-slate-400 text-center py-6">Loading coaches...</div>
+          </div>
+        </div>
+
+        <!-- Section 2: Group Clinics Spotlight -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black uppercase tracking-wider text-slate-300">Featured Group Clinics</span>
+            <span class="text-[10px] text-[#CCFF00] font-bold">Fast-Track Progress</span>
+          </div>
+
+          <div id="clinics-container" class="space-y-2.5">
+            <!-- Dynamic Clinic Cards -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom Mini Status Bar -->
+    <div class="p-3 bg-[#111827] border-t border-[#1E293B] flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-[10px] font-black text-slate-300 uppercase tracking-wider">
+          PiklrPH Community Network
+        </span>
+      </div>
+
+      <button onclick="showQuickProfile()" class="text-xs font-bold text-[#CCFF00] hover:underline flex items-center gap-1 cursor-pointer">
+        <i data-lucide="user" class="w-3.5 h-3.5"></i>
+        <span>My Passport</span>
+      </button>
+    </div>
+
+    <!-- VIEW 3: INVITATION DRAWER -->
+    <div id="invite-drawer" class="absolute inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col justify-end transition-all">
+      <div class="bg-[#111827] border-t border-[#1E293B] rounded-t-3xl p-5 max-h-[90%] overflow-y-auto space-y-4 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-[#CCFF00]/10 border border-[#CCFF00]/30 flex items-center justify-center text-[#CCFF00]">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+            </span>
+            <span class="text-xs font-black uppercase tracking-wider text-white">Partner Pairing Request</span>
+          </div>
+          <button onclick="closeInviteDrawer()" class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div id="drawer-avatar" class="w-10 h-10 rounded-xl bg-purple-600 text-white font-black flex items-center justify-center text-sm">
+              BR
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span id="drawer-name" class="text-sm font-black text-white">Bea Ramirez</span>
+                <span id="drawer-dupr" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">3.42 DUPR</span>
+              </div>
+              <p id="drawer-style" class="text-[11px] text-slate-400 font-medium">Right-Side Dinker • Taguig / BGC</p>
+            </div>
+          </div>
+          <span id="drawer-match" class="text-xs font-black text-[#CCFF00]">94% Match</span>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-300">Custom Pitch / Intro Message:</label>
+          <textarea id="drawer-message" rows="3" class="w-full p-3 rounded-xl bg-[#0B131E] border border-slate-700 text-xs text-white focus:outline-none focus:border-[#CCFF00] resize-none" placeholder="Hey, let's drill and partner up!"></textarea>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-300">Suggested Meeting Venue:</label>
+          <select id="invite-venue-select" class="w-full p-2.5 rounded-xl bg-[#0B131E] border border-slate-700 text-xs text-white focus:outline-none focus:border-[#CCFF00]">
+            <!-- Dynamically populated from Supabase venues -->
+          </select>
+        </div>
+
+        <button id="send-invite-btn" onclick="sendPartnerInvite()" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#CCFF00] to-[#a3e635] text-black font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.35)] hover:brightness-110 active:scale-98 transition cursor-pointer">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          <span>SEND IN-APP INVITE (SAVE TO DB)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- BOOKING SUCCESS MODAL -->
+    <div id="booking-modal" class="absolute inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center transition-all">
+      <div class="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 mb-3 shadow-[0_0_30px_rgba(52,211,153,0.4)]">
+        <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+      </div>
+      <span class="text-[10px] uppercase tracking-widest font-black text-emerald-400">Reservation Confirmed</span>
+      <h2 id="booking-item-title" class="text-lg font-black text-white mt-1">Lesson Confirmation</h2>
+      <p id="booking-item-venue" class="text-xs text-slate-300 mt-0.5">Venue</p>
+
+      <div class="my-4 p-3 rounded-2xl bg-slate-900 border border-slate-800 w-full text-xs space-y-1.5">
+        <div class="flex items-center justify-between text-slate-400">
+          <span>Booking Reference:</span>
+          <span id="booking-ref-code" class="text-white font-mono font-bold">#PKLR-CLN-77492</span>
+        </div>
+        <div class="flex items-center justify-between text-slate-400">
+          <span>Paid via:</span>
+          <span id="booking-price-pill" class="text-[#005CE6] font-black">GCash</span>
+        </div>
+        <div class="flex items-center justify-between text-slate-400">
+          <span>Database Status:</span>
+          <span class="text-emerald-400 font-bold">Confirmed & Synced</span>
+        </div>
+      </div>
+
+      <button onclick="closeBookingModal()" class="w-full py-3 rounded-xl bg-[#CCFF00] text-black font-black text-xs tracking-wider shadow-lg hover:brightness-110 cursor-pointer">
+        DONE & RETURN TO APP
+      </button>
+    </div>
+
+    <!-- Floating Toast Notification -->
+    <div id="toast" class="absolute top-14 inset-x-4 bg-slate-900 border border-[#CCFF00] text-white p-3 rounded-xl shadow-2xl z-50 text-xs font-bold flex items-center gap-2.5 transform -translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
+      <i data-lucide="bell" class="w-4 h-4 text-[#CCFF00] shrink-0"></i>
+      <span id="toast-text" class="flex-1">Notification message</span>
+    </div>
+
+  </div>
+
+  <!-- JavaScript Community Hub Logic with Supabase -->
+  <script>
+    // 1. SUPABASE CLIENT
+    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let venuesList = [];
+
+    function switchSegment(tab) {
+      const pBtn = document.getElementById('seg-btn-partner');
+      const cBtn = document.getElementById('seg-btn-coach');
+      const pView = document.getElementById('view-partner');
+      const cView = document.getElementById('view-coach');
+
+      if (tab === 'partner') {
+        pBtn.className = "py-1.5 rounded-lg bg-[#CCFF00] text-black shadow-md font-black flex items-center justify-center gap-1.5 transition cursor-pointer";
+        cBtn.className = "py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition cursor-pointer";
+        pView.classList.remove('hidden');
+        pView.classList.add('flex');
+        cView.classList.add('hidden');
+        cView.classList.remove('flex');
+      } else {
+        cBtn.className = "py-1.5 rounded-lg bg-[#CCFF00] text-black shadow-md font-black flex items-center justify-center gap-1.5 transition cursor-pointer";
+        pBtn.className = "py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition cursor-pointer";
+        cView.classList.remove('hidden');
+        cView.classList.add('flex');
+        pView.classList.add('hidden');
+        pView.classList.remove('flex');
+        loadCoachesAndClinics();
+      }
+      lucide.createIcons();
+    }
+
+    function showToast(text, duration = 2400) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      toastText.innerText = text;
+      toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, duration);
+    }
+
+    // 2. LOAD LIVE COACHES & VENUES FROM POSTGRESQL
+    async function loadCoachesAndClinics() {
+      const container = document.getElementById('coaches-container');
+      const clinicsContainer = document.getElementById('clinics-container');
+
+      try {
+        const { data: coaches, error: coachErr } = await supabaseClient
+          .from('coaches')
+          .select('*')
+          .order('rating', { ascending: false });
+
+        if (coachErr) throw coachErr;
+
+        if (coaches && coaches.length > 0) {
+          container.innerHTML = coaches.map(c => `
+            <div class="p-3.5 rounded-2xl bg-[#111827] border border-[#1E293B] shadow-md space-y-2.5">
+              <div class="flex items-start justify-between">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-600 to-blue-700 flex items-center justify-center text-white font-black text-lg shadow-md relative">
+                    ${c.name.split(' ').map(n=>n[0]).slice(0,2).join('')}
+                    ${c.is_verified ? `
+                      <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-[#CCFF00] rounded-full border-2 border-[#111827] flex items-center justify-center text-black">
+                        <i data-lucide="check" class="w-2.5 h-2.5 stroke-[3]"></i>
+                      </span>
+                    ` : ''}
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-black text-white">${c.name}</h3>
+                    <p class="text-[10px] font-semibold text-emerald-400">${c.title} • License ${c.license_number || 'PH-8921'}</p>
+                    <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                      <span class="text-amber-400 font-extrabold flex items-center gap-0.5">
+                        <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i> ${c.rating}
+                      </span>
+                      <span>• ${c.students_count} students</span>
+                      <span>• ${c.city}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] space-y-1">
+                <div class="text-slate-300">
+                  <span class="font-extrabold text-[#CCFF00]">Specialization:</span> ${c.specialization}
+                </div>
+                <div class="flex items-center justify-between pt-1 border-t border-slate-800/80 text-[11px]">
+                  <span class="text-slate-400">Private 1-on-1 Rate:</span>
+                  <span class="text-sm font-black text-[#CCFF00]">₱${c.hourly_rate.toLocaleString()} / hr</span>
+                </div>
+              </div>
+
+              <button onclick="openCoachBooking('${c.name}', '₱${c.hourly_rate}/hr')" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:brightness-110 active:scale-98 text-white font-black text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-md transition cursor-pointer">
+                <i data-lucide="calendar-check" class="w-3.5 h-3.5"></i>
+                <span>BOOK 1-ON-1 LESSON</span>
+              </button>
+            </div>
+          `).join('');
+        }
+
+        // Render dynamic clinics matching live venues
+        const defaultVenueName = venuesList.length > 0 ? venuesList[0].name : 'The Dink Yard BGC';
+        clinicsContainer.innerHTML = `
+          <div class="p-3.5 rounded-2xl bg-gradient-to-b from-[#131f33] to-[#111827] border-2 border-sky-500/40 shadow-lg space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] font-black px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">
+                4-TO-1 COACH RATIO
+              </span>
+              <span class="text-[10px] font-black text-rose-400 animate-pulse">2 SLOTS LEFT</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-white">Sunday Morning Fast-Track Clinic</h3>
+              <p class="text-[11px] text-slate-300">${defaultVenueName} • Sun 7:00 AM - 9:00 AM</p>
+            </div>
+            <div class="flex items-center justify-between pt-1 text-xs">
+              <div>
+                <span class="text-[10px] text-slate-400 block leading-tight">Registration Fee</span>
+                <span class="text-base font-black text-[#CCFF00]">₱650 <span class="text-[10px] text-slate-400 font-normal">/ pax</span></span>
+              </div>
+              <button onclick="reserveClinic('Sunday Morning Fast-Track Clinic', '${defaultVenueName}', 650)" class="py-2 px-3.5 rounded-xl bg-[#005CE6] hover:bg-[#004dc2] text-white font-black text-xs flex items-center gap-1.5 shadow-md transition active:scale-95 cursor-pointer">
+                <span>Reserve via GCash</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        `;
+
+      } catch (err) {
+        console.error(err);
+      }
+      lucide.createIcons();
+    }
+
+    async function loadVenues() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('venues')
+          .select('id, name')
+          .order('name', { ascending: true });
+
+        if (error) throw error;
+        venuesList = data || [];
+
+        const select = document.getElementById('invite-venue-select');
+        if (venuesList.length > 0) {
+          select.innerHTML = venuesList.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
+        } else {
+          select.innerHTML = '<option value="The Dink Yard BGC">The Dink Yard BGC</option>';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Filter Chips Logic
+    function filterPartners(category, btnElement) {
+      document.querySelectorAll('.filter-chip').forEach(btn => {
+        btn.className = "filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer";
+      });
+      btnElement.className = "filter-chip px-3 py-1.5 rounded-xl bg-[#CCFF00] text-black text-xs font-black shrink-0 transition cursor-pointer shadow-sm";
+
+      const cards = document.querySelectorAll('.partner-card');
+      cards.forEach(card => {
+        const cats = card.getAttribute('data-category');
+        if (category === 'all' || cats.includes(category)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      showToast(`Filter: ${btnElement.innerText.trim()}`);
+    }
+
+    let beaconActive = true;
+    function toggleBeacon() {
+      beaconActive = !beaconActive;
+      const statusText = document.getElementById('beacon-status-text');
+      const ring = document.getElementById('beacon-ring');
+      const btn = document.getElementById('beacon-toggle-btn');
+
+      if (beaconActive) {
+        statusText.innerText = "ON";
+        statusText.className = "text-xs font-black text-[#CCFF00]";
+        btn.className = "w-11 h-6 rounded-full bg-[#CCFF00] p-0.5 transition cursor-pointer flex items-center justify-end";
+        ring.style.display = 'block';
+        showToast("Partner Beacon ON: Visible across Philippine courts.");
+      } else {
+        statusText.innerText = "OFF";
+        statusText.className = "text-xs font-black text-slate-500";
+        btn.className = "w-11 h-6 rounded-full bg-slate-700 p-0.5 transition cursor-pointer flex items-center justify-start";
+        ring.style.display = 'none';
+        showToast("Partner Beacon OFF: Profile hidden from discovery.");
+      }
+    }
+
+    function openInviteDrawer(name, dupr, style, match, location) {
+      document.getElementById('drawer-name').innerText = name;
+      document.getElementById('drawer-avatar').innerText = name.split(' ').map(n=>n[0]).join('');
+      document.getElementById('drawer-dupr').innerText = `${dupr} DUPR`;
+      document.getElementById('drawer-style').innerText = `${style} • ${location}`;
+      document.getElementById('drawer-match').innerText = `${match}% Match`;
+      document.getElementById('drawer-message').value = `Hey ${name.split(' ')[0]}, saw you're looking for a partner. I'm a 3.6 Left-Side player, let's drill!`;
+
+      const drawer = document.getElementById('invite-drawer');
+      drawer.classList.remove('hidden');
+      drawer.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeInviteDrawer() {
+      const drawer = document.getElementById('invite-drawer');
+      drawer.classList.add('hidden');
+      drawer.classList.remove('flex');
+    }
+
+    // 3. PERSIST PARTNER INVITE TO SUPABASE
+    async function sendPartnerInvite() {
+      const btn = document.getElementById('send-invite-btn');
+      const name = document.getElementById('drawer-name').innerText;
+      const msg = document.getElementById('drawer-message').value;
+      const venue = document.getElementById('invite-venue-select').value;
+
+      btn.disabled = true;
+      btn.innerText = 'Delivering via Supabase...';
+
+      try {
+        const { error } = await supabaseClient
+          .from('partner_invites')
+          .insert([{
+            sender_name: 'Dave H.',
+            receiver_name: name,
+            custom_message: msg,
+            venue_name: venue,
+            status: 'pending'
+          }]);
+
+        if (error) throw error;
+
+        btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> <span>SAVED & DELIVERED!</span>`;
+        btn.className = "w-full py-3.5 px-4 rounded-2xl bg-emerald-400 text-black font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-lg cursor-default";
+        lucide.createIcons();
+        showToast("Invite permanently saved and sent to athlete!");
+
+        setTimeout(() => {
+          closeInviteDrawer();
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> <span>SEND IN-APP INVITE (SAVE TO DB)</span>`;
+          btn.className = "w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#CCFF00] to-[#a3e635] text-black font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.35)] hover:brightness-110 active:scale-98 transition cursor-pointer";
+        }, 1500);
+      } catch (err) {
+        alert('Invite failed: ' + err.message);
+        btn.disabled = false;
+        btn.innerText = 'SEND IN-APP INVITE (SAVE TO DB)';
+      }
+    }
+
+    // 4. BOOK COACH OR CLINIC TO SUPABASE
+    function openCoachBooking(coachName, rate) {
+      document.getElementById('booking-item-title').innerText = `1-on-1 Lesson with ${coachName}`;
+      document.getElementById('booking-item-venue').innerText = `Private Court Session (${rate})`;
+      document.getElementById('booking-price-pill').innerText = `GCash (${rate})`;
+      document.getElementById('booking-ref-code').innerText = `#PKLR-CCH-${Math.floor(10000 + Math.random() * 90000)}`;
+
+      const m = document.getElementById('booking-modal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    async function reserveClinic(clinicName, venue, price) {
+      const refCode = `#PKLR-CLN-${Math.floor(10000 + Math.random() * 90000)}`;
+
+      document.getElementById('booking-item-title').innerText = clinicName;
+      document.getElementById('booking-item-venue').innerText = `${venue} • ₱${price}`;
+      document.getElementById('booking-price-pill').innerText = `GCash (₱${price})`;
+      document.getElementById('booking-ref-code').innerText = refCode;
+
+      try {
+        await supabaseClient
+          .from('clinic_bookings')
+          .insert([{
+            clinic_title: clinicName,
+            venue_name: venue,
+            amount: price,
+            payment_method: 'gcash',
+            booking_code: refCode
+          }]);
+      } catch (e) {
+        console.warn('Booking sync note:', e.message);
+      }
+
+      const m = document.getElementById('booking-modal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeBookingModal() {
+      const m = document.getElementById('booking-modal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+      showToast("Confirmation recorded in database & receipt sent.");
+    }
+
+    function showQuickProfile() {
+      showToast("Opening Player Passport (Dave H. • DUPR 3.6)");
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadVenues();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

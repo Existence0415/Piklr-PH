@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PiklrPH — Super-Admin Command Center</title>
+
+  <!-- Google Font: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            court: '#0B131E',
+            surface: '#111827',
+            card: '#161F30',
+            borderDark: '#1E293B',
+            neon: '#CCFF00',
+            gcash: '#005CE6',
+            maya: '#00D26A',
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- External Libraries: Lucide Icons, Chart.js, Supabase Client -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #0B131E;
+      color: #F8FAFC;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0B131E; }
+    ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
+<body class="min-h-screen flex antialiased selection:bg-neon selection:text-slate-950">
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="w-64 border-r border-borderDark bg-surface flex flex-col justify-between shrink-0">
+    <div>
+      <div class="py-5 px-6 border-b border-borderDark flex items-center justify-between gap-3">
+        <img src="logo.png" alt="PiklrPH" class="h-24 w-auto object-contain shrink-0" />
+        <div class="flex flex-col items-end shrink-0">
+          <span class="text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded bg-neon/20 text-neon border border-neon/30">HQ</span>
+          <p class="text-[10px] text-slate-400 font-medium mt-1">Master CRUD</p>
+        </div>
+      </div>
+
+      <nav class="p-3 space-y-1">
+        <button onclick="switchTab('earnings')" id="tab-earnings" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all bg-neon text-slate-950 shadow-lg shadow-neon/10">
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+          <span>Financials & Earnings</span>
+        </button>
+
+        <button onclick="switchTab('venues')" id="tab-venues" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-card">
+          <i data-lucide="map-pin" class="w-4 h-4"></i>
+          <span>Venues & Courts (M2/M3)</span>
+        </button>
+
+        <button onclick="switchTab('tournaments')" id="tab-tournaments" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-card">
+          <i data-lucide="award" class="w-4 h-4"></i>
+          <span>Tournaments & Brackets (M5)</span>
+        </button>
+
+        <button onclick="switchTab('coaches')" id="tab-coaches" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-card">
+          <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+          <span>Coaches & Academies (M6)</span>
+        </button>
+
+        <button onclick="switchTab('marketplace')" id="tab-marketplace" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-card">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          <span>Marketplace & Escrow (M7)</span>
+        </button>
+
+        <button onclick="switchTab('community')" id="tab-community" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-card">
+          <i data-lucide="coffee" class="w-4 h-4"></i>
+          <span>Social & Cafe Perks (M8)</span>
+        </button>
+
+        <div class="pt-2 border-t border-borderDark/60 my-1"></div>
+
+        <!-- Admin Settings Navigation Item -->
+        <button onclick="switchTab('settings')" id="tab-settings" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-card">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-neon"></i>
+          <span>Admin Settings</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- User Profile Strip -->
+    <div class="p-3 border-t border-borderDark m-3 rounded-2xl bg-card">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-neon text-slate-950 font-black text-xs flex items-center justify-center">
+          DP
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-bold text-white truncate">Dave P.</p>
+          <p class="text-[10px] text-slate-400 font-medium truncate">Master Super-Admin</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CANVAS -->
+  <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+    <header class="h-16 border-b border-borderDark px-6 flex items-center justify-between bg-surface/50 backdrop-blur sticky top-0 z-20">
+      <div>
+        <h1 id="page-title" class="text-lg font-black text-white tracking-tight">Financials & Platform Earnings</h1>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span id="syncBadge" class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 font-bold">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Supabase Connected
+        </span>
+        <button onclick="refreshAllHQData()" class="p-2 rounded-xl bg-card border border-borderDark text-slate-300 hover:text-white transition-colors" title="Sync All Tables">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="p-6 space-y-6">
+
+      <!-- ===================================================================== -->
+      <!-- TAB 1: FINANCIALS & EARNINGS -->
+      <!-- ===================================================================== -->
+      <section id="view-earnings" class="tab-view space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="p-4 rounded-2xl bg-surface border border-borderDark">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Platform Gross</span>
+            <div id="statGross" class="text-xl font-black text-white mt-1">₱0.00</div>
+            <span class="text-[10px] text-emerald-400 font-medium">Courts + Escrow Gear</span>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-surface border border-borderDark">
+            <span class="text-[10px] font-bold text-neon uppercase tracking-wider block">Platform Take-Rate (5%)</span>
+            <div id="statTake" class="text-xl font-black text-neon mt-1">₱0.00</div>
+            <span class="text-[10px] text-slate-400 font-medium">Net Commission</span>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-surface border border-borderDark">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Escrow Protected</span>
+            <div id="statEscrowBalance" class="text-xl font-black text-sky-400 mt-1">₱0.00</div>
+            <span class="text-[10px] text-slate-400 font-medium">Active Locked Escrow</span>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-surface border border-borderDark">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Active Venues / Courts</span>
+            <div id="statVenuesCount" class="text-xl font-black text-amber-400 mt-1">0 / 0</div>
+            <span class="text-[10px] text-slate-400 font-medium">Across Metro Manila & PH</span>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-surface border border-borderDark">
+          <h3 class="text-sm font-bold text-white mb-2">Platform Revenue Trajectory (2026)</h3>
+          <div class="h-64">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+
+        <!-- FINANCIAL CALCULATION BREAKDOWN & SOURCE AUDIT -->
+        <div class="p-6 rounded-2xl bg-surface border border-borderDark space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-borderDark">
+            <div>
+              <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="calculator" class="w-4 h-4 text-neon"></i>
+                Revenue Math & Database Source Breakdown
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">Line-item derivation of active figures displayed in top summary tiles.</p>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-neon/10 text-neon border border-neon/30">
+              Live DB Query
+            </span>
+          </div>
+
+          <!-- Formula Step Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Step 1 -->
+            <div class="p-4 rounded-xl bg-card border border-borderDark space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">1. Total Gross Breakdown</span>
+                <span id="auditGrossTotal" class="text-xs font-black text-white">₱0</span>
+              </div>
+              <div class="space-y-1.5 text-xs">
+                <div class="flex justify-between text-slate-300">
+                  <span class="flex items-center gap-1 text-[11px]"><i data-lucide="shopping-bag" class="w-3 h-3 text-cyan-400"></i> Escrow Orders (Gear):</span>
+                  <span id="auditEscrowItemSum" class="font-bold text-white font-mono">₱0</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span class="flex items-center gap-1 text-[11px]"><i data-lucide="graduation-cap" class="w-3 h-3 text-sky-400"></i> Clinic Registrations:</span>
+                  <span id="auditClinicSum" class="font-bold text-white font-mono">₱0</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span class="flex items-center gap-1 text-[11px]"><i data-lucide="map-pin" class="w-3 h-3 text-emerald-400"></i> Court Baseline Pool:</span>
+                  <span id="auditCourtBaseline" class="font-bold text-white font-mono">₱15,400</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="p-4 rounded-xl bg-card border border-borderDark space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-neon uppercase tracking-wide">2. Platform Take-Rate (5%)</span>
+                <span id="auditTakeTotal" class="text-xs font-black text-neon">₱0</span>
+              </div>
+              <div class="space-y-1.5 text-xs">
+                <div class="flex justify-between text-slate-300">
+                  <span class="text-[11px]">Evaluated Gross Pool:</span>
+                  <span id="auditTakeBase" class="font-bold text-white font-mono">₱0</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span class="text-[11px]">Commission Rate:</span>
+                  <span class="font-bold text-neon font-mono">5.0%</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span class="text-[11px]">Net Margin Retained:</span>
+                  <span id="auditTakeCalc" class="font-bold text-white font-mono">₱0.00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="p-4 rounded-xl bg-card border border-borderDark space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-sky-400 uppercase tracking-wide">3. Active Escrow Vault</span>
+                <span id="auditVaultTotal" class="text-xs font-black text-sky-400">₱0</span>
+              </div>
+              <div class="space-y-1.5 text-xs">
+                <div class="flex justify-between text-slate-300">
+                  <span class="text-[11px]">Locked In-Escrow Orders:</span>
+                  <span id="auditLockedOrdersCount" class="font-bold text-white font-mono">0</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span class="text-[11px]">Buyer Escrow Fees (2%):</span>
+                  <span id="auditBuyerEscrowFee" class="font-bold text-emerald-400 font-mono">₱0</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span class="text-[11px]">Courier Transit Pool:</span>
+                  <span id="auditCourierTransitFee" class="font-bold text-[#F97316] font-mono">₱0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Line-Item Transaction Ledger Table -->
+          <div class="space-y-2">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+              Recent Aggregated Ledger Records (Supabase)
+            </span>
+            <div class="overflow-x-auto rounded-xl border border-borderDark">
+              <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-card text-slate-400 uppercase text-[10px]">
+                  <tr>
+                    <th class="p-2.5">Source / Origin</th>
+                    <th class="p-2.5">Table Reference</th>
+                    <th class="p-2.5">Item / Service Details</th>
+                    <th class="p-2.5">Status</th>
+                    <th class="p-2.5 text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="auditLedgerRows" class="divide-y divide-borderDark bg-surface">
+                  <tr><td colspan="5" class="p-3 text-center text-slate-500">Querying ledger records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: VENUES & COURTS (M2 & M3) -->
+      <section id="view-venues" class="tab-view hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-black text-white">Registered Philippine Venues</h3>
+            <p class="text-xs text-slate-400">Full CRUD: Add/Edit/Delete Venues, Configure Pricing, Manage Individual Courts.</p>
+          </div>
+          <button onclick="openModal('addVenueModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Add Venue</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="venuesGrid">
+          <div class="p-6 text-center text-slate-500 text-xs col-span-3">Loading venues...</div>
+        </div>
+      </section>
+
+      <!-- TAB 3: TOURNAMENTS & BRACKETS (M5) -->
+      <section id="view-tournaments" class="tab-view hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-black text-white">Active Tournaments (Module 5 Engine)</h3>
+            <p class="text-xs text-slate-400">Create tournaments, adjust prize pools, manage brackets, and delete records.</p>
+          </div>
+          <button onclick="openModal('addTourneyModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Create Tournament</span>
+          </button>
+        </div>
+
+        <div id="tourneysGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- TAB 4: COACHES & CLINICS (M6) -->
+      <section id="view-coaches" class="tab-view hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-black text-white">Verified Coaches & Accreditations (Module 6)</h3>
+            <p class="text-xs text-slate-400">Add instructors, update hourly rates, approve/revoke PPR badges, or delete coaches.</p>
+          </div>
+          <button onclick="openModal('addCoachModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Add Coach</span>
+          </button>
+        </div>
+
+        <div id="coachesHQContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- TAB 5: MARKETPLACE & ESCROW (M7) -->
+      <section id="view-marketplace" class="tab-view hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-black text-white">Marketplace & Buyer Escrow Ledger (Module 7)</h3>
+            <p class="text-xs text-slate-400">Inspect orders, release escrow funds to sellers, or moderate/delete gear listings.</p>
+          </div>
+          <span id="escrowOrdersBadge" class="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/20">
+            0 Escrow Orders
+          </span>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-surface border border-borderDark space-y-3">
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider">Active Escrow Orders</h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-card text-slate-400 uppercase text-[10px]">
+                <tr>
+                  <th class="p-2.5">Item</th>
+                  <th class="p-2.5">Buyer</th>
+                  <th class="p-2.5">Amount</th>
+                  <th class="p-2.5">Status</th>
+                  <th class="p-2.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="escrowOrdersTableBody" class="divide-y divide-borderDark">
+                <tr><td colspan="5" class="p-4 text-center text-slate-500">Loading escrow records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-surface border border-borderDark space-y-3">
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider">Active Marketplace Listings</h4>
+          <div id="gearListingsHQContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: SOCIAL & COMMUNITY PERKS (M8) -->
+      <section id="view-community" class="tab-view hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-black text-white">Kain at Kape & Highlights Moderation (Module 8)</h3>
+            <p class="text-xs text-slate-400">Add cafe partner discounts, generate QR codes, and delete community posts.</p>
+          </div>
+          <button onclick="openModal('addPerkModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Add Cafe Perk</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="perksHQContainer">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div class="p-4 rounded-2xl bg-surface border border-borderDark space-y-3">
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider">Community Posts Moderation</h4>
+          <div id="postsHQContainer" class="space-y-2">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- TAB 7: ADMIN SETTINGS & SYSTEM UTILITIES (BACKUP / UPLOAD / RESET) -->
+      <!-- ===================================================================== -->
+      <section id="view-settings" class="tab-view hidden space-y-6">
+        <div>
+          <h3 class="text-sm font-black text-white uppercase tracking-wider">Admin System Utilities</h3>
+          <p class="text-xs text-slate-400">Master database backup to hard drive, JSON state restore, and system-wide reset.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Action Card 1: Backup/Export Data to Hard Drive -->
+          <div class="p-5 rounded-2xl bg-surface border border-borderDark flex flex-col justify-between space-y-4">
+            <div class="space-y-2">
+              <div class="w-10 h-10 rounded-xl bg-neon/10 border border-neon/30 flex items-center justify-center text-neon">
+                <i data-lucide="download" class="w-5 h-5"></i>
+              </div>
+              <h4 class="text-sm font-black text-white">Backup/Export Data</h4>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Exports all PostgreSQL tables (venues, courts, pila, matches, tournaments, coaches, bookings, gear, escrow, perks, and posts) into a structured JSON file saved locally.
+              </p>
+            </div>
+            <button onclick="exportAllDataToJSON()" id="btn-export-backup" class="w-full py-2.5 px-4 rounded-xl bg-neon text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#b8e600] active:scale-98 transition shadow-lg shadow-neon/15 cursor-pointer">
+              <i data-lucide="hard-drive-download" class="w-4 h-4"></i>
+              <span>Backup Data to Hard Drive</span>
+            </button>
+          </div>
+
+          <!-- Action Card 2: Upload/Import Data from Hard Drive -->
+          <div class="p-5 rounded-2xl bg-surface border border-borderDark flex flex-col justify-between space-y-4">
+            <div class="space-y-2">
+              <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                <i data-lucide="upload" class="w-5 h-5"></i>
+              </div>
+              <h4 class="text-sm font-black text-white">Upload/Import Data</h4>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Restores every module from a previously exported `.json` backup file. Records will be validated and upserted in foreign-key order into Supabase.
+              </p>
+            </div>
+            
+            <div>
+              <input type="file" id="backupFileInput" accept=".json" class="hidden" onchange="handleFileRestore(event)" />
+              <button onclick="document.getElementById('backupFileInput').click()" id="btn-upload-backup" class="w-full py-2.5 px-4 rounded-xl bg-sky-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-sky-400 active:scale-98 transition shadow-lg shadow-sky-500/20 cursor-pointer">
+                <i data-lucide="hard-drive-upload" class="w-4 h-4"></i>
+                <span>Upload Data from Hard Drive</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Card 3: Erase ALL Data (Factory Reset to 0) -->
+          <div class="p-5 rounded-2xl bg-surface border border-rose-500/40 flex flex-col justify-between space-y-4 shadow-lg shadow-rose-950/20">
+            <div class="space-y-2">
+              <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+              </div>
+              <h4 class="text-sm font-black text-rose-400">Erase ALL Data (Reset to 0)</h4>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Permanently deletes all rows across all application tables, resetting balances, earnings, venues, tournaments, and marketplace back to 0.
+              </p>
+            </div>
+            <button onclick="openModal('eraseModal')" class="w-full py-2.5 px-4 rounded-xl bg-rose-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-rose-600 active:scale-98 transition shadow-lg shadow-rose-500/20 cursor-pointer">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+              <span>Erase ALL Data</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Terminal Status Display -->
+        <div class="p-4 rounded-2xl bg-card border border-borderDark space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5 text-neon"></i>
+              System Utilities Log
+            </span>
+            <span class="text-[10px] text-slate-500 font-mono">SUPABASE CLI EMULATOR</span>
+          </div>
+          <div id="systemLog" class="p-3 rounded-xl bg-[#070B11] border border-borderDark font-mono text-[11px] text-slate-400 h-28 overflow-y-auto space-y-1">
+            <div class="text-slate-500">System ready. Select a backup, upload, or reset action above.</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS -->
+  <!-- ========================================================================= -->
+
+  <!-- ERASE CONFIRMATION MODAL -->
+  <div id="eraseModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface border-2 border-rose-500/60 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl text-center">
+      <div class="w-14 h-14 mx-auto rounded-full bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center text-rose-400">
+        <i data-lucide="alert-octagon" class="w-8 h-8"></i>
+      </div>
+
+      <h3 class="text-lg font-black text-white">Danger: Erase Entire System?</h3>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        This will permanently truncate every table: all venues, courts, matches, tournaments, coaches, escrow orders, and community posts will be erased to 0.
+      </p>
+
+      <div class="bg-card p-3 rounded-xl border border-borderDark text-left space-y-1">
+        <label class="text-[11px] font-bold text-slate-400 block">Type <span class="text-rose-400 font-mono">RESET PIKLR</span> to confirm:</label>
+        <input type="text" id="eraseConfirmationInput" placeholder="RESET PIKLR" class="w-full bg-[#070B11] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 font-mono" />
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="executeEraseAllData()" id="btnConfirmErase" class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white font-black rounded-xl text-xs uppercase tracking-wider transition">
+          Permanently Erase
+        </button>
+        <button onclick="closeModal('eraseModal')" class="px-5 py-3 bg-card text-slate-300 font-bold rounded-xl text-xs">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD VENUE MODAL -->
+  <div id="addVenueModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface border border-borderDark w-full max-w-md rounded-3xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Onboard New Venue</h3>
+        <button onclick="closeModal('addVenueModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Venue Name</label>
+          <input type="text" id="newVenueName" placeholder="e.g. Alabang Pickleball Hub" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 mb-1">City</label>
+            <input type="text" id="newVenueCity" placeholder="Muntinlupa" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Courts Count</label>
+            <input type="number" id="newVenueCourts" value="4" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 mb-1">Environment</label>
+            <select id="newVenueEnv" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon">
+              <option value="indoor_ac">Indoor Air-Conditioned</option>
+              <option value="covered">Covered Court</option>
+              <option value="outdoor">Outdoor</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Base Rate (₱/hr)</label>
+            <input type="number" id="newVenueRate" value="800" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button id="saveVenueBtn" onclick="saveNewVenue()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Save & Publish</button>
+        <button onclick="closeModal('addVenueModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT VENUE DETAILS MODAL -->
+  <div id="editVenueModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface border border-borderDark w-full max-w-md rounded-3xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Edit Venue Details</h3>
+        <button onclick="closeModal('editVenueModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <input type="hidden" id="editVenueDetailId" />
+
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Venue Name</label>
+          <input type="text" id="editVenueDetailName" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 mb-1">City / Region</label>
+            <input type="text" id="editVenueDetailCity" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Environment</label>
+            <select id="editVenueDetailEnv" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon">
+              <option value="indoor_ac">Indoor Air-Conditioned</option>
+              <option value="covered">Covered Court</option>
+              <option value="outdoor">Outdoor</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">Playing Surface</label>
+          <input type="text" id="editVenueDetailSurface" placeholder="cushioned_acrylic, concrete, etc." class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button id="saveVenueDetailBtn" onclick="saveUpdatedVenueDetails()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Save Changes</button>
+        <button onclick="closeModal('editVenueModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT VENUE PRICING MODAL -->
+  <div id="editPricingModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface border border-borderDark w-full max-w-md rounded-3xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Edit Court Rates</h3>
+        <button onclick="closeModal('editPricingModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <input type="hidden" id="editVenueId" />
+
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Venue</label>
+          <input type="text" id="editVenueName" disabled class="w-full bg-slate-800 border border-borderDark rounded-xl px-3 py-2 text-slate-300 cursor-not-allowed" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 mb-1">Base Rate (₱/hr)</label>
+            <input type="number" id="editBaseRate" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Peak Rate (₱/hr)</label>
+            <input type="number" id="editPeakRate" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button id="savePricingBtn" onclick="saveUpdatedPricing()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Update Rates</button>
+        <button onclick="closeModal('editPricingModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANAGE INDIVIDUAL COURTS MODAL -->
+  <div id="manageCourtsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface border border-borderDark w-full max-w-2xl rounded-3xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white" id="manageModalVenueTitle">Manage Courts</h3>
+          <p class="text-xs text-slate-400">Rename, toggle Active/Maintenance, adjust pricing, or delete individual courts.</p>
+        </div>
+        <button onclick="closeModal('manageCourtsModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <input type="hidden" id="manageVenueId" />
+
+      <div class="space-y-2.5 max-h-72 overflow-y-auto pr-1" id="courtsListContainer">
+        <!-- Rendered by refreshCourtsList() -->
+      </div>
+
+      <div class="pt-3 border-t border-borderDark flex flex-col sm:flex-row gap-2">
+        <input type="text" id="quickNewCourtName" placeholder="e.g. Court 4 (Acrylic)" class="flex-1 bg-card border border-borderDark rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-neon" />
+        <div class="flex gap-2">
+          <input type="number" id="quickNewCourtBase" placeholder="Base ₱" value="800" class="w-20 bg-card border border-borderDark rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-neon" />
+          <input type="number" id="quickNewCourtPeak" placeholder="Peak ₱" value="1000" class="w-20 bg-card border border-borderDark rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-neon" />
+          <button onclick="addNewCourtToVenue()" class="px-3.5 py-2 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600] whitespace-nowrap">+ Add Court</button>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button onclick="closeModal('manageCourtsModal')" class="px-5 py-2 bg-card text-slate-300 hover:text-white font-bold rounded-xl text-xs">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD TOURNAMENT MODAL -->
+  <div id="addTourneyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface border border-borderDark w-full max-w-md rounded-3xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Create Tournament</h3>
+        <button onclick="closeModal('addTourneyModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Tournament Title</label>
+          <input type="text" id="newTourneyTitle" placeholder="e.g. Cebu Sinulog Open 2026" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 mb-1">Category / Draw</label>
+            <input type="text" id="newTourneyCategory" placeholder="Intermediate 3.5+" value="Men's Doubles 3.5+" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Escrow Prize Pool (₱)</label>
+            <input type="number" id="newTourneyPrize" value="25000" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="saveNewTournament()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Publish Tournament</button>
+        <button onclick="closeModal('addTourneyModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD COACH MODAL -->
+  <div id="addCoachModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface border border-borderDark w-full max-w-md rounded-3xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Add Coach Accreditation</h3>
+        <button onclick="closeModal('addCoachModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Coach Full Name</label>
+          <input type="text" id="newCoachName" placeholder="e.g. Coach Miguel Ramos" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 mb-1">Title & License</label>
+            <input type="text" id="newCoachTitle" placeholder="PPR Certified Instructor" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Hourly Lesson Rate (₱)</label>
+            <input type="number" id="newCoachRate" value="1200" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="saveNewCoach()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Add & Verify</button>
+        <button onclick="closeModal('addCoachModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD PERK MODAL -->
+  <div id="addPerkModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface border border-borderDark w-full max-w-md rounded-3xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Add Cafe / Restaurant Perk</h3>
+        <button onclick="closeModal('addPerkModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Cafe / Diner Name</label>
+          <input type="text" id="newPerkCafe" placeholder="e.g. Toby's Estate BGC" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">Perk Offer</label>
+          <input type="text" id="newPerkTitle" placeholder="e.g. 15% OFF Pour-Over with Booking Receipt" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 mb-1">Promo Code</label>
+            <input type="text" id="newPerkCode" placeholder="#PKLR-TOBYS-15" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Category</label>
+            <select id="newPerkCat" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon">
+              <option value="coffee">Coffee & Matcha</option>
+              <option value="protein">High Protein Meals</option>
+              <option value="late">Open Late</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="saveNewPerk()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Publish Perk</button>
+        <button onclick="closeModal('addPerkModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT CONTROLLER (MASTER CRUD + BACKUP UTILITIES) -->
+  <script>
+    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function logSystem(msg) {
+      const log = document.getElementById('systemLog');
+      if (log) {
+        const time = new Date().toLocaleTimeString();
+        log.innerHTML += `<div><span class="text-neon">[${time}]</span> ${msg}</div>`;
+        log.scrollTop = log.scrollHeight;
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
+      document.querySelectorAll('.nav-btn').forEach(b => {
+        b.classList.remove('bg-neon', 'text-slate-950', 'shadow-lg', 'shadow-neon/10');
+        b.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-card');
+      });
+
+      const activeView = document.getElementById(`view-${tabId}`);
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('bg-neon', 'text-slate-950', 'shadow-lg', 'shadow-neon/10');
+        activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-card');
+      }
+
+      if (tabId === 'earnings') loadAnalytics();
+      if (tabId === 'venues') loadVenuesFromSupabase();
+      if (tabId === 'tournaments') loadTournamentsHQ();
+      if (tabId === 'coaches') loadCoachesHQ();
+      if (tabId === 'marketplace') loadMarketplaceHQ();
+      if (tabId === 'community') loadCommunityHQ();
+      if (tabId === 'settings') logSystem('System utilities active. Ready for backup, upload or reset.');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    // 1. REFRESH ALL DATA & COMPUTE AGGREGATES
+    async function refreshAllHQData() {
+      await loadAnalytics();
+      await loadVenuesFromSupabase();
+      await loadTournamentsHQ();
+      await loadCoachesHQ();
+      await loadMarketplaceHQ();
+      await loadCommunityHQ();
+      lucide.createIcons();
+    }
+
+    let revenueChartInstance = null;
+
+    async function loadAnalytics() {
+      try {
+        // 1. Fetch Clinic Bookings
+        const { data: bookings } = await supabaseClient
+          .from('clinic_bookings')
+          .select('amount, clinic_title, venue_name, created_at');
+        const clinicTotal = (bookings || []).reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+        // 2. Fetch Escrow Orders
+        const { data: escrows } = await supabaseClient
+          .from('escrow_orders')
+          .select('id, item_title, item_price, delivery_fee, escrow_fee, total_amount, status, created_at');
+        
+        const escrowTotal = (escrows || []).reduce((acc, curr) => acc + (curr.total_amount || 0), 0);
+        const lockedOrders = (escrows || []).filter(e => e.status === 'in_escrow');
+        const lockedEscrow = lockedOrders.reduce((acc, curr) => acc + (curr.total_amount || 0), 0);
+        
+        const totalBuyerEscrowFee = (escrows || []).reduce((acc, curr) => acc + (curr.escrow_fee || 0), 0);
+        const totalCourierTransitFee = (escrows || []).reduce((acc, curr) => acc + (curr.delivery_fee || 0), 0);
+
+        // 3. Count Active Venues & Courts
+        const { data: venues } = await supabaseClient.from('venues').select('id, courts (id)');
+        const hasVenues = venues && venues.length > 0;
+        const courtsCount = hasVenues ? venues.reduce((acc, v) => acc + (v.courts ? v.courts.length : 0), 0) : 0;
+        document.getElementById('statVenuesCount').innerText = `${hasVenues ? venues.length : 0} / ${courtsCount}`;
+
+        // 4. Dynamic Court Bookings Pool (Evaluates to 0 if no venues/bookings exist)
+        const courtBaseline = hasVenues ? 15400 : 0;
+        const totalGross = clinicTotal + escrowTotal + courtBaseline;
+        const platformTake = Math.round(totalGross * 0.05);
+
+        // Update Top Summary Cards
+        document.getElementById('statGross').innerText = `₱${totalGross.toLocaleString()}`;
+        document.getElementById('statTake').innerText = `₱${platformTake.toLocaleString()}`;
+        document.getElementById('statEscrowBalance').innerText = `₱${lockedEscrow.toLocaleString()}`;
+
+        // Update Audit Breakdown Detail Card
+        const elAuditGross = document.getElementById('auditGrossTotal');
+        if (elAuditGross) {
+          elAuditGross.innerText = `₱${totalGross.toLocaleString()}`;
+          document.getElementById('auditEscrowItemSum').innerText = `₱${escrowTotal.toLocaleString()}`;
+          document.getElementById('auditClinicSum').innerText = `₱${clinicTotal.toLocaleString()}`;
+          document.getElementById('auditCourtBaseline').innerText = `₱${courtBaseline.toLocaleString()}`;
+
+          document.getElementById('auditTakeTotal').innerText = `₱${platformTake.toLocaleString()}`;
+          document.getElementById('auditTakeBase').innerText = `₱${totalGross.toLocaleString()}`;
+          document.getElementById('auditTakeCalc').innerText = `₱${(totalGross * 0.05).toFixed(2)}`;
+
+          document.getElementById('auditVaultTotal').innerText = `₱${lockedEscrow.toLocaleString()}`;
+          document.getElementById('auditLockedOrdersCount').innerText = `${lockedOrders.length} Order${lockedOrders.length === 1 ? '' : 's'}`;
+          document.getElementById('auditBuyerEscrowFee').innerText = `₱${totalBuyerEscrowFee.toLocaleString()}`;
+          document.getElementById('auditCourierTransitFee').innerText = `₱${totalCourierTransitFee.toLocaleString()}`;
+        }
+
+        // Populate Audit Ledger Table
+        const ledgerBody = document.getElementById('auditLedgerRows');
+        if (ledgerBody) {
+          let rowsHtml = '';
+
+          // Add escrow rows
+          (escrows || []).forEach(e => {
+            rowsHtml += `
+              <tr>
+                <td class="p-2.5 font-bold text-white flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  Module 7 Marketplace
+                </td>
+                <td class="p-2.5 font-mono text-[11px] text-slate-400">public.escrow_orders</td>
+                <td class="p-2.5 text-slate-300">${e.item_title}</td>
+                <td class="p-2.5">
+                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded ${e.status === 'in_escrow' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400'}">
+                    ${e.status.toUpperCase()}
+                  </span>
+                </td>
+                <td class="p-2.5 text-right font-black font-mono text-neon">₱${e.total_amount.toLocaleString()}</td>
+              </tr>
+            `;
+          });
+
+          // Add clinic booking rows
+          (bookings || []).forEach(b => {
+            rowsHtml += `
+              <tr>
+                <td class="p-2.5 font-bold text-white flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                  Module 6 Academy
+                </td>
+                <td class="p-2.5 font-mono text-[11px] text-slate-400">public.clinic_bookings</td>
+                <td class="p-2.5 text-slate-300">${b.clinic_title} (${b.venue_name})</td>
+                <td class="p-2.5">
+                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400">
+                    PAID GCASH
+                  </span>
+                </td>
+                <td class="p-2.5 text-right font-black font-mono text-sky-400">₱${b.amount.toLocaleString()}</td>
+              </tr>
+            `;
+          });
+
+          // Add baseline court row only if venues exist
+          if (courtBaseline > 0) {
+            rowsHtml += `
+              <tr class="bg-card/40">
+                <td class="p-2.5 font-bold text-white flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  Module 2 Court Discovery
+                </td>
+                <td class="p-2.5 font-mono text-[11px] text-slate-400">Baseline Pool</td>
+                <td class="p-2.5 text-slate-300">Metro Manila Hours Reserved (BGC, Pasig, QC)</td>
+                <td class="p-2.5">
+                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-300">
+                    SETTLED
+                  </span>
+                </td>
+                <td class="p-2.5 text-right font-black font-mono text-white">₱${courtBaseline.toLocaleString()}</td>
+              </tr>
+            `;
+          }
+
+          if (rowsHtml === '') {
+            rowsHtml = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Database is empty (All reset to 0).</td></tr>';
+          }
+
+          ledgerBody.innerHTML = rowsHtml;
+        }
+
+        // Synchronize Chart to 0 if database is empty
+        function updateRevenueChart(currentTotalGross) {
+          const canvas = document.getElementById('revenueChart');
+          if (!canvas) return;
+
+          const chartData = currentTotalGross === 0
+            ? [0, 0, 0, 0, 0, 0]
+            : [14200, 21500, 29000, 38500, 48200, currentTotalGross];
+
+          if (revenueChartInstance) {
+            revenueChartInstance.data.datasets[0].data = chartData;
+            revenueChartInstance.update();
+            return;
+          }
+
+          revenueChartInstance = new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: {
+              labels: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct (Now)'],
+              datasets: [{
+                label: 'Platform Revenue (₱)',
+                data: chartData,
+                borderColor: '#CCFF00',
+                backgroundColor: 'rgba(204, 255, 0, 0.05)',
+                tension: 0.4,
+                fill: true,
+                borderWidth: 3
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8' } },
+                y: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8', callback: v => '₱' + v.toLocaleString() } }
+              }
+            }
+          });
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+          lucide.createIcons();
+          refreshAllHQData();
+        });
+
+      } catch (err) {
+        console.warn('Analytics:', err.message);
+      }
+      lucide.createIcons();
+    }
+
+    // 2. VENUES & COURTS MASTER CRUD [C, R, U, D]
+    async function loadVenuesFromSupabase() {
+      const grid = document.getElementById('venuesGrid');
+      grid.innerHTML = '<div class="p-6 text-center text-slate-500 text-xs col-span-3">Fetching venues from Supabase...</div>';
+
+      const { data: venues, error } = await supabaseClient
+        .from('venues')
+        .select('id, name, city, environment, surface, courts (id, name, base_hourly_rate, peak_hourly_rate, is_active)')
+        .order('name', { ascending: true });
+
+      if (error || !venues || venues.length === 0) {
+        grid.innerHTML = '<div class="p-6 text-center text-slate-400 text-xs col-span-3">No venues found.</div>';
+        return;
+      }
+
+      grid.innerHTML = venues.map(v => {
+        const courts = v.courts || [];
+        const activeCourts = courts.filter(c => c.is_active).length;
+        const minRate = courts.length > 0 ? Math.min(...courts.map(c => c.base_hourly_rate || 800)) : 800;
+        const maxRate = courts.length > 0 ? Math.max(...courts.map(c => c.peak_hourly_rate || 1000)) : 1000;
+
+        const safeName = v.name.replace(/'/g, "\\'");
+        const safeCity = (v.city || 'Metro Manila').replace(/'/g, "\\'");
+        const safeEnv = (v.environment || 'covered').replace(/'/g, "\\'");
+        const safeSurface = (v.surface || 'cushioned_acrylic').replace(/'/g, "\\'");
+
+        return `
+          <div class="rounded-3xl bg-surface border border-borderDark overflow-hidden flex flex-col justify-between">
+            <div class="p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-neon/10 text-neon border border-neon/20">${v.city || 'Philippines'}</span>
+                <button onclick="deleteEntireVenue('${v.id}', '${safeName}')" class="text-rose-400 hover:text-white p-1 rounded hover:bg-rose-500/20" title="Delete Venue">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <h4 class="text-sm font-bold text-white">${v.name}</h4>
+              <p class="text-xs text-slate-400 mt-0.5">${courts.length} Courts (${activeCourts} Active) • ${v.environment.replace('_', ' ').toUpperCase()}</p>
+              <div class="mt-3 flex items-center justify-between text-xs pt-2 border-t border-borderDark">
+                <span class="text-slate-400">Rate:</span>
+                <span class="font-bold text-white">₱${minRate} - ₱${maxRate}/hr</span>
+              </div>
+            </div>
+
+            <div class="p-2.5 bg-card border-t border-borderDark grid grid-cols-3 gap-1.5">
+              <button onclick="openPricingModal('${v.id}', '${safeName}', ${minRate}, ${maxRate})" class="py-1 px-1.5 text-[11px] text-slate-300 hover:text-white rounded-lg bg-slate-800 hover:bg-slate-700 text-center">
+                Rates
+              </button>
+              <button onclick="openEditVenueModal('${v.id}', '${safeName}', '${safeCity}', '${safeEnv}', '${safeSurface}')" class="py-1 px-1.5 text-[11px] text-slate-300 hover:text-white rounded-lg bg-slate-800 hover:bg-slate-700 text-center">
+                Edit
+              </button>
+              <button onclick="openCourtsModal('${v.id}', '${safeName}')" class="py-1 px-1.5 text-[11px] font-bold text-neon bg-neon/10 hover:bg-neon hover:text-slate-950 rounded-lg text-center">
+                Courts (${courts.length})
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    async function saveNewVenue() {
+      const btn = document.getElementById('saveVenueBtn');
+      const name = document.getElementById('newVenueName').value.trim();
+      const city = document.getElementById('newVenueCity').value.trim() || 'Metro Manila';
+      const env = document.getElementById('newVenueEnv').value;
+      const rate = parseFloat(document.getElementById('newVenueRate').value) || 800;
+      const courtCount = parseInt(document.getElementById('newVenueCourts').value) || 3;
+
+      if (!name) return alert('Venue name required');
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.floor(Math.random() * 10000);
+        const { data: newV, error } = await supabaseClient
+          .from('venues')
+          .insert([{
+            name: name,
+            slug: slug,
+            city: city,
+            environment: env,
+            surface: 'cushioned_acrylic',
+            address: city + ', Philippines'
+          }])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        const courts = [];
+        for (let i = 1; i <= courtCount; i++) {
+          courts.push({
+            venue_id: newV.id,
+            name: `Court ${i}`,
+            base_hourly_rate: rate,
+            peak_hourly_rate: rate + 200,
+            is_active: true
+          });
+        }
+        await supabaseClient.from('courts').insert(courts);
+
+        closeModal('addVenueModal');
+        document.getElementById('newVenueName').value = '';
+        loadVenuesFromSupabase();
+        loadAnalytics();
+        alert('Venue created successfully!');
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save & Publish';
+      }
+    }
+
+    function openEditVenueModal(venueId, name, city, env, surface) {
+      document.getElementById('editVenueDetailId').value = venueId;
+      document.getElementById('editVenueDetailName').value = name;
+      document.getElementById('editVenueDetailCity').value = city;
+      document.getElementById('editVenueDetailEnv').value = env;
+      document.getElementById('editVenueDetailSurface').value = surface;
+      openModal('editVenueModal');
+    }
+
+    async function saveUpdatedVenueDetails() {
+      const id = document.getElementById('editVenueDetailId').value;
+      const name = document.getElementById('editVenueDetailName').value.trim();
+      const city = document.getElementById('editVenueDetailCity').value.trim();
+      const env = document.getElementById('editVenueDetailEnv').value;
+      const surface = document.getElementById('editVenueDetailSurface').value.trim();
+
+      await supabaseClient.from('venues').update({
+        name: name,
+        city: city,
+        environment: env,
+        surface: surface
+      }).eq('id', id);
+
+      closeModal('editVenueModal');
+      loadVenuesFromSupabase();
+      alert('Venue details updated!');
+    }
+
+    function openPricingModal(venueId, venueName, baseRate, peakRate) {
+      document.getElementById('editVenueId').value = venueId;
+      document.getElementById('editVenueName').value = venueName;
+      document.getElementById('editBaseRate').value = baseRate;
+      document.getElementById('editPeakRate').value = peakRate;
+      openModal('editPricingModal');
+    }
+
+    async function saveUpdatedPricing() {
+      const venueId = document.getElementById('editVenueId').value;
+      const base = parseFloat(document.getElementById('editBaseRate').value) || 800;
+      const peak = parseFloat(document.getElementById('editPeakRate').value) || 1000;
+
+      await supabaseClient.from('courts').update({
+        base_hourly_rate: base,
+        peak_hourly_rate: peak
+      }).eq('venue_id', venueId);
+
+      closeModal('editPricingModal');
+      loadVenuesFromSupabase();
+      alert('Pricing updated across all courts in this venue!');
+    }
+
+    async function deleteEntireVenue(venueId, venueName) {
+      if (!confirm(`Are you sure you want to permanently delete "${venueName}" and all of its courts?`)) return;
+
+      await supabaseClient.from('courts').delete().eq('venue_id', venueId);
+      await supabaseClient.from('venues').delete().eq('id', venueId);
+
+      alert(`"${venueName}" deleted.`);
+      loadVenuesFromSupabase();
+      loadAnalytics();
+    }
+
+    async function openCourtsModal(venueId, venueName) {
+      document.getElementById('manageVenueId').value = venueId;
+      document.getElementById('manageModalVenueTitle').textContent = `Manage Courts — ${venueName}`;
+      openModal('manageCourtsModal');
+      await refreshCourtsList(venueId);
+    }
+
+    async function refreshCourtsList(venueId) {
+      const container = document.getElementById('courtsListContainer');
+      container.innerHTML = '<div class="text-xs text-slate-400 py-4 text-center">Loading courts...</div>';
+
+      const { data: courts, error } = await supabaseClient
+        .from('courts')
+        .select('*')
+        .eq('venue_id', venueId)
+        .order('name', { ascending: true });
+
+      if (error || !courts || courts.length === 0) {
+        container.innerHTML = '<div class="p-4 text-center text-slate-400 text-xs bg-card rounded-xl">No courts. Add one below!</div>';
+        return;
+      }
+
+      container.innerHTML = courts.map(c => `
+        <div class="p-3 bg-card border border-borderDark rounded-xl space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <input type="text" id="court_name_${c.id}" value="${c.name}" class="bg-surface border border-borderDark rounded-lg px-2.5 py-1 text-xs text-white font-bold flex-1 focus:border-neon focus:outline-none" />
+            
+            <select id="court_status_${c.id}" class="bg-surface border border-borderDark rounded-lg px-2 py-1 text-xs font-semibold ${c.is_active ? 'text-emerald-400' : 'text-amber-400'} focus:outline-none">
+              <option value="true" ${c.is_active ? 'selected' : ''}>● Active</option>
+              <option value="false" ${!c.is_active ? 'selected' : ''}>● Maintenance</option>
+            </select>
+          </div>
+
+          <div class="flex items-center justify-between text-xs pt-2 border-t border-borderDark/60">
+            <div class="flex items-center gap-2 text-slate-400">
+              <label class="flex items-center gap-1">
+                <span>Base ₱</span>
+                <input type="number" id="court_base_${c.id}" value="${c.base_hourly_rate}" class="w-16 bg-surface border border-borderDark rounded px-1.5 py-0.5 text-white" />
+              </label>
+              <label class="flex items-center gap-1">
+                <span>Peak ₱</span>
+                <input type="number" id="court_peak_${c.id}" value="${c.peak_hourly_rate}" class="w-16 bg-surface border border-borderDark rounded px-1.5 py-0.5 text-white" />
+              </label>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button onclick="saveSingleCourt('${c.id}')" class="px-2.5 py-0.5 bg-neon/10 hover:bg-neon hover:text-slate-950 text-neon font-bold rounded text-xs">Save</button>
+              <button onclick="deleteSingleCourt('${c.id}')" class="px-2.5 py-0.5 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-400 font-bold rounded text-xs">Delete</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function saveSingleCourt(courtId) {
+      const name = document.getElementById(`court_name_${courtId}`).value.trim();
+      const isActive = document.getElementById(`court_status_${courtId}`).value === 'true';
+      const base = parseFloat(document.getElementById(`court_base_${courtId}`).value) || 800;
+      const peak = parseFloat(document.getElementById(`court_peak_${courtId}`).value) || 1000;
+
+      await supabaseClient.from('courts').update({
+        name: name,
+        is_active: isActive,
+        base_hourly_rate: base,
+        peak_hourly_rate: peak
+      }).eq('id', courtId);
+
+      const venueId = document.getElementById('manageVenueId').value;
+      loadVenuesFromSupabase();
+      refreshCourtsList(venueId);
+      alert('Court updated!');
+    }
+
+    async function addNewCourtToVenue() {
+      const venueId = document.getElementById('manageVenueId').value;
+      const name = document.getElementById('quickNewCourtName').value.trim() || 'Court';
+      const base = parseFloat(document.getElementById('quickNewCourtBase').value) || 800;
+      const peak = parseFloat(document.getElementById('quickNewCourtPeak').value) || 1000;
+
+      await supabaseClient.from('courts').insert([{
+        venue_id: venueId,
+        name: name,
+        base_hourly_rate: base,
+        peak_hourly_rate: peak,
+        is_active: true
+      }]);
+
+      document.getElementById('quickNewCourtName').value = '';
+      loadVenuesFromSupabase();
+      refreshCourtsList(venueId);
+    }
+
+    async function deleteSingleCourt(courtId) {
+      if (!confirm('Delete this court?')) return;
+      await supabaseClient.from('courts').delete().eq('id', courtId);
+      const venueId = document.getElementById('manageVenueId').value;
+      loadVenuesFromSupabase();
+      refreshCourtsList(venueId);
+    }
+
+    // 3. TOURNAMENTS MASTER CRUD [C, R, U, D]
+    async function loadTournamentsHQ() {
+      const grid = document.getElementById('tourneysGrid');
+      const { data: tourneys } = await supabaseClient.from('tournaments').select('*').order('created_at', { ascending: false });
+
+      if (!tourneys || tourneys.length === 0) {
+        grid.innerHTML = '<div class="col-span-2 text-xs text-slate-400 p-4">No tournaments found.</div>';
+        return;
+      }
+
+      grid.innerHTML = tourneys.map(t => `
+        <div class="p-4 rounded-2xl bg-surface border border-borderDark space-y-3">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="text-[9px] font-black uppercase tracking-widest text-[#F59E0B] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">
+                ${t.status.toUpperCase()}
+              </span>
+              <h4 class="text-sm font-black text-white mt-1">${t.title}</h4>
+              <p class="text-xs text-slate-400">${t.category}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-black text-neon">₱${(t.prize_pool || 25000).toLocaleString()}</span>
+              <button onclick="deleteTournamentHQ('${t.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+          <div class="pt-2 border-t border-borderDark flex gap-2">
+            <button onclick="updateTourneyPrize('${t.id}')" class="flex-1 py-1.5 bg-slate-800 text-slate-200 hover:text-white rounded-lg text-xs font-bold">
+              Adjust Prize
+            </button>
+            <button onclick="releaseTourneyEscrow('${t.id}', '${t.title}', ${t.prize_pool || 25000})" class="flex-1 py-1.5 bg-neon text-slate-950 font-bold rounded-lg text-xs hover:bg-[#b8e600]">
+              Release Prize via GCash
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    async function saveNewTournament() {
+      const title = document.getElementById('newTourneyTitle').value.trim();
+      const cat = document.getElementById('newTourneyCategory').value.trim();
+      const prize = parseInt(document.getElementById('newTourneyPrize').value, 10) || 25000;
+
+      if (!title) return alert('Title required');
+
+      await supabaseClient.from('tournaments').insert([{
+        title: title,
+        category: cat,
+        prize_pool: prize,
+        status: 'in_progress',
+        start_date: new Date().toISOString()
+      }]);
+
+      closeModal('addTourneyModal');
+      loadTournamentsHQ();
+      alert('Tournament published!');
+    }
+
+    async function updateTourneyPrize(id) {
+      const val = prompt('Enter new Escrow Prize Pool (₱):', '35000');
+      if (!val) return;
+      await supabaseClient.from('tournaments').update({ prize_pool: parseInt(val, 10) }).eq('id', id);
+      loadTournamentsHQ();
+    }
+
+    async function releaseTourneyEscrow(id, title, prize) {
+      if (confirm(`Authorize release of ₱${prize.toLocaleString()} escrow payout for ${title} to verified winners via GCash?`)) {
+        await supabaseClient.from('tournaments').update({ status: 'completed' }).eq('id', id);
+        alert('Prize released and tournament marked completed!');
+        loadTournamentsHQ();
+      }
+    }
+
+    async function deleteTournamentHQ(id) {
+      if (!confirm('Delete this tournament and its brackets?')) return;
+      await supabaseClient.from('tournaments').delete().eq('id', id);
+      loadTournamentsHQ();
+    }
+
+    // 4. COACHES MASTER CRUD [C, R, U, D]
+    async function loadCoachesHQ() {
+      const container = document.getElementById('coachesHQContainer');
+      const { data: coaches } = await supabaseClient.from('coaches').select('*').order('created_at', { ascending: false });
+
+      if (!coaches || coaches.length === 0) {
+        container.innerHTML = '<div class="col-span-2 text-xs text-slate-400 p-4">No coaches found.</div>';
+        return;
+      }
+
+      container.innerHTML = coaches.map(c => `
+        <div class="p-4 rounded-2xl bg-surface border border-borderDark flex flex-col justify-between space-y-3">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h4 class="text-sm font-bold text-white">${c.name}</h4>
+                <span class="text-[9px] font-bold px-1.5 py-0.2 rounded ${c.is_verified ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
+                  ${c.is_verified ? 'VERIFIED' : 'PENDING'}
+                </span>
+              </div>
+              <p class="text-xs text-slate-400">${c.title} • License: ${c.license_number || 'PH-8921'}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-black text-neon">₱${c.hourly_rate}/hr</span>
+              <button onclick="deleteCoachHQ('${c.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+          <div class="pt-2 border-t border-borderDark flex gap-2">
+            <button onclick="toggleCoachVerification('${c.id}', ${!c.is_verified})" class="flex-1 py-1.5 rounded-lg text-xs font-bold ${c.is_verified ? 'bg-slate-800 text-slate-400' : 'bg-emerald-500 text-black font-black'}">
+              ${c.is_verified ? 'Revoke Badge' : 'Approve PPR Badge'}
+            </button>
+            <button onclick="editCoachRate('${c.id}', ${c.hourly_rate})" class="px-3 py-1.5 bg-card border border-borderDark text-slate-300 rounded-lg text-xs font-bold">
+              Rate
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    async function saveNewCoach() {
+      const name = document.getElementById('newCoachName').value.trim();
+      const title = document.getElementById('newCoachTitle').value.trim();
+      const rate = parseInt(document.getElementById('newCoachRate').value, 10) || 1200;
+
+      if (!name) return alert('Name required');
+
+      await supabaseClient.from('coaches').insert([{
+        name: name,
+        title: title || 'PPR Certified Instructor',
+        hourly_rate: rate,
+        is_verified: true
+      }]);
+
+      closeModal('addCoachModal');
+      loadCoachesHQ();
+      alert('Coach added and verified!');
+    }
+
+    async function toggleCoachVerification(id, newStatus) {
+      await supabaseClient.from('coaches').update({ is_verified: newStatus }).eq('id', id);
+      loadCoachesHQ();
+    }
+
+    async function editCoachRate(id, currentRate) {
+      const val = prompt('Enter new Hourly Lesson Rate (₱):', currentRate);
+      if (!val) return;
+      await supabaseClient.from('coaches').update({ hourly_rate: parseInt(val, 10) }).eq('id', id);
+      loadCoachesHQ();
+    }
+
+    async function deleteCoachHQ(id) {
+      if (!confirm('Delete this coach profile?')) return;
+      await supabaseClient.from('coaches').delete().eq('id', id);
+      loadCoachesHQ();
+    }
+
+    // 5. MARKETPLACE & ESCROW CRUD [C, R, U, D]
+    async function loadMarketplaceHQ() {
+      const tbody = document.getElementById('escrowOrdersTableBody');
+      const container = document.getElementById('gearListingsHQContainer');
+
+      const { data: orders } = await supabaseClient.from('escrow_orders').select('*').order('created_at', { ascending: false });
+      if (orders && orders.length > 0) {
+        document.getElementById('escrowOrdersBadge').innerText = `${orders.length} Escrow Orders`;
+        tbody.innerHTML = orders.map(o => `
+          <tr>
+            <td class="p-2.5 font-bold text-white">${o.item_title}</td>
+            <td class="p-2.5 text-slate-400">${o.buyer_name}</td>
+            <td class="p-2.5 font-bold text-neon">₱${o.total_amount.toLocaleString()}</td>
+            <td class="p-2.5">
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${o.status === 'in_escrow' ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}">
+                ${o.status.toUpperCase()} (${o.delivery_method})
+              </span>
+            </td>
+            <td class="p-2.5 text-right flex items-center justify-end gap-1.5">
+              ${o.status === 'in_escrow' ? `
+                <button onclick="releaseGearEscrow('${o.id}')" class="px-2 py-1 rounded bg-neon text-slate-950 font-bold text-[10px] hover:bg-[#b8e600]">
+                  Release
+                </button>
+              ` : `
+                <span class="text-[10px] text-emerald-400 font-bold">Released</span>
+              `}
+              <button onclick="deleteEscrowOrder('${o.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">No active escrow orders.</td></tr>';
+      }
+
+      const { data: listings } = await supabaseClient.from('gear_listings').select('*').order('created_at', { ascending: false });
+      if (listings && listings.length > 0) {
+        container.innerHTML = listings.map(g => `
+          <div class="p-3 bg-card border border-borderDark rounded-xl flex items-center justify-between">
+            <div>
+              <span class="text-xs font-bold text-white block">${g.title}</span>
+              <span class="text-[10px] text-slate-400">₱${g.price.toLocaleString()} • ${g.seller_name} (${g.condition})</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="editListingPrice('${g.id}', ${g.price})" class="px-2 py-0.5 text-[10px] bg-slate-800 text-slate-300 rounded hover:text-white">Price</button>
+              <button onclick="deleteGearListing('${g.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+      lucide.createIcons();
+    }
+
+    async function editListingPrice(id, currentPrice) {
+      const val = prompt('Enter new Price (₱):', currentPrice);
+      if (!val) return;
+      await supabaseClient.from('gear_listings').update({ price: parseInt(val, 10) }).eq('id', id);
+      loadMarketplaceHQ();
+    }
+
+    async function releaseGearEscrow(orderId) {
+      if (confirm('Verify delivery and release funds from escrow to seller?')) {
+        await supabaseClient.from('escrow_orders').update({ status: 'released' }).eq('id', orderId);
+        alert('Funds released!');
+        loadMarketplaceHQ();
+        loadAnalytics();
+      }
+    }
+
+    async function deleteEscrowOrder(id) {
+      if (!confirm('Delete this escrow order?')) return;
+      await supabaseClient.from('escrow_orders').delete().eq('id', id);
+      loadMarketplaceHQ();
+      loadAnalytics();
+    }
+
+    async function deleteGearListing(id) {
+      if (!confirm('Remove this gear listing?')) return;
+      await supabaseClient.from('gear_listings').delete().eq('id', id);
+      loadMarketplaceHQ();
+    }
+
+    // 6. SOCIAL & PERKS CRUD [C, R, U, D]
+    async function loadCommunityHQ() {
+      const perksContainer = document.getElementById('perksHQContainer');
+      const postsContainer = document.getElementById('postsHQContainer');
+
+      const { data: perks } = await supabaseClient.from('partner_perks').select('*');
+      if (perks && perks.length > 0) {
+        perksContainer.innerHTML = perks.map(p => `
+          <div class="p-3.5 rounded-2xl bg-surface border border-borderDark flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h4 class="text-xs font-black text-white">${p.cafe_name}</h4>
+                <span class="text-[9px] font-mono font-bold text-neon bg-neon/10 px-1 rounded">${p.promo_code}</span>
+              </div>
+              <p class="text-xs text-slate-300 mt-0.5">${p.perk_title}</p>
+            </div>
+            <button onclick="deletePerk('${p.id}')" class="p-1.5 text-rose-400 hover:bg-rose-500/20 rounded-lg">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `).join('');
+      } else {
+        perksContainer.innerHTML = '<div class="col-span-2 text-xs text-slate-400 p-4">No perks registered.</div>';
+      }
+
+      const { data: posts } = await supabaseClient.from('community_posts').select('*').order('created_at', { ascending: false });
+      if (posts && posts.length > 0) {
+        postsContainer.innerHTML = posts.map(p => `
+          <div class="p-2.5 rounded-xl bg-card border border-borderDark flex items-center justify-between text-xs">
+            <div>
+              <span class="font-bold text-white">${p.author_name}:</span>
+              <span class="text-slate-300 ml-1">"${p.title}"</span>
+              <span class="text-[10px] text-slate-500 block">🥒 ${p.pickle_reactions} • 🔥 ${p.fire_reactions}</span>
+            </div>
+            <button onclick="deletePost('${p.id}')" class="text-rose-400 hover:text-white px-2 py-1 text-xs">
+              Delete
+            </button>
+          </div>
+        `).join('');
+      } else {
+        postsContainer.innerHTML = '<div class="text-xs text-slate-400 p-4 text-center">No community posts found.</div>';
+      }
+      lucide.createIcons();
+    }
+
+    async function saveNewPerk() {
+      const cafe = document.getElementById('newPerkCafe').value.trim();
+      const title = document.getElementById('newPerkTitle').value.trim();
+      const code = document.getElementById('newPerkCode').value.trim();
+      const cat = document.getElementById('newPerkCat').value;
+
+      if (!cafe || !title) return alert('Cafe name and offer required');
+
+      await supabaseClient.from('partner_perks').insert([{
+        cafe_name: cafe,
+        perk_title: title,
+        promo_code: code || '#PKLR-PERK',
+        category: cat
+      }]);
+
+      closeModal('addPerkModal');
+      loadCommunityHQ();
+      alert('Perk published to Module 8!');
+    }
+
+    async function deletePerk(id) {
+      if (!confirm('Remove this cafe perk?')) return;
+      await supabaseClient.from('partner_perks').delete().eq('id', id);
+      loadCommunityHQ();
+    }
+
+    async function deletePost(id) {
+      if (!confirm('Delete this community post?')) return;
+      await supabaseClient.from('community_posts').delete().eq('id', id);
+      loadCommunityHQ();
+    }
+
+    // =========================================================================
+    // 7. ADMIN SETTINGS UTILITIES (BACKUP, UPLOAD, AND FACTORY RESET)
+    // =========================================================================
+
+    // BACKUP/EXPORT ALL DATA TO HARD DRIVE AS JSON
+    async function exportAllDataToJSON() {
+      const btn = document.getElementById('btn-export-backup');
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Exporting All Tables...</span>`;
+      lucide.createIcons();
+      logSystem('Starting complete system database backup...');
+
+      try {
+        const tableNames = [
+          'venues',
+          'courts',
+          'pila_queue',
+          'matches',
+          'tournaments',
+          'tournament_matches',
+          'coaches',
+          'clinic_bookings',
+          'partner_invites',
+          'gear_listings',
+          'escrow_orders',
+          'swap_offers',
+          'community_posts',
+          'partner_perks'
+        ];
+
+        const backupData = {
+          metadata: {
+            appName: 'PiklrPH Platform',
+            exportDate: new Date().toISOString(),
+            schemaVersion: '2026.10',
+            exportedBy: 'Dave P. (Super-Admin)'
+          },
+          tables: {}
+        };
+
+        for (const tbl of tableNames) {
+          logSystem(`Reading public.${tbl}...`);
+          const { data, error } = await supabaseClient.from(tbl).select('*');
+          if (error) {
+            logSystem(`Warning: ${tbl} read error: ${error.message}`);
+            backupData.tables[tbl] = [];
+          } else {
+            backupData.tables[tbl] = data || [];
+            logSystem(`Exported ${data ? data.length : 0} records from ${tbl}.`);
+          }
+        }
+
+        // Generate JSON file and trigger browser download to local disk
+        const jsonStr = JSON.stringify(backupData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const timestamp = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `PiklrPH_Master_Backup_${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        logSystem(`✓ Full backup exported successfully! Downloaded: PiklrPH_Master_Backup_${timestamp}.json`);
+        alert('Database backup downloaded to your hard drive!');
+      } catch (err) {
+        logSystem(`Error exporting backup: ${err.message}`);
+        alert('Export failed: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="hard-drive-download" class="w-4 h-4"></i><span>Backup Data to Hard Drive</span>`;
+        lucide.createIcons();
+      }
+    }
+
+    // UPLOAD/IMPORT DATA FROM HARD DRIVE (RESTORE)
+    async function handleFileRestore(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const btn = document.getElementById('btn-upload-backup');
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Importing File...</span>`;
+      lucide.createIcons();
+      logSystem(`Reading backup file from disk: ${file.name}...`);
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (!parsed.tables) throw new Error('Invalid JSON format: missing root "tables" property.');
+
+          logSystem('File parsed. Verified schema. Beginning Supabase database restore...');
+
+          // Restoration order respecting foreign keys
+          const orderedTables = [
+            'venues',
+            'courts',
+            'tournaments',
+            'tournament_matches',
+            'coaches',
+            'clinic_bookings',
+            'partner_invites',
+            'gear_listings',
+            'escrow_orders',
+            'swap_offers',
+            'community_posts',
+            'partner_perks',
+            'pila_queue',
+            'matches'
+          ];
+
+          for (const tbl of orderedTables) {
+            const records = parsed.tables[tbl];
+            if (records && records.length > 0) {
+              logSystem(`Upserting ${records.length} records into ${tbl}...`);
+              const { error } = await supabaseClient.from(tbl).upsert(records);
+              if (error) {
+                logSystem(`Notice on ${tbl}: ${error.message}`);
+              } else {
+                logSystem(`✓ Restored ${tbl} (${records.length} rows)`);
+              }
+            }
+          }
+
+          logSystem(`✓ All data successfully uploaded and restored from ${file.name}!`);
+          alert('Database restored from hard drive! Refreshing live views...');
+          refreshAllHQData();
+        } catch (err) {
+          logSystem(`Restore failed: ${err.message}`);
+          alert('Upload failed: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="hard-drive-upload" class="w-4 h-4"></i><span>Upload Data from Hard Drive</span>`;
+          document.getElementById('backupFileInput').value = '';
+          lucide.createIcons();
+        }
+      };
+
+      reader.readAsText(file);
+    }
+
+    // ERASE ALL DATA (FACTORY RESET TO 0)
+    async function executeEraseAllData() {
+      const confirmation = document.getElementById('eraseConfirmationInput').value.trim();
+      if (confirmation !== 'RESET PIKLR') {
+        alert('Verification mismatch. You must type "RESET PIKLR" in capital letters to proceed.');
+        return;
+      }
+
+      const btn = document.getElementById('btnConfirmErase');
+      btn.disabled = true;
+      btn.textContent = 'Erasing Database...';
+      logSystem('WARNING: Authorization accepted. Initiating full system wipe...');
+
+      try {
+        // Child tables first to avoid foreign key blocks
+        const wipeOrder = [
+          'tournament_matches',
+          'tournaments',
+          'escrow_orders',
+          'swap_offers',
+          'gear_listings',
+          'clinic_bookings',
+          'partner_invites',
+          'coaches',
+          'community_posts',
+          'partner_perks',
+          'pila_queue',
+          'matches',
+          'courts',
+          'venues'
+        ];
+
+        for (const tbl of wipeOrder) {
+          logSystem(`Wiping table: public.${tbl}...`);
+          const { error } = await supabaseClient.from(tbl).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          if (error) {
+            logSystem(`Note on ${tbl}: ${error.message}`);
+          }
+        }
+
+        logSystem('✓ Database wiped clean. All metrics reset to 0.');
+        closeModal('eraseModal');
+        document.getElementById('eraseConfirmationInput').value = '';
+
+        // Reset display tiles to 0 immediately
+        document.getElementById('statGross').innerText = '₱0.00';
+        document.getElementById('statTake').innerText = '₱0.00';
+        document.getElementById('statEscrowBalance').innerText = '₱0.00';
+        document.getElementById('statVenuesCount').innerText = '0 / 0';
+
+        alert('All application tables have been completely wiped. Everything is reset to 0.');
+        refreshAllHQData();
+      } catch (err) {
+        logSystem(`Erase failure: ${err.message}`);
+        alert('Reset error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Permanently Erase';
+      }
+    }
+
+    // 8. INITIALIZE ON LOAD
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      refreshAllHQData();
+
+      const canvas = document.getElementById('revenueChart');
+      if (canvas) {
+        new Chart(canvas.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct (Now)'],
+            datasets: [{
+              label: 'Platform Revenue (₱)',
+              data: [14200, 21500, 29000, 38500, 48200, 56400],
+              borderColor: '#CCFF00',
+              backgroundColor: 'rgba(204, 255, 0, 0.05)',
+              tension: 0.4,
+              fill: true,
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8' } },
+              y: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8', callback: v => '₱' + v.toLocaleString() } }
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

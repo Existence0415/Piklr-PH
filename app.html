@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>PiklrPH — The Home Court of Philippine Pickleball</title>
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#0B131E">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts & Tailwind -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-[#070B11] text-slate-100 min-h-screen flex flex-col items-center justify-center p-0 sm:p-4 select-none">
+
+  <!-- Mobile Frame Container (max-w: 420px, h: 880px) -->
+  <div class="relative w-full max-w-[420px] h-screen sm:h-[880px] bg-[#0B131E] sm:rounded-[40px] border border-slate-800 shadow-2xl flex flex-col justify-between overflow-hidden">
+    
+    <!-- Top System Dynamic Bar -->
+    <header class="pt-3 pb-2 px-6 flex items-center justify-between z-30 shrink-0 bg-[#0B131E]/95 backdrop-blur-md border-b border-slate-800/40">
+      <div class="flex items-center gap-2">
+        <img src="logo.png" alt="PiklrPH" class="h-6 w-auto object-contain" />
+        <span class="text-[10px] font-black uppercase text-[#CCFF00] tracking-widest">LIVE</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="admin.html" class="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/80 px-2 py-0.5 rounded-lg border border-slate-700">HQ Admin</a>
+        <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+      </div>
+    </header>
+
+    <!-- Dynamic Module Viewport (Iframe / Inline Dynamic Loader) -->
+    <main class="flex-1 relative overflow-hidden bg-[#070B11]">
+      <iframe id="app-viewport" src="module2.html" class="w-full h-full border-none" loading="eager"></iframe>
+    </main>
+
+    <!-- Persistent Bottom Mobile App Tab Bar -->
+    <nav class="h-18 bg-[#111827]/95 backdrop-blur-lg border-t border-slate-800 px-3 py-1 flex items-center justify-around z-40 shrink-0">
+      
+      <!-- Tab 1: Book Courts -->
+      <button onclick="navigateTab('module2.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-[#CCFF00] transition cursor-pointer">
+        <i data-lucide="map-pin" class="w-5 h-5"></i>
+        <span class="text-[10px] font-black mt-0.5">Courts</span>
+      </button>
+
+      <!-- Tab 2: Live Pila -->
+      <button onclick="navigateTab('module3.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+        <i data-lucide="users" class="w-5 h-5"></i>
+        <span class="text-[10px] font-bold mt-0.5">Pila</span>
+      </button>
+
+      <!-- Tab 3: Match Scorer / Tourneys -->
+      <button onclick="navigateTab('module4.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+        <div class="relative">
+          <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
+            <i data-lucide="activity" class="w-4 h-4 text-[#CCFF00]"></i>
+          </div>
+        </div>
+        <span class="text-[10px] font-bold mt-0.5">Referee</span>
+      </button>
+
+      <!-- Tab 4: Shop & Perks -->
+      <button onclick="navigateTab('module7.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+        <span class="text-[10px] font-bold mt-0.5">Exchange</span>
+      </button>
+
+      <!-- Tab 5: Athlete Passport -->
+      <button onclick="navigateTab('index.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+        <i data-lucide="user" class="w-5 h-5"></i>
+        <span class="text-[10px] font-bold mt-0.5">Passport</span>
+      </button>
+
+    </nav>
+  </div>
+
+  <script>
+    function navigateTab(moduleUrl, btnElement) {
+      document.getElementById('app-viewport').src = moduleUrl;
+
+      document.querySelectorAll('.app-tab').forEach(b => {
+        b.className = 'app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer';
+        const span = b.querySelector('span');
+        if (span) span.className = 'text-[10px] font-bold mt-0.5';
+      });
+
+      btnElement.className = 'app-tab flex-1 flex flex-col items-center justify-center py-1 text-[#CCFF00] transition cursor-pointer';
+      const activeSpan = btnElement.querySelector('span');
+      if (activeSpan) activeSpan.className = 'text-[10px] font-black mt-0.5';
+
+      lucide.createIcons();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PiklrPH - The Home Court of Philippine Pickleball</title>
+  
+  <!-- Google Fonts: Outfit (Loaded for all typography) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            deep: '#0B131E',
+            surface: '#111827',
+            borderDark: '#1E293B',
+            opticLime: '#CCFF00',
+            emeraldGreen: '#10B981',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    * {
+      font-family: 'Outfit', sans-serif;
+    }
+    
+    /* Interactive Range Slider Thumb (Optic Lime Glow) */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 9999px;
+      background: #CCFF00;
+      cursor: pointer;
+      box-shadow: 0 0 16px rgba(204, 255, 0, 0.75), 0 2px 6px rgba(0, 0, 0, 0.5);
+      border: 3px solid #0B131E;
+      transition: transform 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(1.25);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 9999px;
+      background: #CCFF00;
+      cursor: pointer;
+      box-shadow: 0 0 16px rgba(204, 255, 0, 0.75);
+      border: 3px solid #0B131E;
+    }
+
+    /* Clean mobile scrollbar */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-[#0B131E] text-slate-100 h-screen w-full overflow-hidden antialiased selection:bg-[#CCFF00] selection:text-[#0B131E]">
+
+  <!-- Floating Toast Notification -->
+  <div id="toast" class="fixed top-3 z-50 left-1/2 -translate-x-1/2 hidden flex items-center gap-2 bg-[#111827] border border-[#CCFF00]/40 text-slate-100 px-3.5 py-2 rounded-full shadow-2xl text-xs">
+    <div class="w-2 h-2 rounded-full bg-[#CCFF00] animate-pulse"></div>
+    <span id="toast-msg" class="font-medium">Notification</span>
+  </div>
+
+  <!-- Simulated SMS Notification Dropdown (for 1-click auto-fill testing) -->
+  <div id="sms-banner" onclick="quickFillOtp()" class="fixed top-3 z-50 left-1/2 -translate-x-1/2 hidden w-[90%] max-w-xs bg-slate-900/95 backdrop-blur-md border border-slate-700 p-3 rounded-2xl shadow-2xl cursor-pointer hover:border-[#CCFF00] transition-all">
+    <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+      <span class="flex items-center gap-1 font-semibold text-slate-200">💬 MESSAGES · NOW</span>
+      <span class="text-[#CCFF00] font-bold text-[10px]">TAP TO AUTO-FILL</span>
+    </div>
+    <p class="text-xs text-slate-100 font-medium">PiklrPH code: <strong>8492</strong>. Valid for 5 minutes.</p>
+  </div>
+
+  <!-- Full Frame Container (Fills App Shell) -->
+  <div class="w-full h-full flex flex-col justify-between overflow-hidden select-none">
+
+    <!-- Scrollable Screen Canvas -->
+    <div class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col">
+
+      <!-- ======================================================== -->
+      <!-- SCREEN 1: MOBILE AUTH SCREEN -->
+      <!-- ======================================================== -->
+      <div id="screen-1" class="flex-1 flex flex-col justify-between px-6 pt-5 pb-6">
+        <!-- Logo & Branding Header -->
+        <div class="flex flex-col items-center text-center mt-1">
+          <!-- Logo Image Asset -->
+          <div class="relative group cursor-pointer mb-2">
+            <div class="absolute -inset-2 bg-[#CCFF00]/15 rounded-3xl blur-xl transition duration-300"></div>
+            <img 
+              src="logo.png" 
+              alt="PiklrPH - The Homecourt of Philippine Pickleball" 
+              class="relative h-44 w-auto object-contain drop-shadow-[0_4px_20px_rgba(204,255,0,0.15)]"
+            />
+          </div>
+
+          <div class="inline-flex items-center gap-1.5 mt-1 px-3 py-1 bg-[#111827] border border-[#1E293B] rounded-full text-xs text-slate-300">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+            <span>Metro Manila · Cebu · Davao · Pampanga</span>
+          </div>
+        </div>
+
+        <!-- Auth Form Card -->
+        <div class="mt-6 bg-[#111827] border border-[#1E293B] rounded-3xl p-5 shadow-xl">
+          <div class="mb-4">
+            <label class="block text-xs font-semibold text-slate-400 mb-1.5 tracking-wider uppercase">
+              Philippine Mobile Number
+            </label>
+            <div class="flex items-center bg-[#0B131E] border border-slate-700/80 rounded-2xl focus-within:border-[#CCFF00] focus-within:ring-1 focus-within:ring-[#CCFF00] transition-all overflow-hidden">
+              <!-- Fixed +63 badge with PH Flag -->
+              <div class="flex items-center gap-1.5 px-3 py-3.5 bg-slate-800/60 border-r border-slate-700/80 text-white font-bold text-sm select-none shrink-0">
+                <span class="text-base">🇵🇭</span>
+                <span>+63</span>
+              </div>
+              <!-- 10-digit number field -->
+              <input
+                id="phone-input"
+                type="tel"
+                value="917 555 1829"
+                maxlength="14"
+                placeholder="917 123 4567"
+                class="w-full bg-transparent px-3 py-3.5 text-white font-medium text-base focus:outline-none placeholder:text-slate-600"
+              />
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1.5">
+              Instant SMS authentication for verified DUPR ratings & court matching.
+            </p>
+          </div>
+
+          <!-- Send OTP Button -->
+          <div id="auth-send-step">
+            <button
+              onclick="sendOtp()"
+              class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#d8ff33] active:scale-[0.98] transition-all shadow-lg shadow-[#CCFF00]/20 cursor-pointer"
+            >
+              <span>Send OTP</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Mock OTP Entry Field (4-Digit PIN Box) -->
+          <div id="auth-verify-step" class="hidden space-y-4">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-semibold text-slate-300">Enter 4-Digit PIN</label>
+                <button onclick="quickFillOtp()" class="text-[11px] font-bold text-[#CCFF00] hover:underline">
+                  Auto-fill (8492)
+                </button>
+              </div>
+
+              <div class="grid grid-cols-4 gap-2.5">
+                <input id="pin-0" type="text" maxlength="1" inputmode="numeric" oninput="handlePinInput(0)" class="h-13 text-center text-xl font-bold bg-[#0B131E] border border-slate-700 rounded-xl text-white focus:border-[#CCFF00] focus:ring-2 focus:ring-[#CCFF00]/40 focus:outline-none transition-all" />
+                <input id="pin-1" type="text" maxlength="1" inputmode="numeric" oninput="handlePinInput(1)" class="h-13 text-center text-xl font-bold bg-[#0B131E] border border-slate-700 rounded-xl text-white focus:border-[#CCFF00] focus:ring-2 focus:ring-[#CCFF00]/40 focus:outline-none transition-all" />
+                <input id="pin-2" type="text" maxlength="1" inputmode="numeric" oninput="handlePinInput(2)" class="h-13 text-center text-xl font-bold bg-[#0B131E] border border-slate-700 rounded-xl text-white focus:border-[#CCFF00] focus:ring-2 focus:ring-[#CCFF00]/40 focus:outline-none transition-all" />
+                <input id="pin-3" type="text" maxlength="1" inputmode="numeric" oninput="handlePinInput(3)" class="h-13 text-center text-xl font-bold bg-[#0B131E] border border-slate-700 rounded-xl text-white focus:border-[#CCFF00] focus:ring-2 focus:ring-[#CCFF00]/40 focus:outline-none transition-all" />
+              </div>
+
+              <div class="flex items-center justify-between text-xs text-slate-400 mt-2.5">
+                <span>Resend code in 45s</span>
+                <button onclick="sendOtp()" class="text-[#CCFF00] font-semibold hover:underline">Resend Now</button>
+              </div>
+            </div>
+
+            <!-- Verify & Continue Button -->
+            <button
+              id="btn-verify-continue"
+              onclick="verifyOtpAndContinue()"
+              class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-extrabold text-sm flex items-center justify-center gap-2 hover:bg-[#d8ff33] active:scale-[0.98] transition-all shadow-lg shadow-[#CCFF00]/25 cursor-pointer"
+            >
+              <span>Verify & Continue</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Divider -->
+          <div class="relative my-4 flex items-center justify-center">
+            <div class="w-full border-t border-slate-800"></div>
+            <span class="absolute bg-[#111827] px-3 text-[11px] font-semibold text-slate-500 uppercase">or</span>
+          </div>
+
+          <!-- Secondary Continue with Google Button -->
+          <button
+            onclick="continueWithGoogle()"
+            class="w-full py-3 px-4 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-white font-medium text-xs flex items-center justify-center gap-2.5 active:scale-[0.98] transition-all cursor-pointer"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+        </div>
+
+        <div class="text-center mt-4">
+          <p class="text-[11px] text-slate-500">
+            By tapping continue, you agree to PiklrPH Community Fair Play Guidelines.
+          </p>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- SCREEN 2: 3-STEP MICRO-ONBOARDING -->
+      <!-- ======================================================== -->
+      <div id="screen-2" class="hidden flex-1 flex flex-col justify-between px-5 pt-4 pb-5">
+        <div>
+          <!-- Header and Progress Indicator (Step 1 of 3) -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <button onclick="goToScreen(1)" class="p-1.5 rounded-xl bg-[#111827] border border-slate-800 text-slate-400 hover:text-white">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+              </button>
+              <div class="text-center">
+                <span id="onboard-step-pill" class="text-[11px] font-extrabold tracking-widest text-[#CCFF00] uppercase">
+                  Step 1 of 3
+                </span>
+                <h2 id="onboard-step-title" class="text-base font-bold text-white">
+                  Player Identity & Court Hub
+                </h2>
+              </div>
+              <button onclick="goToScreen(3)" class="text-xs text-slate-500 hover:text-slate-300 font-semibold">
+                Skip
+              </button>
+            </div>
+
+            <!-- Segmented Progress Bar -->
+            <div class="grid grid-cols-3 gap-1.5 h-1.5">
+              <div id="prog-1" class="h-full rounded-full bg-[#CCFF00] transition-all duration-300"></div>
+              <div id="prog-2" class="h-full rounded-full bg-slate-800 transition-all duration-300"></div>
+              <div id="prog-3" class="h-full rounded-full bg-slate-800 transition-all duration-300"></div>
+            </div>
+          </div>
+
+          <!-- Micro-step 1: Full Name, Nickname & Home City -->
+          <div id="step-content-1" class="space-y-4">
+            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-4">
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Full Name</label>
+              <div class="flex items-center bg-[#0B131E] border border-slate-800 rounded-xl px-3 py-2.5 focus-within:border-[#CCFF00]">
+                <i data-lucide="user" class="w-4 h-4 text-slate-500 mr-2 shrink-0"></i>
+                <input
+                  id="input-fullname"
+                  type="text"
+                  value="Dave Hernandez"
+                  placeholder="e.g. Dave Hernandez"
+                  class="w-full bg-transparent text-white font-medium text-sm focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-semibold text-slate-400">Court Nickname</label>
+                <span class="text-[11px] font-medium text-[#CCFF00]">"Ano tawag sa'yo sa court?"</span>
+              </div>
+              <div class="flex items-center bg-[#0B131E] border border-slate-800 rounded-xl px-3 py-2.5 focus-within:border-[#CCFF00]">
+                <span class="text-slate-500 font-bold text-sm mr-2 select-none">"</span>
+                <input
+                  id="input-nickname"
+                  type="text"
+                  value="D-Train"
+                  placeholder="e.g. D-Train / Smash Dave"
+                  class="w-full bg-transparent text-white font-bold text-sm focus:outline-none placeholder:text-slate-600"
+                />
+                <span class="text-slate-500 font-bold text-sm select-none">"</span>
+              </div>
+            </div>
+
+            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-semibold text-slate-400">Home City / Court Hub</label>
+                <span class="text-[11px] text-slate-500">Philippines</span>
+              </div>
+
+              <div id="city-chips" class="flex flex-wrap gap-1.5 mb-2.5"></div>
+
+              <div class="relative">
+                <select
+                  id="select-city"
+                  onchange="selectCity(this.value)"
+                  class="w-full bg-[#0B131E] border border-slate-800 text-slate-200 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#CCFF00] appearance-none"
+                >
+                  <option value="Quezon City">Quezon City</option>
+                  <option value="BGC / Taguig" selected>BGC / Taguig</option>
+                  <option value="Pasig">Pasig</option>
+                  <option value="Makati">Makati</option>
+                  <option value="Mandaluyong">Mandaluyong</option>
+                  <option value="Cebu City">Cebu City</option>
+                  <option value="Davao City">Davao City</option>
+                  <option value="Pampanga">Pampanga</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                  <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Micro-step 2: DUPR Skill Rating Slider -->
+          <div id="step-content-2" class="hidden space-y-4">
+            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-2">
+                <div>
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Skill Assessment</span>
+                  <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
+                    DUPR / Skill Rating
+                    <i data-lucide="shield-check" class="w-4 h-4 text-[#10B981]"></i>
+                  </h3>
+                </div>
+                <div class="text-right">
+                  <div id="dupr-val-display" class="text-3xl font-black text-[#CCFF00] tracking-tight">3.6</div>
+                  <span class="text-[10px] font-semibold text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded-full">SELF-RATED</span>
+                </div>
+              </div>
+
+              <div class="my-5">
+                <input
+                  id="dupr-slider"
+                  type="range"
+                  min="2.0"
+                  max="5.0"
+                  step="0.1"
+                  value="3.6"
+                  oninput="updateDuprRating(this.value)"
+                  class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#CCFF00]"
+                />
+                <div class="flex justify-between text-[11px] text-slate-500 font-bold mt-2 px-1">
+                  <span>2.0 (Rec)</span>
+                  <span>3.0 (Club)</span>
+                  <span>4.0 (Adv)</span>
+                  <span>5.0+ (Pro)</span>
+                </div>
+              </div>
+
+              <div class="bg-[#0B131E] border border-slate-800 rounded-xl p-3.5 mt-3">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="w-2 h-2 rounded-full bg-[#CCFF00]"></span>
+                  <span id="dupr-tier-title" class="text-xs font-bold text-[#CCFF00]">3.5 - 3.9 · Advanced</span>
+                </div>
+                <p id="dupr-tier-desc" class="text-xs text-slate-300 leading-relaxed">
+                  Consistent third-shot drops and directional control, kitchen patience, and high anticipation.
+                </p>
+              </div>
+            </div>
+
+            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-4">
+              <label class="block text-xs font-semibold text-slate-400 mb-2">Dominant Playing Hand</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  id="btn-hand-right"
+                  onclick="selectHand('Right')"
+                  class="py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-[#CCFF00] text-[#0B131E] transition-all cursor-pointer"
+                >
+                  <span>Right-Handed</span>
+                  <i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>
+                </button>
+                <button
+                  type="button"
+                  id="btn-hand-left"
+                  onclick="selectHand('Left')"
+                  class="py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-[#0B131E] border border-slate-800 text-slate-300 hover:border-slate-700 transition-all cursor-pointer"
+                >
+                  <span>Left-Handed (Lefty)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Micro-step 3: Play Style & Paddle Model -->
+          <div id="step-content-3" class="hidden space-y-4">
+            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-semibold text-slate-400">Court Play Style</label>
+                <span class="text-[11px] text-[#CCFF00] font-semibold">Tactical DNA</span>
+              </div>
+
+              <div class="space-y-2">
+                <button
+                  type="button"
+                  onclick="selectPlayStyle('Dinker / Soft Game')"
+                  id="style-dinker"
+                  class="w-full text-left p-3 rounded-xl border border-slate-800 bg-[#0B131E]/60 hover:border-slate-700 transition-all cursor-pointer flex items-center justify-between"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-lg">🎾</span>
+                    <div>
+                      <div class="text-xs font-bold text-white">Dinker / Soft Game</div>
+                      <div class="text-[11px] text-slate-400">Patient kitchen control & resets</div>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="selectPlayStyle('Banger / Power')"
+                  id="style-banger"
+                  class="w-full text-left p-3 rounded-xl border border-slate-800 bg-[#0B131E]/60 hover:border-slate-700 transition-all cursor-pointer flex items-center justify-between"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-lg">⚡</span>
+                    <div>
+                      <div class="text-xs font-bold text-white">Banger / Power</div>
+                      <div class="text-[11px] text-slate-400">Aggressive drives & speedups</div>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="selectPlayStyle('All-Court Balanced')"
+                  id="style-allcourt"
+                  class="w-full text-left p-3 rounded-xl border border-[#CCFF00] bg-[#0B131E] shadow-sm shadow-[#CCFF00]/15 transition-all cursor-pointer flex items-center justify-between"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-lg">⚖️</span>
+                    <div>
+                      <div class="text-xs font-bold text-white">All-Court Balanced</div>
+                      <div class="text-[11px] text-slate-400">Adaptive touch & transition resets</div>
+                    </div>
+                  </div>
+                  <div class="w-5 h-5 rounded-full bg-[#CCFF00] flex items-center justify-center text-[#0B131E]">
+                    <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-4">
+              <label class="block text-xs font-semibold text-slate-400 mb-1.5">Primary Paddle Weapon</label>
+              <input
+                id="input-paddle"
+                type="text"
+                value="Joola Perseus 16mm"
+                placeholder="e.g. Joola Perseus 16mm"
+                class="w-full bg-[#0B131E] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-medium focus:border-[#CCFF00] focus:outline-none mb-2"
+              />
+              <div class="text-[10px] font-semibold text-slate-500 mb-1">POPULAR IN PH:</div>
+              <div class="flex flex-wrap gap-1">
+                <button type="button" onclick="setPaddlePreset('Joola Perseus 16mm')" class="px-2 py-1 rounded-md text-[10px] font-medium bg-slate-700 text-[#CCFF00]">Joola Perseus 16mm</button>
+                <button type="button" onclick="setPaddlePreset('Selkirk Vanguard Control')" class="px-2 py-1 rounded-md text-[10px] font-medium bg-[#0B131E] text-slate-400 hover:text-white border border-slate-800">Selkirk Vanguard</button>
+                <button type="button" onclick="setPaddlePreset('CRBN 1X Power Series')" class="px-2 py-1 rounded-md text-[10px] font-medium bg-[#0B131E] text-slate-400 hover:text-white border border-slate-800">CRBN 1X</button>
+                <button type="button" onclick="setPaddlePreset('Six Zero Double Black Diamond')" class="px-2 py-1 rounded-md text-[10px] font-medium bg-[#0B131E] text-slate-400 hover:text-white border border-slate-800">Six Zero DBD</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onboarding Step Action Button -->
+        <div class="pt-3">
+          <button
+            id="btn-onboard-next"
+            onclick="nextOnboardStep()"
+            class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-sm flex items-center justify-center gap-2 hover:bg-[#d8ff33] active:scale-[0.98] transition-all shadow-xl shadow-[#CCFF00]/25 cursor-pointer"
+          >
+            <span>Continue to Step 2</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- SCREEN 3: THE PLAYER PASSPORT (ATHLETE TRADING CARD) -->
+      <!-- ======================================================== -->
+      <div id="screen-3" class="hidden flex-1 flex flex-col justify-between px-5 pt-3 pb-4">
+        <div class="space-y-3.5">
+          <!-- Top Bar -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <button onclick="goToScreen(2)" class="p-1.5 rounded-xl bg-[#111827] border border-slate-800 text-slate-400 hover:text-white">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+              </button>
+              <div>
+                <h2 class="text-base font-extrabold text-white tracking-tight flex items-center gap-1.5">
+                  Player Passport
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+                </h2>
+                <span class="text-[10px] text-slate-400 font-medium">PiklrPH Verified Athlete Card</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button onclick="sharePassport()" class="p-2 rounded-xl bg-[#111827] border border-slate-800 text-slate-300 hover:text-[#CCFF00] hover:border-[#CCFF00]/40 transition-colors" title="Share Passport">
+                <i data-lucide="share-2" class="w-4 h-4"></i>
+              </button>
+              <button onclick="toggleSettingsModal(true)" class="p-2 rounded-xl bg-[#111827] border border-slate-800 text-slate-300 hover:text-[#CCFF00] hover:border-[#CCFF00]/40 transition-colors" title="Passport Settings">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Hero Athlete Card -->
+          <div class="relative rounded-3xl bg-gradient-to-b from-[#16202E] via-[#111827] to-[#0D141F] border border-slate-700/80 p-5 shadow-2xl overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-36 h-36 bg-[#CCFF00]/15 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-[#10B981]/15 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="absolute inset-0 opacity-5 pointer-events-none">
+              <div class="w-full h-full border-2 border-white m-3"></div>
+              <div class="absolute top-1/2 left-0 right-0 border-t border-dashed border-white"></div>
+            </div>
+
+            <div class="relative flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-slate-900 to-slate-800 border-2 border-[#CCFF00] p-0.5 shadow-[0_0_16px_rgba(204,255,0,0.45)] flex items-center justify-center overflow-hidden">
+                    <div id="card-avatar-initial" class="w-full h-full bg-[#0B131E] rounded-xl flex items-center justify-center text-2xl font-black text-[#CCFF00]">
+                      D
+                    </div>
+                  </div>
+                  <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#10B981] border-2 border-[#0B131E] flex items-center justify-center">
+                    <i data-lucide="check" class="w-2.5 h-2.5 text-white stroke-[3]"></i>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 id="card-fullname" class="text-base font-extrabold text-white tracking-tight leading-tight">
+                    Dave Hernandez
+                  </h3>
+                  <div id="card-nickname" class="text-xs font-bold text-[#CCFF00] tracking-wide">
+                    "D-Train"
+                  </div>
+                  <div class="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
+                    <i data-lucide="map-pin" class="w-3 h-3 text-slate-500"></i>
+                    <span id="card-city">BGC / Taguig, PH</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end">
+                <div class="inline-flex items-center gap-1 bg-[#10B981]/15 border border-[#10B981]/40 px-2 py-1 rounded-lg text-[10px] font-extrabold text-[#10B981]">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                  <span>DUPR VERIFIED</span>
+                </div>
+                <span class="text-[9px] text-slate-500 mt-1">ID: #PH-3960</span>
+              </div>
+            </div>
+
+            <div class="relative grid grid-cols-3 gap-2 bg-[#0B131E]/90 border border-slate-800/90 rounded-2xl p-3 text-center mb-3">
+              <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">DUPR Doubles</span>
+                <span id="card-dupr" class="text-xl font-black text-[#CCFF00] tracking-tight block">3.60</span>
+                <span class="text-[9px] text-slate-500 font-medium block">Reliability 98%</span>
+              </div>
+              <div class="border-x border-slate-800/80 px-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Win Rate</span>
+                <span class="text-xl font-black text-[#10B981] tracking-tight block">68%</span>
+                <span class="text-[9px] text-[#10B981]/80 font-medium block">Top 15% PH</span>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Matches</span>
+                <span class="text-xl font-black text-white tracking-tight block">42</span>
+                <span class="text-[9px] text-slate-500 font-medium block">Season 2026</span>
+              </div>
+            </div>
+
+            <div class="text-[11px] text-slate-300 bg-slate-800/40 border border-slate-700/50 rounded-xl px-3 py-1.5 flex items-center justify-between">
+              <span class="font-semibold text-slate-400">Class:</span>
+              <span id="card-tier-label" class="font-bold text-[#CCFF00]">3.5 - 3.9 · Advanced</span>
+            </div>
+          </div>
+
+          <!-- Tactical DNA Section -->
+          <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="zap" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+                Tactical DNA
+              </span>
+              <span class="text-[10px] text-slate-500">Court Specs</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="bg-[#0B131E] border border-slate-800/80 rounded-xl p-2.5">
+                <span class="text-[10px] text-slate-500 uppercase font-semibold block">Dominant Hand</span>
+                <span id="card-hand" class="font-bold text-white mt-0.5 block">Right-Handed</span>
+              </div>
+
+              <div class="bg-[#0B131E] border border-slate-800/80 rounded-xl p-2.5">
+                <span class="text-[10px] text-slate-500 uppercase font-semibold block">Play Style</span>
+                <span id="card-style" class="font-bold text-[#CCFF00] mt-0.5 block truncate">All-Court Balanced</span>
+              </div>
+
+              <div class="col-span-2 bg-[#0B131E] border border-slate-800/80 rounded-xl p-2.5 flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] text-slate-500 uppercase font-semibold block">Paddle Model</span>
+                  <span id="card-paddle" class="font-bold text-white text-xs mt-0.5 block">Joola Perseus 16mm</span>
+                </div>
+                <span class="text-lg">🏓</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doubles Partner Toggle -->
+          <div id="partner-card" class="border rounded-2xl p-4 transition-all bg-gradient-to-r from-[#111827] to-[#0e221c] border-[#10B981]/50 shadow-lg shadow-[#10B981]/10">
+            <div class="flex items-center justify-between">
+              <div class="pr-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-extrabold text-white">Looking for a Doubles Partner?</span>
+                  <span id="partner-dot" class="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+                </div>
+                <p id="partner-status-text" class="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                  ACTIVE · Matchmaking open in BGC & Taguig
+                </p>
+              </div>
+
+              <button
+                type="button"
+                id="btn-partner-toggle"
+                onclick="togglePartnerSearch()"
+                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-[#CCFF00]"
+              >
+                <span id="toggle-circle" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-[#0B131E] shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prototype Review Mini Controls -->
+        <div class="pt-2 flex items-center justify-between gap-2">
+          <button
+            onclick="resetPrototype()"
+            class="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Reset / Back to Start</span>
+          </button>
+          <button
+            onclick="goToScreen(2)"
+            class="py-2.5 px-3 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+          >
+            <i data-lucide="sliders" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+            <span>Edit Stats</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Settings Modal Sheet -->
+  <div id="settings-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#111827] border border-[#1E293B] rounded-3xl p-5 max-w-sm w-full shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="settings" class="w-4 h-4 text-[#CCFF00]"></i>
+          Passport Preferences
+        </h3>
+        <button onclick="toggleSettingsModal(false)" class="p-1 text-slate-400 hover:text-white rounded-lg">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="bg-[#0B131E] p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="font-semibold text-white block">DUPR Syncing</span>
+            <span class="text-[11px] text-slate-400">Auto-update match ratings</span>
+          </div>
+          <span class="text-[10px] font-bold text-[#10B981] bg-[#10B981]/20 px-2 py-0.5 rounded-full">CONNECTED</span>
+        </div>
+
+        <div class="bg-[#0B131E] p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="font-semibold text-white block">Philippines Region</span>
+            <span id="settings-city-label" class="text-[11px] text-slate-400">BGC / Taguig</span>
+          </div>
+          <button onclick="toggleSettingsModal(false); goToScreen(2);" class="text-[#CCFF00] font-bold text-[11px] hover:underline">Change</button>
+        </div>
+
+        <div class="bg-[#0B131E] p-3 rounded-xl border border-slate-800">
+          <span class="font-semibold text-white block mb-1">PiklrPH Club ID</span>
+          <span class="font-mono text-slate-300 text-xs">#PIKLR-PH-91724</span>
+        </div>
+      </div>
+
+      <button onclick="toggleSettingsModal(false)" class="w-full mt-4 py-2.5 rounded-xl bg-[#CCFF00] text-[#0B131E] font-bold text-xs cursor-pointer">
+        Done
+      </button>
+    </div>
+  </div>
+
+  <!-- Inline JavaScript Logic -->
+  <script>
+    const state = {
+      screen: 1,
+      onboardingStep: 1,
+      fullName: 'Dave Hernandez',
+      nickname: 'D-Train',
+      city: 'BGC / Taguig',
+      duprRating: 3.6,
+      dominantHand: 'Right',
+      playStyle: 'All-Court Balanced',
+      paddle: 'Joola Perseus 16mm',
+      partnerSearchActive: true,
+      cities: [
+        'Quezon City',
+        'BGC / Taguig',
+        'Pasig',
+        'Makati',
+        'Mandaluyong',
+        'Cebu City',
+        'Davao City',
+        'Pampanga'
+      ]
+    };
+
+    function refreshIcons() {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      toastMsg.innerText = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2600);
+    }
+
+    function goToScreen(screenNumber) {
+      state.screen = screenNumber;
+      
+      document.getElementById('screen-1').classList.add('hidden');
+      document.getElementById('screen-2').classList.add('hidden');
+      document.getElementById('screen-3').classList.add('hidden');
+
+      document.getElementById(`screen-${screenNumber}`).classList.remove('hidden');
+
+      if (screenNumber === 2) {
+        updateOnboardingStepUI();
+      }
+      if (screenNumber === 3) {
+        syncPassportCard();
+      }
+
+      refreshIcons();
+    }
+
+    // Screen 1: Auth
+    function sendOtp() {
+      document.getElementById('auth-send-step').classList.add('hidden');
+      document.getElementById('auth-verify-step').classList.remove('hidden');
+      
+      const phone = document.getElementById('phone-input').value;
+      showToast('OTP sent to +63 ' + phone);
+
+      const banner = document.getElementById('sms-banner');
+      banner.classList.remove('hidden');
+      setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 6000);
+
+      document.getElementById('pin-0').focus();
+      refreshIcons();
+    }
+
+    function quickFillOtp() {
+      const pins = ['8', '4', '9', '2'];
+      pins.forEach((d, i) => {
+        const el = document.getElementById(`pin-${i}`);
+        if (el) el.value = d;
+      });
+      document.getElementById('sms-banner').classList.add('hidden');
+      showToast('Auto-filled PIN: 8492');
+    }
+
+    function handlePinInput(idx) {
+      const input = document.getElementById(`pin-${idx}`);
+      const val = input.value.replace(/[^0-9]/g, '');
+      input.value = val;
+      if (val && idx < 3) {
+        document.getElementById(`pin-${idx + 1}`).focus();
+      }
+    }
+
+    function verifyOtpAndContinue() {
+      const btn = document.getElementById('btn-verify-continue');
+      btn.innerHTML = '<span>Verifying Player...</span>';
+      setTimeout(() => {
+        btn.innerHTML = '<span>Verify & Continue</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
+        showToast('Mobile verified! Welcome to PiklrPH');
+        state.onboardingStep = 1;
+        goToScreen(2);
+      }, 500);
+    }
+
+    function continueWithGoogle() {
+      showToast('Google Authenticated as davelex520@gmail.com');
+      setTimeout(() => {
+        state.onboardingStep = 1;
+        goToScreen(2);
+      }, 500);
+    }
+
+    // Screen 2: Onboarding
+    function renderCityChips() {
+      const container = document.getElementById('city-chips');
+      container.innerHTML = '';
+      state.cities.forEach(city => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => selectCity(city);
+        const isSelected = state.city === city;
+        btn.className = isSelected
+          ? 'px-3 py-1.5 rounded-xl text-xs font-bold bg-[#CCFF00] text-[#0B131E] shadow-sm shadow-[#CCFF00]/30 transition-all cursor-pointer'
+          : 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#0B131E] text-slate-300 border border-slate-800 hover:border-slate-700 transition-all cursor-pointer';
+        btn.innerText = city;
+        container.appendChild(btn);
+      });
+    }
+
+    function selectCity(city) {
+      state.city = city;
+      document.getElementById('select-city').value = city;
+      renderCityChips();
+    }
+
+    function updateDuprRating(val) {
+      const rating = parseFloat(val);
+      state.duprRating = rating;
+      document.getElementById('dupr-val-display').innerText = rating.toFixed(1);
+
+      const titleEl = document.getElementById('dupr-tier-title');
+      const descEl = document.getElementById('dupr-tier-desc');
+
+      if (rating < 2.5) {
+        titleEl.innerText = '2.0 - 2.4 · Beginner';
+        descEl.innerText = 'Learning basic rules, scoring, non-volley zone boundaries, and serve fundamentals.';
+      } else if (rating < 3.0) {
+        titleEl.innerText = '2.5 - 2.9 · Novice';
+        descEl.innerText = 'Learning drops & dinks, improving court positioning, and sustaining short baseline rallies.';
+      } else if (rating < 3.5) {
+        titleEl.innerText = '3.0 - 3.4 · Intermediate';
+        descEl.innerText = 'Developing consistent dinking, medium-pace rallies, and directional third-shot drops.';
+      } else if (rating < 4.0) {
+        titleEl.innerText = '3.5 - 3.9 · Advanced';
+        descEl.innerText = 'Consistent third-shot drops and directional control, kitchen patience, and high anticipation.';
+      } else if (rating < 4.5) {
+        titleEl.innerText = '4.0 - 4.4 · Expert';
+        descEl.innerText = 'High shot anticipation, resets from transition zone, and offensive speedups with wrist snap.';
+      } else {
+        titleEl.innerText = '4.5+ · Elite / Tour Pro';
+        descEl.innerText = 'Competitive tournament player with high tournament podium experience and court mastery.';
+      }
+    }
+
+    function selectHand(hand) {
+      state.dominantHand = hand;
+      const rightBtn = document.getElementById('btn-hand-right');
+      const leftBtn = document.getElementById('btn-hand-left');
+      if (hand === 'Right') {
+        rightBtn.className = 'py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-[#CCFF00] text-[#0B131E] transition-all cursor-pointer';
+        rightBtn.innerHTML = '<span>Right-Handed</span><i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>';
+        leftBtn.className = 'py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-[#0B131E] border border-slate-800 text-slate-300 hover:border-slate-700 transition-all cursor-pointer';
+        leftBtn.innerHTML = '<span>Left-Handed (Lefty)</span>';
+      } else {
+        leftBtn.className = 'py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-[#CCFF00] text-[#0B131E] transition-all cursor-pointer';
+        leftBtn.innerHTML = '<span>Left-Handed (Lefty)</span><i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>';
+        rightBtn.className = 'py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-[#0B131E] border border-slate-800 text-slate-300 hover:border-slate-700 transition-all cursor-pointer';
+        rightBtn.innerHTML = '<span>Right-Handed</span>';
+      }
+      refreshIcons();
+    }
+
+    function selectPlayStyle(style) {
+      state.playStyle = style;
+      const styles = ['Dinker / Soft Game', 'Banger / Power', 'All-Court Balanced'];
+      const ids = ['style-dinker', 'style-banger', 'style-allcourt'];
+      
+      ids.forEach((id, idx) => {
+        const el = document.getElementById(id);
+        const isSelected = styles[idx] === style;
+        if (isSelected) {
+          el.className = 'w-full text-left p-3 rounded-xl border border-[#CCFF00] bg-[#0B131E] shadow-sm shadow-[#CCFF00]/15 transition-all cursor-pointer flex items-center justify-between';
+        } else {
+          el.className = 'w-full text-left p-3 rounded-xl border border-slate-800 bg-[#0B131E]/60 hover:border-slate-700 transition-all cursor-pointer flex items-center justify-between';
+        }
+      });
+      refreshIcons();
+    }
+
+    function setPaddlePreset(paddle) {
+      document.getElementById('input-paddle').value = paddle;
+      state.paddle = paddle;
+    }
+
+    function updateOnboardingStepUI() {
+      const step = state.onboardingStep;
+      document.getElementById('onboard-step-pill').innerText = `Step ${step} of 3`;
+      
+      const titles = [
+        'Player Identity & Court Hub',
+        'Skill Rating & DUPR',
+        'Tactical DNA & Gear'
+      ];
+      document.getElementById('onboard-step-title').innerText = titles[step - 1];
+
+      for (let s = 1; s <= 3; s++) {
+        const prog = document.getElementById(`prog-${s}`);
+        const content = document.getElementById(`step-content-${s}`);
+        if (s <= step) {
+          prog.classList.add('bg-[#CCFF00]');
+          prog.classList.remove('bg-slate-800');
+        } else {
+          prog.classList.remove('bg-[#CCFF00]');
+          prog.classList.add('bg-slate-800');
+        }
+        if (s === step) {
+          content.classList.remove('hidden');
+        } else {
+          content.classList.add('hidden');
+        }
+      }
+
+      const nextBtn = document.getElementById('btn-onboard-next');
+      if (step < 3) {
+        nextBtn.innerHTML = `<span>Continue to Step ${step + 1}</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+      } else {
+        nextBtn.innerHTML = `<span>Create My Player Passport</span><i data-lucide="trophy" class="w-4 h-4"></i>`;
+      }
+
+      renderCityChips();
+      refreshIcons();
+    }
+
+    function nextOnboardStep() {
+      if (state.onboardingStep === 1) {
+        const nameVal = document.getElementById('input-fullname').value;
+        const nickVal = document.getElementById('input-nickname').value;
+        if (nameVal) state.fullName = nameVal;
+        if (nickVal) state.nickname = nickVal;
+        state.onboardingStep = 2;
+        updateOnboardingStepUI();
+      } else if (state.onboardingStep === 2) {
+        state.onboardingStep = 3;
+        updateOnboardingStepUI();
+      } else {
+        const paddleVal = document.getElementById('input-paddle').value;
+        if (paddleVal) state.paddle = paddleVal;
+        showToast('Player Passport minted!');
+        goToScreen(3);
+      }
+    }
+
+    // Screen 3: Player Passport
+    function syncPassportCard() {
+      document.getElementById('card-fullname').innerText = state.fullName;
+      document.getElementById('card-nickname').innerText = `"${state.nickname}"`;
+      document.getElementById('card-city').innerText = `${state.city}, PH`;
+      document.getElementById('card-dupr').innerText = state.duprRating.toFixed(2);
+      document.getElementById('card-hand').innerText = `${state.dominantHand}-Handed`;
+      document.getElementById('card-style').innerText = state.playStyle;
+      document.getElementById('card-paddle').innerText = state.paddle;
+      document.getElementById('settings-city-label').innerText = state.city;
+
+      const initial = state.nickname ? state.nickname.charAt(0).toUpperCase() : 'P';
+      document.getElementById('card-avatar-initial').innerText = initial;
+
+      const rating = state.duprRating;
+      let tierLabel = '3.5 - 3.9 · Advanced';
+      if (rating < 2.5) tierLabel = '2.0 - 2.4 · Beginner';
+      else if (rating < 3.0) tierLabel = '2.5 - 2.9 · Novice';
+      else if (rating < 3.5) tierLabel = '3.0 - 3.4 · Intermediate';
+      else if (rating < 4.0) tierLabel = '3.5 - 3.9 · Advanced';
+      else if (rating < 4.5) tierLabel = '4.0 - 4.4 · Expert';
+      else tierLabel = '4.5+ · Elite / Tour Pro';
+      document.getElementById('card-tier-label').innerText = tierLabel;
+
+      refreshIcons();
+    }
+
+    function togglePartnerSearch() {
+      state.partnerSearchActive = !state.partnerSearchActive;
+      const card = document.getElementById('partner-card');
+      const dot = document.getElementById('partner-dot');
+      const statusText = document.getElementById('partner-status-text');
+      const toggle = document.getElementById('btn-partner-toggle');
+      const circle = document.getElementById('toggle-circle');
+
+      if (state.partnerSearchActive) {
+        card.className = 'border rounded-2xl p-4 transition-all bg-gradient-to-r from-[#111827] to-[#0e221c] border-[#10B981]/50 shadow-lg shadow-[#10B981]/10';
+        dot.className = 'w-2 h-2 rounded-full bg-[#10B981] animate-pulse';
+        statusText.innerText = `ACTIVE · Matchmaking open in ${state.city}`;
+        toggle.className = 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-[#CCFF00]';
+        circle.className = 'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-[#0B131E] shadow ring-0 transition duration-200 ease-in-out translate-x-5';
+        showToast('Partner matchmaking enabled!');
+      } else {
+        card.className = 'border rounded-2xl p-4 transition-all bg-[#111827] border-[#1E293B]';
+        dot.className = 'w-2 h-2 rounded-full bg-slate-600';
+        statusText.innerText = 'Inactive · You are hidden from open partner queue';
+        toggle.className = 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-slate-700';
+        circle.className = 'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-[#0B131E] shadow ring-0 transition duration-200 ease-in-out translate-x-0';
+        showToast('Partner search paused');
+      }
+    }
+
+    function sharePassport() {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(`https://piklr.ph/player/${state.nickname.toLowerCase().replace(/\s+/g, '-')}`);
+      }
+      showToast('Passport link copied to clipboard!');
+    }
+
+    function toggleSettingsModal(show) {
+      const modal = document.getElementById('settings-modal');
+      if (show) modal.classList.remove('hidden');
+      else modal.classList.add('hidden');
+      refreshIcons();
+    }
+
+    function resetPrototype() {
+      state.screen = 1;
+      state.onboardingStep = 1;
+      document.getElementById('auth-send-step').classList.remove('hidden');
+      document.getElementById('auth-verify-step').classList.add('hidden');
+      ['pin-0','pin-1','pin-2','pin-3'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      goToScreen(1);
+      showToast('Prototype reset to Screen 1');
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCityChips();
+      refreshIcons();
+    });
+  </script>
+</body>
+</html>

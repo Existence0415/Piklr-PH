@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PiklrPH - Tournament Director & Stream Overlay (Module 5)</title>
+
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <!-- Lucide Icons CDN & Supabase Client -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes pulse-serve {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.6; }
+    }
+    .pulse-dot { animation: pulse-serve 1.5s infinite; }
+  </style>
+</head>
+<body class="bg-[#070B11] text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
+
+  <!-- Mobile Device Frame Container -->
+  <div class="w-full max-w-[420px] h-[880px] max-h-screen bg-[#0B131E] sm:rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.85)] border border-[#1E293B] flex flex-col relative overflow-hidden">
+    
+    <!-- Top System / Dynamic Island Status Bar -->
+    <div class="pt-3 px-6 pb-2 flex items-center justify-between z-30 shrink-0 bg-[#0B131E]">
+      <span class="text-xs font-semibold text-slate-400">09:41</span>
+      <div class="w-28 h-4 bg-black rounded-full flex items-center justify-center gap-1.5 border border-slate-800">
+        <span class="w-2 h-2 rounded-full bg-[#CCFF00] animate-ping"></span>
+        <span class="text-[9px] font-bold tracking-wider text-[#CCFF00]">DIRECTOR DESK</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="admin.html" class="text-[10px] font-bold text-[#CCFF00] hover:underline">HQ Admin</a>
+        <div class="flex items-center gap-1 text-slate-400 text-xs">
+          <i data-lucide="radio" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+          <span class="text-[10px] font-bold">LIVE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- View 1: Tournament Director Command Header -->
+    <div class="px-4 py-2.5 bg-[#111827] border-y border-[#1E293B] shrink-0">
+      <div class="flex items-start justify-between">
+        <div class="flex-1 min-w-0 pr-2">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#CCFF00]">Live Supabase Tournament</span>
+          </div>
+          <h1 id="tourney-title" class="text-sm font-black text-white tracking-wide truncate">
+            Loading Tournament...
+          </h1>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span id="tourney-category" class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700">
+              Intermediate 3.5 Draw
+            </span>
+            <span id="tourney-escrow" class="text-[10px] font-extrabold text-[#F59E0B] flex items-center gap-1">
+              <i data-lucide="award" class="w-3 h-3 text-[#F59E0B]"></i> Escrow ₱25,000
+            </span>
+          </div>
+        </div>
+
+        <button onclick="showQuickStatsModal()" class="w-8 h-8 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition active:scale-95 cursor-pointer shrink-0" title="Tournament Info">
+          <i data-lucide="info" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Segmented Tab Bar -->
+      <div class="grid grid-cols-3 gap-1 mt-2.5 p-1 bg-slate-900/90 rounded-xl border border-slate-800 text-xs font-bold">
+        <button id="tab-btn-bracket" onclick="switchTab('bracket')" class="py-1.5 px-2 rounded-lg bg-[#CCFF00] text-black shadow-sm font-black transition flex items-center justify-center gap-1 cursor-pointer">
+          <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
+          <span>Bracket</span>
+        </button>
+        <button id="tab-btn-dispatch" onclick="switchTab('dispatch')" class="py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1 cursor-pointer">
+          <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+          <span>Dispatch</span>
+        </button>
+        <button id="tab-btn-stream" onclick="switchTab('stream')" class="py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1 cursor-pointer">
+          <i data-lucide="tv" class="w-3.5 h-3.5"></i>
+          <span>StreamBug</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN SCROLLABLE CONTENT BODY -->
+    <div class="flex-1 overflow-y-auto px-4 py-3 flex flex-col justify-between">
+
+      <!-- ================= TAB A: INTERACTIVE LIVE BRACKET ================= -->
+      <div id="tab-content-bracket" class="space-y-3 flex-1 flex flex-col">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-black text-white uppercase tracking-wider">Playoff Elimination Tree</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-bold">8 Pairs</span>
+          </div>
+          <span class="text-[10px] text-slate-400 font-medium">Click card to advance winner</span>
+        </div>
+
+        <div class="flex-1 overflow-x-auto no-scrollbar pb-2">
+          <div class="inline-flex gap-4 min-w-[700px] h-full items-stretch py-1">
+
+            <!-- ROUND 1: QUARTER-FINALS -->
+            <div class="w-[220px] flex flex-col justify-between space-y-2">
+              <div class="flex items-center justify-between px-1">
+                <span class="text-[11px] font-black uppercase tracking-wider text-slate-400">Quarter-Finals</span>
+                <span class="text-[9px] font-bold text-slate-500">Best of 3</span>
+              </div>
+
+              <!-- QF 1 -->
+              <div id="qf1-card" class="p-2.5 rounded-2xl bg-[#111827] border-2 border-[#CCFF00]/50 shadow-[0_0_15px_rgba(204,255,0,0.15)] relative">
+                <div class="flex items-center justify-between mb-1.5 text-[9px] font-extrabold text-slate-400">
+                  <span class="text-[#CCFF00] flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#CCFF00] animate-ping"></span>
+                    Court 1 • Match QF-1
+                  </span>
+                  <span class="text-amber-400 font-bold">Set 3 (In Play)</span>
+                </div>
+                <div onclick="advanceMatch('qf1', 'Mico / Carlo')" class="p-1.5 rounded-xl bg-slate-900/80 border border-[#CCFF00]/40 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-[#CCFF00] text-black">1</span>
+                    <span class="text-xs font-bold text-white">Mico / Carlo</span>
+                  </div>
+                  <span class="text-xs font-black text-[#CCFF00]">11, 9, 8</span>
+                </div>
+                <div onclick="advanceMatch('qf1', 'Dan / Paolo')" class="mt-1 p-1.5 rounded-xl bg-slate-900/50 border border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">8</span>
+                    <span class="text-xs font-semibold text-slate-300">Dan / Paolo</span>
+                  </div>
+                  <span class="text-xs font-bold text-slate-400">8, 11, 6</span>
+                </div>
+                <div class="mt-2 flex items-center justify-between text-[9px]">
+                  <span class="text-slate-500">Tap to advance</span>
+                  <button onclick="advanceMatch('qf1', 'Mico / Carlo')" class="px-2 py-0.5 rounded bg-[#CCFF00]/20 hover:bg-[#CCFF00] text-[#CCFF00] hover:text-black font-black transition cursor-pointer">
+                    Advance [1] →
+                  </button>
+                </div>
+              </div>
+
+              <!-- QF 2 -->
+              <div id="qf2-card" class="p-2.5 rounded-2xl bg-[#111827] border border-slate-800 relative">
+                <div class="flex items-center justify-between mb-1.5 text-[9px] font-extrabold text-slate-400">
+                  <span class="text-slate-400">Court 3 • Match QF-2</span>
+                  <span class="text-emerald-400 font-bold">Final (2-0)</span>
+                </div>
+                <div class="p-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-emerald-400 text-black">4</span>
+                    <span class="text-xs font-bold text-white">Ken / Raffy</span>
+                    <i data-lucide="check" class="w-3 h-3 text-emerald-400"></i>
+                  </div>
+                  <span class="text-xs font-black text-emerald-400">11, 11</span>
+                </div>
+                <div class="mt-1 p-1.5 rounded-xl bg-slate-900/30 border border-slate-800/60 flex items-center justify-between opacity-60">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-slate-800 text-slate-500">5</span>
+                    <span class="text-xs font-medium text-slate-400 line-through">Jolo / Mark</span>
+                  </div>
+                  <span class="text-xs font-semibold text-slate-500">6, 9</span>
+                </div>
+              </div>
+
+              <!-- QF 3 -->
+              <div id="qf3-card" class="p-2.5 rounded-2xl bg-[#111827] border border-slate-800 relative">
+                <div class="flex items-center justify-between mb-1.5 text-[9px] font-extrabold text-slate-400">
+                  <span>Match QF-3</span>
+                  <span class="text-sky-400 font-bold">Warmup</span>
+                </div>
+                <div onclick="advanceMatch('qf3', 'Gabe / Josh')" class="p-1.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-800 transition">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">3</span>
+                    <span class="text-xs font-bold text-white">Gabe / Josh</span>
+                  </div>
+                  <span class="text-xs font-bold text-slate-400">-</span>
+                </div>
+                <div onclick="advanceMatch('qf3', 'Anton / Vince')" class="mt-1 p-1.5 rounded-xl bg-slate-900/50 border border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-800 transition">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">6</span>
+                    <span class="text-xs font-semibold text-slate-300">Anton / Vince</span>
+                  </div>
+                  <span class="text-xs font-bold text-slate-400">-</span>
+                </div>
+              </div>
+
+              <!-- QF 4 -->
+              <div id="qf4-card" class="p-2.5 rounded-2xl bg-[#111827] border border-slate-800 relative">
+                <div class="flex items-center justify-between mb-1.5 text-[9px] font-extrabold text-slate-400">
+                  <span>Match QF-4</span>
+                  <span class="text-slate-500 font-bold">On Deck</span>
+                </div>
+                <div onclick="advanceMatch('qf4', 'Brian / Nico')" class="p-1.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-800 transition">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">2</span>
+                    <span class="text-xs font-bold text-white">Brian / Nico</span>
+                  </div>
+                  <span class="text-xs font-bold text-slate-400">-</span>
+                </div>
+                <div onclick="advanceMatch('qf4', 'Leo / Sam')" class="mt-1 p-1.5 rounded-xl bg-slate-900/50 border border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-800 transition">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">7</span>
+                    <span class="text-xs font-semibold text-slate-300">Leo / Sam</span>
+                  </div>
+                  <span class="text-xs font-bold text-slate-400">-</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ROUND 2: SEMI-FINALS -->
+            <div class="w-[220px] flex flex-col justify-around space-y-4">
+              <div class="flex items-center justify-between px-1">
+                <span class="text-[11px] font-black uppercase tracking-wider text-[#38BDF8]">Semi-Finals</span>
+                <span class="text-[9px] font-bold text-slate-500">Medal Qualifier</span>
+              </div>
+
+              <!-- SF 1 -->
+              <div class="p-3 rounded-2xl bg-[#111827] border border-[#38BDF8]/40 shadow-lg relative">
+                <div class="flex items-center justify-between mb-2 text-[9px] font-extrabold text-slate-400">
+                  <span class="text-[#38BDF8]">Match SF-1</span>
+                  <span id="sf1-status" class="text-slate-400">Pending QF1</span>
+                </div>
+                <div id="sf1-team1-box" class="p-2 rounded-xl bg-slate-900/80 border border-dashed border-slate-700 flex items-center justify-between">
+                  <span id="sf1-t1-name" class="text-xs font-bold text-white">Mico / Carlo (Adv.)</span>
+                  <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-[#CCFF00] text-black">#1</span>
+                </div>
+                <div id="sf1-team2-box" class="mt-1.5 p-2 rounded-xl bg-slate-900/80 border border-slate-700 flex items-center justify-between">
+                  <span id="sf1-t2-name" class="text-xs font-bold text-white">Ken / Raffy</span>
+                  <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-emerald-400 text-black">#4</span>
+                </div>
+                <button onclick="advanceMatch('sf1', 'Mico / Carlo')" class="mt-2 w-full py-1 text-[10px] rounded-lg bg-sky-500/20 hover:bg-sky-500 text-sky-300 hover:text-black font-black transition cursor-pointer">
+                  Advance Mico/Carlo to Gold →
+                </button>
+              </div>
+
+              <!-- SF 2 -->
+              <div class="p-3 rounded-2xl bg-[#111827] border border-slate-800 relative">
+                <div class="flex items-center justify-between mb-2 text-[9px] font-extrabold text-slate-400">
+                  <span class="text-slate-400">Match SF-2</span>
+                  <span id="sf2-status" class="text-slate-500">Scheduled</span>
+                </div>
+                <div class="p-2 rounded-xl bg-slate-900/60 border border-dashed border-slate-700 flex items-center justify-between">
+                  <span id="sf2-t1-name" class="text-xs font-semibold text-slate-400 truncate">Winner QF-3</span>
+                  <span class="text-[10px] font-bold text-slate-500">#3</span>
+                </div>
+                <div class="mt-1.5 p-2 rounded-xl bg-slate-900/60 border border-dashed border-slate-700 flex items-center justify-between">
+                  <span id="sf2-t2-name" class="text-xs font-semibold text-slate-400 truncate">Winner QF-4</span>
+                  <span class="text-[10px] font-bold text-slate-500">#2</span>
+                </div>
+                <button onclick="advanceMatch('sf2', 'Brian / Nico')" class="mt-2 w-full py-1 text-[10px] rounded-lg bg-slate-800 hover:bg-[#CCFF00] text-slate-300 hover:text-black font-black transition cursor-pointer">
+                  Advance Brian/Nico to Gold →
+                </button>
+              </div>
+            </div>
+
+            <!-- ROUND 3: GOLD MEDAL MATCH -->
+            <div class="w-[230px] flex flex-col justify-center space-y-3">
+              <div class="flex items-center justify-between px-1">
+                <span class="text-[11px] font-black uppercase tracking-wider text-[#F59E0B] flex items-center gap-1">
+                  <i data-lucide="crown" class="w-3.5 h-3.5 text-[#F59E0B]"></i>
+                  Gold Medal Match
+                </span>
+                <span class="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">FINALS</span>
+              </div>
+
+              <div class="p-3.5 rounded-2xl bg-gradient-to-b from-[#1c1917] to-[#111827] border-2 border-[#F59E0B] shadow-[0_0_25px_rgba(245,158,11,0.25)] relative">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-black text-[#F59E0B] uppercase tracking-wider">Championship Court</span>
+                  <i data-lucide="trophy" class="w-4 h-4 text-[#F59E0B]"></i>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-900/90 border border-amber-500/40 flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-black text-amber-400">🥇</span>
+                    <span id="final-t1-name" class="text-xs font-black text-white">Mico / Carlo</span>
+                  </div>
+                  <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-[#CCFF00] text-black">#1</span>
+                </div>
+
+                <div class="text-center py-1 text-[10px] font-black text-slate-500 tracking-wider">VS</div>
+
+                <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-700 flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-black text-slate-400">🥈</span>
+                    <span id="final-t2-name" class="text-xs font-black text-white">Brian / Nico</span>
+                  </div>
+                  <span class="text-[10px] font-black px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">#2</span>
+                </div>
+
+                <button onclick="crownChampion('Mico / Carlo')" class="mt-3 w-full py-2.5 rounded-xl bg-gradient-to-r from-[#F59E0B] to-[#d97706] text-black font-black text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-lg hover:brightness-110 active:scale-95 transition cursor-pointer">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                  <span>CROWN CHAMPION!</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB B: COURT DISPATCH QUEUE ================= -->
+      <div id="tab-content-dispatch" class="space-y-3 flex-1 hidden flex-col">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xs font-black uppercase tracking-wider text-white">Live Court Status</h2>
+            <p id="dispatch-venue-sub" class="text-[10px] text-slate-400">Fetching courts from PostgreSQL...</p>
+          </div>
+          <span id="dispatch-header-badge" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            Live Courts
+          </span>
+        </div>
+
+        <!-- Dynamic Live Courts Grid from Supabase -->
+        <div id="dispatch-courts-grid" class="grid grid-cols-2 gap-2.5">
+          <!-- Rendered dynamically by loadDispatchCourts() -->
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 space-y-2 mt-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="list-ordered" class="w-4 h-4 text-[#CCFF00]"></i>
+              <span class="text-xs font-black text-white uppercase tracking-wider">On-Deck Dispatch Queue</span>
+            </div>
+            <span class="text-[10px] font-bold text-slate-400">Priority Queuing</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-[#111827] border border-slate-800 flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400">MATCH QF-4</span>
+                <span class="text-xs font-bold text-white">[2] Brian/Nico vs [7] Leo/Sam</span>
+              </div>
+              <span class="text-[10px] text-emerald-400 font-medium">✓ Checked in & Ready for assignment</span>
+            </div>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB C: BROADCASTER'S STREAMBUG OVERLAY SETUP ================= -->
+      <div id="tab-content-stream" class="space-y-3 flex-1 hidden flex-col">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xs font-black uppercase tracking-wider text-white">Broadcaster StreamBug</h2>
+            <p class="text-[10px] text-slate-400">OBS, vMix & PRISM Live Studio Web Source</p>
+          </div>
+          <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span> 1080p 60fps
+          </span>
+        </div>
+
+        <div id="stream-monitor" class="relative w-full aspect-video bg-[#05080e] rounded-2xl border-2 border-slate-700 overflow-hidden shadow-2xl flex flex-col justify-between p-2.5 transition-all">
+          <div id="monitor-bg" class="absolute inset-0 bg-gradient-to-tr from-[#0B131E] via-[#0F1E33] to-[#08121f] opacity-90 pointer-events-none">
+            <div class="absolute inset-4 border border-white/10 rounded-lg"></div>
+            <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 h-[1px] bg-white/20"></div>
+          </div>
+
+          <!-- TOP-LEFT: OFFICIAL SCOREBOARD BUG -->
+          <div class="relative z-10 max-w-[210px] shadow-2xl">
+            <div class="bg-black/90 backdrop-blur-md px-2 py-0.5 rounded-t-lg border-t border-x border-[#1E293B] flex items-center justify-between">
+              <span id="bug-tourney-tag" class="text-[8px] font-black text-[#CCFF00] tracking-wider uppercase truncate max-w-[130px]">MANILA OPEN</span>
+              <span class="text-[8px] font-bold text-slate-400">SET 3</span>
+            </div>
+
+            <div class="bg-slate-900/95 backdrop-blur-md border-x border-b border-slate-800 px-2 py-1 flex items-center justify-between">
+              <div class="flex items-center gap-1.5 truncate">
+                <span id="bug-t1-serve" class="w-2 h-2 rounded-full bg-[#CCFF00] pulse-dot"></span>
+                <span class="text-[11px] font-extrabold text-white truncate">M. Santos / C. Reyes</span>
+              </div>
+              <div class="flex items-center gap-1 shrink-0 ml-1">
+                <span class="text-[10px] font-bold text-slate-400 px-1 rounded bg-black/40">1</span>
+                <span id="bug-t1-game" class="text-xs font-black text-[#CCFF00] px-1 rounded bg-black/60 min-w-[16px] text-center">8</span>
+              </div>
+            </div>
+
+            <div class="bg-slate-900/95 backdrop-blur-md border-x border-b border-slate-800 rounded-b-lg px-2 py-1 flex items-center justify-between">
+              <div class="flex items-center gap-1.5 truncate">
+                <span id="bug-t2-serve" class="w-2 h-2 rounded-full bg-transparent"></span>
+                <span class="text-[11px] font-bold text-slate-300 truncate">D. Cruz / P. Gomez</span>
+              </div>
+              <div class="flex items-center gap-1 shrink-0 ml-1">
+                <span class="text-[10px] font-bold text-slate-400 px-1 rounded bg-black/40">1</span>
+                <span id="bug-t2-game" class="text-xs font-black text-white px-1 rounded bg-black/60 min-w-[16px] text-center">6</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative z-10 self-end flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/70 backdrop-blur-sm border border-white/10 text-[9px] font-black">
+            <span class="text-[#CCFF00]">PIKLRPH LIVE</span>
+            <span class="text-slate-500">•</span>
+            <span class="text-slate-300 tracking-wider">OFFICIAL BROADCAST</span>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-3 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="sliders" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+              Scoreboard Controller
+            </span>
+            <button onclick="toggleServeIndicator()" class="text-[10px] font-extrabold text-[#CCFF00] hover:underline flex items-center gap-1 cursor-pointer">
+              <i data-lucide="zap" class="w-3 h-3"></i> Toggle Server
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="addBugScore(1)" class="py-2 px-3 rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>+1 Pt Team 1</span>
+            </button>
+            <button onclick="addBugScore(2)" class="py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>+1 Pt Team 2</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Browser Source URL -->
+        <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-slate-300">OBS Browser Source URL</span>
+            <span class="text-[9px] font-bold text-emerald-400">Ready to Stream</span>
+          </div>
+
+          <div class="flex items-center gap-1.5 p-2 rounded-xl bg-[#0B131E] border border-slate-800">
+            <i data-lucide="link-2" class="w-3.5 h-3.5 text-[#CCFF00] shrink-0"></i>
+            <span id="obs-url" class="text-xs font-mono text-slate-300 truncate flex-1">
+              https://piklr.ph/overlay/court-1?token=mmpo26
+            </span>
+          </div>
+
+          <button onclick="copyObsUrl()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-[#CCFF00] font-black text-xs flex items-center justify-center gap-1.5 border border-slate-700 transition active:scale-95 cursor-pointer">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span id="copy-btn-text">Copy OBS Browser Source URL</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- QUICK TOURNAMENT OVERVIEW MODAL -->
+    <div id="stats-modal" class="absolute inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col justify-end transition-all">
+      <div class="bg-[#111827] border-t border-[#1E293B] rounded-t-3xl p-5 max-h-[85%] overflow-y-auto space-y-4 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-black text-white uppercase tracking-wider">Tournament Overview</h3>
+          <button onclick="closeStatsModal()" class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-center">
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+            <span class="text-[10px] font-bold text-slate-400 block uppercase">Total Draw</span>
+            <span class="text-base font-black text-white">8 Seeded Duos</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+            <span class="text-[10px] font-bold text-slate-400 block uppercase">Escrow Prize</span>
+            <span id="modal-prize-val" class="text-base font-black text-[#CCFF00]">₱25,000</span>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Sanctioned by the Philippine Pickleball Federation & PiklrPH HQ. Escrow prize payouts are released via GCash directly from the Admin Command Center.
+        </p>
+
+        <button onclick="closeStatsModal()" class="w-full py-2.5 rounded-xl bg-slate-800 text-white font-bold text-xs cursor-pointer">
+          Close Overview
+        </button>
+      </div>
+    </div>
+
+    <!-- CHAMPION CELEBRATION MODAL -->
+    <div id="champion-modal" class="absolute inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center transition-all">
+      <div class="w-20 h-20 rounded-full bg-[#F59E0B]/20 border-2 border-[#F59E0B] flex items-center justify-center text-[#F59E0B] mb-3 shadow-[0_0_40px_rgba(245,158,11,0.5)]">
+        <i data-lucide="trophy" class="w-10 h-10"></i>
+      </div>
+      <span class="text-xs uppercase tracking-widest font-black text-[#F59E0B]">Tournament Champions</span>
+      <h2 id="champion-names" class="text-2xl font-black text-white mt-1">Mico / Carlo</h2>
+      <p id="champion-sub-text" class="text-xs text-slate-300 mt-1 max-w-[280px]">
+        Official Winners! ₱25,000 Escrow Payout unlocked in Admin HQ.
+      </p>
+
+      <button onclick="closeChampionModal()" class="mt-4 px-6 py-3 rounded-2xl bg-[#CCFF00] text-black font-black text-xs tracking-wider shadow-lg hover:brightness-110 cursor-pointer">
+        BACK TO COMMAND CENTER
+      </button>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div id="toast" class="absolute top-14 inset-x-4 bg-slate-900 border border-[#CCFF00] text-white p-3 rounded-xl shadow-2xl z-50 text-xs font-bold flex items-center gap-2.5 transform -translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
+      <i data-lucide="bell" class="w-4 h-4 text-[#CCFF00] shrink-0"></i>
+      <span id="toast-text" class="flex-1">Tournament notification</span>
+    </div>
+
+  </div>
+
+  <!-- JavaScript Controller -->
+  <script>
+    // 1. SUPABASE CLIENT
+    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentTournament = null;
+
+    function switchTab(tab) {
+      const tabs = ['bracket', 'dispatch', 'stream'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const content = document.getElementById(`tab-content-${t}`);
+        if (t === tab) {
+          btn.className = "py-1.5 px-2 rounded-lg bg-[#CCFF00] text-black shadow-sm font-black transition flex items-center justify-center gap-1 cursor-pointer";
+          content.classList.remove('hidden');
+          content.classList.add('flex');
+        } else {
+          btn.className = "py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1 cursor-pointer";
+          content.classList.add('hidden');
+          content.classList.remove('flex');
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function showToast(text, duration = 2500) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      toastText.innerText = text;
+      toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, duration);
+    }
+
+    // 2. LOAD LIVE TOURNAMENT DETAILS FROM POSTGRESQL
+    async function loadTournamentData() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('tournaments')
+          .select('*')
+          .limit(1)
+          .single();
+
+        if (error) throw error;
+
+        currentTournament = data;
+        document.getElementById('tourney-title').innerText = data.title;
+        document.getElementById('tourney-category').innerText = data.category;
+        document.getElementById('tourney-escrow').innerHTML = `<i data-lucide="award" class="w-3 h-3 text-[#F59E0B]"></i> Escrow ₱${data.prize_pool.toLocaleString()}`;
+        document.getElementById('modal-prize-val').innerText = `₱${data.prize_pool.toLocaleString()}`;
+        document.getElementById('bug-tourney-tag').innerText = data.title.toUpperCase();
+
+        document.getElementById('obs-url').innerText = `https://rnkblqsvwgtxkzqyrjku.supabase.co/overlay/${data.id || 'live'}`;
+
+        loadDispatchCourts();
+      } catch (err) {
+        // Fallback matching admin.html escrow card
+        document.getElementById('tourney-title').innerText = 'Manila Open 2026';
+        document.getElementById('tourney-category').innerText = 'Intermediate 3.5 Draw';
+        document.getElementById('tourney-escrow').innerHTML = `<i data-lucide="award" class="w-3 h-3 text-[#F59E0B]"></i> Escrow ₱25,000`;
+        loadDispatchCourts();
+      }
+      lucide.createIcons();
+    }
+
+    // 3. LOAD DISPATCH COURTS DYNAMICALLY FROM SUPABASE
+    async function loadDispatchCourts() {
+      const grid = document.getElementById('dispatch-courts-grid');
+      const sub = document.getElementById('dispatch-venue-sub');
+      grid.innerHTML = '<div class="col-span-2 text-xs text-slate-400 py-4 text-center">Loading live courts...</div>';
+
+      try {
+        const { data: venues, error } = await supabaseClient
+          .from('venues')
+          .select('name, courts (id, name, is_active)')
+          .limit(1)
+          .single();
+
+        if (error || !venues || !venues.courts) throw (error || new Error('No courts'));
+
+        sub.innerText = `${venues.name} • ${venues.courts.length} Official Courts`;
+        grid.innerHTML = venues.courts.map((c, idx) => `
+          <div class="p-2.5 rounded-2xl ${c.is_active ? 'bg-[#111827] border border-amber-500/40' : 'bg-slate-900 border border-slate-800 opacity-60'} relative">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-black text-white">${c.name}</span>
+              <span class="text-[9px] font-extrabold px-1.5 py-0.2 rounded ${c.is_active ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400'}">
+                ${c.is_active ? 'IN USE' : 'MAINTENANCE'}
+              </span>
+            </div>
+            <p class="text-[11px] font-bold text-slate-300 truncate">${c.is_active ? 'Tournament Play' : 'Closed'}</p>
+            <div class="flex items-center justify-between mt-2 pt-1 border-t border-slate-800 text-[10px] text-slate-400">
+              <span>Status:</span>
+              <span class="${c.is_active ? 'text-[#CCFF00]' : 'text-slate-500'} font-bold">${c.is_active ? 'Active' : 'Down'}</span>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        grid.innerHTML = `
+          <div class="p-2.5 rounded-2xl bg-[#111827] border border-amber-500/40">
+            <span class="text-xs font-black text-white block">Court 1</span>
+            <span class="text-[10px] text-[#CCFF00]">Match QF-1 (Live)</span>
+          </div>
+          <div class="p-2.5 rounded-2xl bg-emerald-950/30 border-2 border-emerald-400">
+            <span class="text-xs font-black text-white block">Court 2</span>
+            <span class="text-[10px] text-emerald-400 font-bold">AVAILABLE</span>
+          </div>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    // 4. BRACKET ADVANCEMENT & SUPABASE PERSISTENCE
+    async function advanceMatch(matchId, teamName) {
+      if (matchId === 'qf1') {
+        document.getElementById('sf1-t1-name').innerText = teamName + ' (Adv.)';
+        document.getElementById('sf1-status').innerText = 'Ready for SF';
+        document.getElementById('sf1-status').className = 'text-emerald-400 font-bold';
+      } else if (matchId === 'qf3') {
+        document.getElementById('sf2-t1-name').innerText = teamName;
+      } else if (matchId === 'qf4') {
+        document.getElementById('sf2-t2-name').innerText = teamName;
+      } else if (matchId === 'sf1') {
+        document.getElementById('final-t1-name').innerText = teamName;
+      } else if (matchId === 'sf2') {
+        document.getElementById('final-t2-name').innerText = teamName;
+      }
+
+      showToast(`${teamName} advanced! Updating bracket...`);
+
+      if (currentTournament) {
+        await supabaseClient
+          .from('tournament_matches')
+          .upsert([{
+            id: matchId,
+            tournament_id: currentTournament.id,
+            round: matchId.startsWith('qf') ? 'Quarter-Finals' : 'Semi-Finals',
+            team_1: teamName,
+            team_2: 'Opponent',
+            winner: teamName,
+            status: 'completed',
+            updated_at: new Date().toISOString()
+          }]);
+      }
+    }
+
+    function crownChampion(champName) {
+      document.getElementById('champion-names').innerText = champName;
+      document.getElementById('champion-modal').classList.remove('hidden');
+      document.getElementById('champion-modal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeChampionModal() {
+      document.getElementById('champion-modal').classList.add('hidden');
+      document.getElementById('champion-modal').classList.remove('flex');
+    }
+
+    // 5. STREAMBUG CONTROLS
+    let bugTeam1Score = 8;
+    let bugTeam2Score = 6;
+    let bugServer = 1;
+
+    function addBugScore(team) {
+      if (team === 1) {
+        bugTeam1Score++;
+        document.getElementById('bug-t1-game').innerText = bugTeam1Score;
+      } else {
+        bugTeam2Score++;
+        document.getElementById('bug-t2-game').innerText = bugTeam2Score;
+      }
+      showToast(`StreamBug: Score updated to ${bugTeam1Score} - ${bugTeam2Score}`);
+    }
+
+    function toggleServeIndicator() {
+      bugServer = bugServer === 1 ? 2 : 1;
+      const s1 = document.getElementById('bug-t1-serve');
+      const s2 = document.getElementById('bug-t2-serve');
+      if (bugServer === 1) {
+        s1.className = "w-2 h-2 rounded-full bg-[#CCFF00] pulse-dot";
+        s2.className = "w-2 h-2 rounded-full bg-transparent";
+      } else {
+        s1.className = "w-2 h-2 rounded-full bg-transparent";
+        s2.className = "w-2 h-2 rounded-full bg-[#CCFF00] pulse-dot";
+      }
+    }
+
+    function copyObsUrl() {
+      const urlText = document.getElementById('obs-url').innerText.trim();
+      if (navigator.clipboard) navigator.clipboard.writeText(urlText);
+      showToast("OBS URL copied to clipboard!");
+    }
+
+    function showQuickStatsModal() {
+      document.getElementById('stats-modal').classList.remove('hidden');
+      document.getElementById('stats-modal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeStatsModal() {
+      document.getElementById('stats-modal').classList.add('hidden');
+      document.getElementById('stats-modal').classList.remove('flex');
+    }
+
+    // 6. INITIALIZE ON LOAD
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTournamentData();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

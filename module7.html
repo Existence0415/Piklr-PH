@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PiklrPH - Marketplace (Benta / Swap & Escrow) (Module 7)</title>
+
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <!-- Lucide Icons CDN & Supabase Client -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-[#070B11] text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
+
+  <!-- Mobile Device Frame Container -->
+  <div class="w-full max-w-[420px] h-[880px] max-h-screen bg-[#0B131E] sm:rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.85)] border border-[#1E293B] flex flex-col relative overflow-hidden">
+    
+    <!-- Top System / Dynamic Island Status Bar -->
+    <div class="pt-3 px-6 pb-2 flex items-center justify-between z-30 shrink-0 bg-[#0B131E]">
+      <span class="text-xs font-semibold text-slate-400">09:41</span>
+      <div class="w-28 h-4 bg-black rounded-full flex items-center justify-center gap-1.5 border border-slate-800">
+        <span class="w-2 h-2 rounded-full bg-[#CCFF00] animate-ping"></span>
+        <span class="text-[9px] font-bold tracking-wider text-[#CCFF00]">PIKLR ESCROW</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="admin.html" class="text-[10px] font-bold text-[#CCFF00] hover:underline">HQ Admin</a>
+        <div class="flex items-center gap-1 text-slate-400 text-xs">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <span class="text-[10px] font-bold">LIVE DB</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top App Bar (Title, Search, & List Gear Button) -->
+    <div class="px-4 py-2.5 bg-[#111827] border-y border-[#1E293B] shrink-0 space-y-2.5">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#CCFF00]">Piklr Exchange</span>
+            <span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Benta / Swap</span>
+          </div>
+          <h1 class="text-sm font-black text-white tracking-wide">
+            Verified Gear & Escrow
+          </h1>
+        </div>
+
+        <button onclick="openPostListingModal()" class="px-3 py-1.5 rounded-xl bg-[#CCFF00] hover:brightness-110 active:scale-95 text-black font-black text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(204,255,0,0.3)] transition cursor-pointer">
+          <i data-lucide="plus" class="w-3.5 h-3.5 stroke-[3]"></i>
+          <span>List Gear</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0B131E] border border-slate-800 focus-within:border-[#CCFF00] transition">
+          <i data-lucide="search" class="w-4 h-4 text-slate-500"></i>
+          <input id="search-input" oninput="handleSearch(this.value)" type="text" placeholder="Search Joola, Selkirk, Six Zero, Carbon..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none" />
+        </div>
+        <button onclick="loadListingsFromSupabase()" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition active:scale-95 cursor-pointer" title="Refresh from Database">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN SCROLLABLE CONTENT BODY -->
+    <div class="flex-1 overflow-y-auto px-4 py-3 flex flex-col justify-between">
+
+      <!-- ================= VIEW 1: MARKETPLACE FEED & DISCOVERY ================= -->
+      <div id="view-feed" class="space-y-3 flex-1 flex flex-col">
+        
+        <!-- Filter Chips Bar -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 shrink-0">
+          <button onclick="filterGear('all', this)" class="gear-filter-chip px-3 py-1.5 rounded-xl bg-[#CCFF00] text-black text-xs font-black shrink-0 transition cursor-pointer shadow-sm">
+            All Gear
+          </button>
+          <button onclick="filterGear('paddles', this)" class="gear-filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer">
+            Paddles Only
+          </button>
+          <button onclick="filterGear('swap', this)" class="gear-filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-cyan-400 hover:text-white border border-cyan-500/30 text-xs font-bold shrink-0 transition cursor-pointer flex items-center gap-1">
+            <i data-lucide="repeat" class="w-3 h-3"></i> Open to Swap
+          </button>
+          <button onclick="filterGear('under5k', this)" class="gear-filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer">
+            Under ₱5,000
+          </button>
+        </div>
+
+        <!-- Escrow Protection Guarantee Banner -->
+        <div class="p-2.5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-[#111827] border border-emerald-500/30 flex items-center gap-2.5 shrink-0">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+            <i data-lucide="shield-alert" class="w-4 h-4"></i>
+          </div>
+          <div class="flex-1">
+            <span class="text-[10px] font-black uppercase text-emerald-400 tracking-wider">100% Buyer Escrow</span>
+            <p class="text-[11px] text-slate-300 leading-tight">
+              Funds held securely in Supabase until paddle arrives via Lalamove and passes inspection.
+            </p>
+          </div>
+        </div>
+
+        <!-- Product Cards Feed (Loaded dynamically) -->
+        <div id="listings-container" class="space-y-3 flex-1">
+          <div class="text-center py-10 text-slate-500 text-xs flex flex-col items-center gap-2">
+            <span class="w-4 h-4 rounded-full border-2 border-[#CCFF00] border-t-transparent animate-spin"></span>
+            Loading gear from PostgreSQL...
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= VIEW 2: ITEM DETAIL & SAME-DAY COURIER ESTIMATOR ================= -->
+      <div id="view-detail" class="space-y-3.5 flex-1 hidden flex-col">
+        
+        <div class="flex items-center justify-between">
+          <button onclick="goToFeed()" class="flex items-center gap-1 text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Back to Exchange Feed</span>
+          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="showToast('Listing link copied to clipboard!')" class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white cursor-pointer">
+              <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="showToast('Added to Saved Watchlist!')" class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300 hover:text-rose-400 cursor-pointer">
+              <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="w-full h-44 rounded-2xl bg-gradient-to-b from-[#162238] to-[#0d1424] border border-[#1E293B] flex flex-col items-center justify-center p-3 relative shadow-inner">
+          <div class="w-24 h-32 bg-gradient-to-b from-slate-800 to-black rounded-xl border-2 border-slate-600 flex flex-col items-center justify-center relative shadow-2xl">
+            <span id="detail-brand-badge" class="text-xs font-black tracking-widest text-[#CCFF00]">JOOLA</span>
+            <span id="detail-model-badge" class="text-[9px] font-bold text-slate-400">PERSEUS</span>
+            <span id="detail-core-badge" class="text-[8px] text-slate-500">16MM CORE</span>
+            <div class="absolute bottom-2 w-5 h-7 bg-amber-600 rounded-sm border border-black shadow"></div>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-baseline gap-2">
+              <span id="detail-price" class="text-2xl font-black text-[#CCFF00]">₱10,500</span>
+              <span id="detail-original-price" class="text-xs text-slate-500 line-through">₱14,500</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+              <i data-lucide="shield-check" class="w-3 h-3"></i> Escrow Protected
+            </span>
+          </div>
+          <h2 id="detail-title" class="text-base font-black text-white">Paddle Title</h2>
+          <p id="detail-seller" class="text-[11px] text-slate-400">
+            Owned by <span class="text-white font-bold">Mico S.</span> • Taguig / BGC
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-[11px]">
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+            <span class="text-[9px] uppercase font-bold text-slate-500 block">Core Architecture</span>
+            <span id="detail-spec-core" class="font-extrabold text-white">16mm Reactive Polymer</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+            <span class="text-[9px] uppercase font-bold text-slate-500 block">Condition</span>
+            <span id="detail-spec-condition" class="font-extrabold text-white">Mint Condition</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+            <span class="text-[9px] uppercase font-bold text-slate-500 block">Average Weight</span>
+            <span id="detail-spec-weight" class="font-extrabold text-white">8.0 oz</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+            <span class="text-[9px] uppercase font-bold text-slate-500 block">Registry Status</span>
+            <span class="font-extrabold text-emerald-400">Verified in Supabase</span>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="truck" class="w-4 h-4 text-[#CCFF00]"></i>
+              <span class="text-xs font-black text-white uppercase tracking-wider">Same-Day Delivery & Pickup</span>
+            </div>
+            <span class="text-[10px] text-slate-400">Live NCR Rates</span>
+          </div>
+
+          <div onclick="selectDelivery('lalamove', 180)" id="del-opt-lalamove" class="p-2.5 rounded-xl bg-[#111827] border-2 border-[#F97316] flex items-center justify-between cursor-pointer transition">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-lg bg-[#F97316] text-white font-black text-[10px] flex items-center justify-center">L</div>
+              <div>
+                <span class="text-xs font-black text-white">Lalamove Same-Day Bike</span>
+                <p class="text-[10px] text-slate-400">Delivered within 45 mins in Metro Manila</p>
+              </div>
+            </div>
+            <span class="text-xs font-black text-[#F97316]">+₱180</span>
+          </div>
+
+          <div onclick="selectDelivery('grab', 260)" id="del-opt-grab" class="p-2.5 rounded-xl bg-[#111827] border border-slate-800 flex items-center justify-between cursor-pointer transition">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-lg bg-[#00B14F] text-white font-black text-[10px] flex items-center justify-center">G</div>
+              <div>
+                <span class="text-xs font-bold text-white">GrabExpress 4-Wheel Protected</span>
+                <p class="text-[10px] text-slate-400">Climate-controlled car delivery for fragile gear</p>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-slate-300">+₱260</span>
+          </div>
+
+          <div onclick="selectDelivery('meetup', 0)" id="del-opt-meetup" class="p-2.5 rounded-xl bg-[#111827] border border-slate-800 flex items-center justify-between cursor-pointer transition">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-lg bg-emerald-500 text-black font-black text-[10px] flex items-center justify-center">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-white">In-Person Handshake at Court</span>
+                <p class="text-[10px] text-slate-400">Meet at Dink Yard BGC or Smash & Drip Pasig</p>
+              </div>
+            </div>
+            <span class="text-xs font-black text-emerald-400">FREE (₱0)</span>
+          </div>
+        </div>
+
+        <div class="pt-2 grid grid-cols-2 gap-2">
+          <button onclick="openSwapModal()" class="py-3 px-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/40 font-black text-xs tracking-wider flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
+            <i data-lucide="repeat" class="w-4 h-4"></i>
+            <span>PROPOSE SWAP</span>
+          </button>
+
+          <button onclick="openCheckoutDrawer()" class="py-3 px-3 rounded-2xl bg-[#CCFF00] hover:brightness-110 active:scale-95 text-black font-black text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(204,255,0,0.35)] transition cursor-pointer">
+            <i data-lucide="lock" class="w-4 h-4"></i>
+            <span>BUY WITH ESCROW</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- VIEW 3: ESCROW CHECKOUT DRAWER -->
+    <div id="checkout-drawer" class="absolute inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col justify-end transition-all">
+      <div class="bg-[#111827] border-t border-[#1E293B] rounded-t-3xl p-5 max-h-[92%] overflow-y-auto space-y-3.5 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+            </span>
+            <span class="text-xs font-black uppercase tracking-wider text-white">Piklr Protected Checkout</span>
+          </div>
+          <button onclick="closeCheckoutDrawer()" class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
+          <div class="flex items-center justify-between text-slate-300">
+            <span>Paddle Price:</span>
+            <span id="checkout-base-price" class="font-bold text-white">₱10,500</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-300">
+            <span id="checkout-delivery-label">Lalamove Same-Day Bike:</span>
+            <span id="checkout-delivery-fee" class="font-bold text-[#F97316]">₱180</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-300">
+            <span>Buyer Protection Escrow Fee (2%):</span>
+            <span id="checkout-escrow-fee" class="font-bold text-emerald-400">₱210</span>
+          </div>
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-sm font-black text-white">
+            <span>Total Escrow Amount:</span>
+            <span id="checkout-total-price" class="text-lg text-[#CCFF00]">₱10,890</span>
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-300">Select E-Wallet:</label>
+          <div class="grid grid-cols-2 gap-2 text-xs font-extrabold">
+            <button onclick="selectWallet('gcash')" id="wallet-btn-gcash" class="p-2.5 rounded-xl bg-[#005CE6] text-white flex items-center justify-center gap-1.5 cursor-pointer shadow-md">
+              <span>GCash E-Wallet</span>
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="selectWallet('maya')" id="wallet-btn-maya" class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>Maya Wallet</span>
+            </button>
+          </div>
+        </div>
+
+        <button id="pay-escrow-btn" onclick="executeEscrowPayment()" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#CCFF00] to-[#a3e635] text-black font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.35)] hover:brightness-110 active:scale-98 transition cursor-pointer">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span id="pay-btn-text">PAY VIA GCASH ESCROW</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- COURIER TRACKING ACTIVE DISPATCH MODAL -->
+    <div id="tracking-modal" class="absolute inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-5 text-center transition-all">
+      <div class="w-16 h-16 rounded-full bg-[#F97316]/20 border-2 border-[#F97316] flex items-center justify-center text-[#F97316] mb-3 shadow-[0_0_30px_rgba(249,115,22,0.4)]">
+        <i data-lucide="bike" class="w-8 h-8"></i>
+      </div>
+      <span class="text-[10px] uppercase tracking-widest font-black text-[#F97316]">Same-Day Courier Dispatched</span>
+      <h2 class="text-lg font-black text-white mt-1">Lalamove Driver Assigned</h2>
+      <p id="tracking-ref-code" class="text-xs text-slate-300 mt-0.5">Tracking #PKLR-LLM-8842</p>
+
+      <div class="my-4 p-3.5 rounded-2xl bg-slate-900 border border-slate-800 w-full text-xs space-y-2 text-left">
+        <div class="flex items-center gap-2 text-emerald-400 font-bold">
+          <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+          <span id="tracking-escrow-text">1. Escrow Funded: ₱10,890 Protected</span>
+        </div>
+        <div class="flex items-center gap-2 text-emerald-400 font-bold">
+          <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+          <span>2. Paddle Picked Up from BGC Court</span>
+        </div>
+        <div class="flex items-center gap-2 text-[#F97316] font-black animate-pulse">
+          <i data-lucide="navigation" class="w-4 h-4 text-[#F97316]"></i>
+          <span>3. Rider En Route • ETA: 35 Mins</span>
+        </div>
+        <div class="flex items-center gap-2 text-slate-500 font-medium">
+          <i data-lucide="circle" class="w-4 h-4 text-slate-600"></i>
+          <span>4. Test On Court & Release Escrow</span>
+        </div>
+      </div>
+
+      <button onclick="closeTrackingModal()" class="w-full py-3 rounded-xl bg-[#CCFF00] text-black font-black text-xs tracking-wider shadow-lg hover:brightness-110 cursor-pointer">
+        VIEW ACTIVE ORDERS
+      </button>
+    </div>
+
+    <!-- PROPOSE SWAP MODAL -->
+    <div id="swap-modal" class="absolute inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col justify-end transition-all">
+      <div class="bg-[#111827] border-t border-[#1E293B] rounded-t-3xl p-5 max-h-[85%] overflow-y-auto space-y-3.5 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5 text-cyan-400 font-black text-xs uppercase">
+            <i data-lucide="repeat" class="w-4 h-4"></i>
+            <span>Propose Paddle Swap</span>
+          </div>
+          <button onclick="closeSwapModal()" class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-300">
+          Target Paddle: <strong id="swap-target-title" class="text-white">Joola Perseus 16mm</strong>
+        </p>
+
+        <div class="space-y-2">
+          <div onclick="selectMyGear('Selkirk Vanguard 2.0 (16mm)')" id="my-gear-1" class="p-3 rounded-xl bg-slate-900 border-2 border-cyan-400 flex items-center justify-between cursor-pointer">
+            <div>
+              <span class="text-xs font-bold text-white">Selkirk Vanguard 2.0 Invicta (16mm)</span>
+              <p class="text-[10px] text-slate-400">Condition: 9/10 • Light Edge Scuffs</p>
+            </div>
+            <span class="text-xs font-black text-cyan-400">Selected</span>
+          </div>
+          <div onclick="selectMyGear('Piklr Pro Carbon 14mm')" id="my-gear-2" class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between cursor-pointer">
+            <div>
+              <span class="text-xs font-bold text-white">Piklr Pro Carbon 14mm</span>
+              <p class="text-[10px] text-slate-400">Condition: Like New</p>
+            </div>
+            <span class="text-xs text-slate-500">Pick</span>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[11px] font-bold text-slate-300">Optional Cash Top-Up (Dagdag):</label>
+          <div class="grid grid-cols-3 gap-2 text-xs font-bold">
+            <button onclick="setTopUp(0, this)" class="top-up-btn py-2 rounded-xl bg-slate-800 border border-cyan-400 text-cyan-400 cursor-pointer">₱0 (Straight)</button>
+            <button onclick="setTopUp(1000, this)" class="top-up-btn py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 cursor-pointer">+₱1,000</button>
+            <button onclick="setTopUp(2000, this)" class="top-up-btn py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 cursor-pointer">+₱2,000</button>
+          </div>
+        </div>
+
+        <button id="send-swap-btn" onclick="submitSwapOffer()" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-black text-xs tracking-wider shadow-lg hover:brightness-110 cursor-pointer">
+          SEND SWAP PROPOSAL (SAVE TO DB)
+        </button>
+      </div>
+    </div>
+
+    <!-- POST GEAR MODAL (SAVES TO SUPABASE) -->
+    <div id="post-modal" class="absolute inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col justify-end transition-all">
+      <div class="bg-[#111827] border-t border-[#1E293B] rounded-t-3xl p-5 max-h-[88%] overflow-y-auto space-y-3 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-black uppercase text-[#CCFF00] tracking-wider">List Your Gear for Sale / Swap</span>
+          <button onclick="closePostListingModal()" class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div>
+            <label class="text-slate-400 font-bold block mb-1">Paddle Brand & Model:</label>
+            <input id="post-title" type="text" placeholder="e.g. Joola Mod-TA-15 16mm" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-[#CCFF00]" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-slate-400 font-bold block mb-1">Price (₱ PHP):</label>
+              <input id="post-price" type="number" placeholder="8500" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-[#CCFF00]" />
+            </div>
+            <div>
+              <label class="text-slate-400 font-bold block mb-1">Condition:</label>
+              <select id="post-condition" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none">
+                <option value="Brand New">Brand New Sealed</option>
+                <option value="Like New" selected>Like New (1-2 games)</option>
+                <option value="Good Condition">Good Condition</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-slate-400 font-bold block mb-1">Trade Preference:</label>
+            <div class="flex gap-2">
+              <label class="flex items-center gap-1.5 text-slate-300">
+                <input id="post-swap" type="checkbox" checked class="accent-[#CCFF00]" />
+                <span>Open to Swap</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button id="publish-listing-btn" onclick="submitNewListing()" class="w-full py-3 rounded-xl bg-[#CCFF00] text-black font-black text-xs tracking-wider shadow-lg hover:brightness-110 cursor-pointer">
+          PUBLISH TO SUPABASE
+        </button>
+      </div>
+    </div>
+
+    <!-- Floating Toast Notification Banner -->
+    <div id="toast" class="absolute top-14 inset-x-4 bg-slate-900 border border-[#CCFF00] text-white p-3 rounded-xl shadow-2xl z-50 text-xs font-bold flex items-center gap-2.5 transform -translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
+      <i data-lucide="bell" class="w-4 h-4 text-[#CCFF00] shrink-0"></i>
+      <span id="toast-text" class="flex-1">Notification message</span>
+    </div>
+
+  </div>
+
+  <!-- JavaScript Marketplace Engine Connected to Supabase -->
+  <script>
+    // 1. SUPABASE CLIENT
+    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let listings = [];
+    let currentItem = null;
+    let currentDeliveryFee = 180;
+    let selectedWalletType = 'gcash';
+    let chosenOfferedGear = 'Selkirk Vanguard 2.0 (16mm)';
+    let chosenTopUp = 0;
+
+    function showToast(text, duration = 2400) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      toastText.innerText = text;
+      toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, duration);
+    }
+
+    // 2. FETCH LISTINGS FROM SUPABASE
+    async function loadListingsFromSupabase() {
+      const container = document.getElementById('listings-container');
+      container.innerHTML = `
+        <div class="text-center py-10 text-slate-500 text-xs flex flex-col items-center gap-2">
+          <span class="w-4 h-4 rounded-full border-2 border-[#CCFF00] border-t-transparent animate-spin"></span>
+          Fetching gear from Supabase...
+        </div>
+      `;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('gear_listings')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        listings = data || [];
+
+        renderListings(listings);
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<div class="text-xs text-rose-400 p-4">Error loading marketplace: ${err.message}</div>`;
+      }
+    }
+
+    function renderListings(items) {
+      const container = document.getElementById('listings-container');
+      container.innerHTML = '';
+
+      if (items.length === 0) {
+        container.innerHTML = `<div class="text-xs text-slate-400 p-6 text-center">No gear listings found. Be the first to list one!</div>`;
+        return;
+      }
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "gear-card p-3.5 rounded-2xl bg-[#111827] border border-[#1E293B] hover:border-[#CCFF00]/50 transition shadow-md space-y-2.5 cursor-pointer relative";
+        card.setAttribute('data-category', `${item.is_swap_allowed ? 'swap' : ''} paddles`);
+        card.setAttribute('data-price', item.price);
+        card.onclick = () => openItemDetail(item);
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-16 h-16 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center p-1.5 relative shrink-0">
+                <div class="w-10 h-14 bg-gradient-to-b from-slate-700 to-black rounded-lg border border-slate-500 flex flex-col items-center justify-center relative shadow-inner">
+                  <span class="text-[8px] font-black tracking-widest text-[#CCFF00]">${item.brand.toUpperCase()}</span>
+                  <span class="text-[6px] text-slate-400">${item.core_thickness}</span>
+                  <div class="absolute bottom-1 w-2.5 h-3 bg-amber-600 rounded-sm"></div>
+                </div>
+                <span class="absolute top-1 left-1 text-[7px] font-black bg-emerald-500 text-black px-1 rounded">AUTH</span>
+              </div>
+
+              <div>
+                <div class="flex items-center gap-1.5">
+                  ${item.is_swap_allowed ? `
+                    <span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center gap-0.5">
+                      <i data-lucide="repeat" class="w-2.5 h-2.5"></i> Benta o Swap
+                    </span>
+                  ` : `
+                    <span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-slate-800 text-slate-300">Benta Only</span>
+                  `}
+                  <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-800 text-slate-300">${item.condition}</span>
+                </div>
+                <h3 class="text-sm font-black text-white mt-0.5">${item.title}</h3>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                  <span class="text-base font-black text-[#CCFF00]">₱${item.price.toLocaleString()}</span>
+                  ${item.original_price ? `<span class="text-[10px] text-slate-500 line-through">₱${item.original_price.toLocaleString()}</span>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-1.5 text-[10px] font-semibold text-slate-300">
+            <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800">${item.core_thickness}</span>
+            <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800">${item.weight}</span>
+            <span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800">USAPA Hologram</span>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
+            <div class="flex items-center gap-1.5 truncate">
+              <span class="w-4 h-4 rounded-full bg-[#38BDF8] text-black font-black flex items-center justify-center text-[9px]">${item.seller_name.charAt(0)}</span>
+              <span class="font-bold text-slate-300 truncate">${item.seller_name} (${item.rating}★)</span>
+              <span>• ${item.seller_city}</span>
+            </div>
+            <span class="text-[#F97316] font-bold flex items-center gap-0.5 shrink-0">
+              <i data-lucide="bike" class="w-3 h-3"></i> Lalamove 45m
+            </span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    // 3. DETAIL VIEW
+    function openItemDetail(item) {
+      currentItem = item;
+      document.getElementById('detail-price').innerText = `₱${item.price.toLocaleString()}`;
+      document.getElementById('detail-original-price').innerText = item.original_price ? `₱${item.original_price.toLocaleString()}` : '';
+      document.getElementById('detail-title').innerText = item.title;
+      document.getElementById('detail-seller').innerHTML = `Owned by <span class="text-white font-bold">${item.seller_name}</span> • ${item.seller_city}`;
+      document.getElementById('detail-spec-core').innerText = item.core_thickness;
+      document.getElementById('detail-spec-condition').innerText = item.condition;
+      document.getElementById('detail-spec-weight').innerText = item.weight;
+      document.getElementById('swap-target-title').innerText = item.title;
+
+      document.getElementById('view-feed').classList.add('hidden');
+      document.getElementById('view-feed').classList.remove('flex');
+      document.getElementById('view-detail').classList.remove('hidden');
+      document.getElementById('view-detail').classList.add('flex');
+
+      updateCheckoutBreakdown();
+      lucide.createIcons();
+    }
+
+    function goToFeed() {
+      document.getElementById('view-detail').classList.add('hidden');
+      document.getElementById('view-detail').classList.remove('flex');
+      document.getElementById('view-feed').classList.remove('hidden');
+      document.getElementById('view-feed').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    // 4. DELIVERY & CHECKOUT
+    function selectDelivery(type, fee) {
+      currentDeliveryFee = fee;
+      ['lalamove', 'grab', 'meetup'].forEach(o => {
+        const el = document.getElementById(`del-opt-${o}`);
+        el.className = (o === type)
+          ? "p-2.5 rounded-xl bg-[#111827] border-2 border-[#F97316] flex items-center justify-between cursor-pointer transition"
+          : "p-2.5 rounded-xl bg-[#111827] border border-slate-800 flex items-center justify-between cursor-pointer transition";
+      });
+      updateCheckoutBreakdown();
+    }
+
+    function updateCheckoutBreakdown() {
+      if (!currentItem) return;
+      const price = currentItem.price;
+      const escrowFee = Math.round(price * 0.02);
+      const total = price + currentDeliveryFee + escrowFee;
+
+      document.getElementById('checkout-base-price').innerText = `₱${price.toLocaleString()}`;
+      document.getElementById('checkout-delivery-fee').innerText = `₱${currentDeliveryFee.toLocaleString()}`;
+      document.getElementById('checkout-escrow-fee').innerText = `₱${escrowFee.toLocaleString()}`;
+      document.getElementById('checkout-total-price').innerText = `₱${total.toLocaleString()}`;
+      document.getElementById('pay-btn-text').innerText = `PAY ₱${total.toLocaleString()} VIA ${selectedWalletType.toUpperCase()} ESCROW`;
+    }
+
+    function openCheckoutDrawer() {
+      document.getElementById('checkout-drawer').classList.remove('hidden');
+      document.getElementById('checkout-drawer').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeCheckoutDrawer() {
+      document.getElementById('checkout-drawer').classList.add('hidden');
+      document.getElementById('checkout-drawer').classList.remove('flex');
+    }
+
+    function selectWallet(wallet) {
+      selectedWalletType = wallet;
+      const gBtn = document.getElementById('wallet-btn-gcash');
+      const mBtn = document.getElementById('wallet-btn-maya');
+
+      if (wallet === 'gcash') {
+        gBtn.className = "p-2.5 rounded-xl bg-[#005CE6] text-white flex items-center justify-center gap-1.5 cursor-pointer shadow-md";
+        mBtn.className = "p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 flex items-center justify-center gap-1.5 cursor-pointer";
+      } else {
+        mBtn.className = "p-2.5 rounded-xl bg-[#00D26A] text-black font-black flex items-center justify-center gap-1.5 cursor-pointer shadow-md";
+        gBtn.className = "p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 flex items-center justify-center gap-1.5 cursor-pointer";
+      }
+      updateCheckoutBreakdown();
+    }
+
+    // 5. EXECUTE ESCROW PAYMENT (SAVES TO SUPABASE)
+    async function executeEscrowPayment() {
+      if (!currentItem) return;
+      const price = currentItem.price;
+      const escrowFee = Math.round(price * 0.02);
+      const total = price + currentDeliveryFee + escrowFee;
+      const trackingCode = `#PKLR-${selectedWalletType.toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const btn = document.getElementById('pay-escrow-btn');
+      btn.disabled = true;
+      btn.innerText = 'Locking Funds in Supabase Escrow...';
+
+      try {
+        const { error } = await supabaseClient
+          .from('escrow_orders')
+          .insert([{
+            listing_id: currentItem.id,
+            item_title: currentItem.title,
+            item_price: price,
+            delivery_fee: currentDeliveryFee,
+            escrow_fee: escrowFee,
+            total_amount: total,
+            delivery_method: currentDeliveryFee === 0 ? 'meetup' : currentDeliveryFee === 180 ? 'lalamove' : 'grab',
+            payment_method: selectedWalletType,
+            tracking_code: trackingCode,
+            status: 'in_escrow'
+          }]);
+
+        if (error) throw error;
+
+        closeCheckoutDrawer();
+        document.getElementById('tracking-ref-code').innerText = `Tracking ${trackingCode}`;
+        document.getElementById('tracking-escrow-text').innerText = `1. Escrow Funded: ₱${total.toLocaleString()} Protected`;
+
+        document.getElementById('tracking-modal').classList.remove('hidden');
+        document.getElementById('tracking-modal').classList.add('flex');
+        lucide.createIcons();
+        showToast("Payment locked into Supabase Escrow!");
+      } catch (err) {
+        alert('Escrow failed: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'PAY VIA GCASH ESCROW';
+      }
+    }
+
+    function closeTrackingModal() {
+      document.getElementById('tracking-modal').classList.add('hidden');
+      document.getElementById('tracking-modal').classList.remove('flex');
+      goToFeed();
+    }
+
+    // 6. SWAP PROPOSALS (SAVES TO SUPABASE)
+    function openSwapModal() {
+      document.getElementById('swap-modal').classList.remove('hidden');
+      document.getElementById('swap-modal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeSwapModal() {
+      document.getElementById('swap-modal').classList.add('hidden');
+      document.getElementById('swap-modal').classList.remove('flex');
+    }
+
+    function selectMyGear(gearName) {
+      chosenOfferedGear = gearName;
+      document.getElementById('my-gear-1').className = (gearName.includes('Vanguard'))
+        ? "p-3 rounded-xl bg-slate-900 border-2 border-cyan-400 flex items-center justify-between cursor-pointer"
+        : "p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between cursor-pointer";
+      document.getElementById('my-gear-2').className = (gearName.includes('Pro Carbon'))
+        ? "p-3 rounded-xl bg-slate-900 border-2 border-cyan-400 flex items-center justify-between cursor-pointer"
+        : "p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between cursor-pointer";
+    }
+
+    function setTopUp(amt, btn) {
+      chosenTopUp = amt;
+      document.querySelectorAll('.top-up-btn').forEach(b => {
+        b.className = "top-up-btn py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 cursor-pointer";
+      });
+      btn.className = "top-up-btn py-2 rounded-xl bg-slate-800 border border-cyan-400 text-cyan-400 cursor-pointer";
+    }
+
+    async function submitSwapOffer() {
+      if (!currentItem) return;
+      const btn = document.getElementById('send-swap-btn');
+      btn.disabled = true;
+      btn.innerText = 'Saving offer to Supabase...';
+
+      try {
+        const { error } = await supabaseClient
+          .from('swap_offers')
+          .insert([{
+            listing_id: currentItem.id,
+            offered_gear: chosenOfferedGear,
+            cash_top_up: chosenTopUp,
+            proposer_name: 'Dave H.',
+            status: 'pending'
+          }]);
+
+        if (error) throw error;
+
+        closeSwapModal();
+        showToast(`Swap proposal sent: ${chosenOfferedGear} (+₱${chosenTopUp})`);
+      } catch (err) {
+        alert('Swap offer failed: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'SEND SWAP PROPOSAL (SAVE TO DB)';
+      }
+    }
+
+    // 7. POST NEW LISTING (SAVES TO SUPABASE)
+    function openPostListingModal() {
+      document.getElementById('post-modal').classList.remove('hidden');
+      document.getElementById('post-modal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closePostListingModal() {
+      document.getElementById('post-modal').classList.add('hidden');
+      document.getElementById('post-modal').classList.remove('flex');
+    }
+
+    async function submitNewListing() {
+      const title = document.getElementById('post-title').value.trim();
+      const price = parseInt(document.getElementById('post-price').value, 10);
+      const condition = document.getElementById('post-condition').value;
+      const isSwap = document.getElementById('post-swap').checked;
+
+      if (!title || !price) {
+        alert('Please fill out paddle model and price!');
+        return;
+      }
+
+      const btn = document.getElementById('publish-listing-btn');
+      btn.disabled = true;
+      btn.innerText = 'Publishing to PostgreSQL...';
+
+      try {
+        const brand = title.split(' ')[0] || 'Pro';
+
+        const { error } = await supabaseClient
+          .from('gear_listings')
+          .insert([{
+            title: title,
+            brand: brand,
+            price: price,
+            original_price: price + 2500,
+            condition: condition,
+            is_swap_allowed: isSwap,
+            seller_name: 'Dave H. (You)',
+            seller_city: 'Taguig / BGC',
+            status: 'available'
+          }]);
+
+        if (error) throw error;
+
+        closePostListingModal();
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-price').value = '';
+        showToast('Listing published permanently to Supabase Marketplace!');
+        loadListingsFromSupabase();
+      } catch (err) {
+        alert('Publish failed: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'PUBLISH TO SUPABASE';
+      }
+    }
+
+    // 8. FILTERS & SEARCH
+    function filterGear(category, btn) {
+      document.querySelectorAll('.gear-filter-chip').forEach(b => {
+        b.className = "gear-filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer";
+      });
+      btn.className = "gear-filter-chip px-3 py-1.5 rounded-xl bg-[#CCFF00] text-black text-xs font-black shrink-0 transition cursor-pointer shadow-sm";
+
+      let filtered = listings;
+      if (category === 'paddles') {
+        filtered = listings.filter(i => i.title.toLowerCase().includes('paddle') || i.brand);
+      } else if (category === 'swap') {
+        filtered = listings.filter(i => i.is_swap_allowed);
+      } else if (category === 'under5k') {
+        filtered = listings.filter(i => i.price <= 5000);
+      }
+
+      renderListings(filtered);
+    }
+
+    function handleSearch(val) {
+      const q = val.toLowerCase().trim();
+      const filtered = listings.filter(i => 
+        i.title.toLowerCase().includes(q) || 
+        i.brand.toLowerCase().includes(q) ||
+        i.seller_city.toLowerCase().includes(q)
+      );
+      renderListings(filtered);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadListingsFromSupabase();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

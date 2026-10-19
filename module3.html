@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PiklrPH - Virtual Pila & Live Court Queue Board</title>
+  
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            deep: '#0B131E',
+            surface: '#111827',
+            borderDark: '#1E293B',
+            opticLime: '#CCFF00',
+            liveAmber: '#F59E0B',
+            openEmerald: '#10B981',
+            alertRed: '#EF4444',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- External Libraries: Lucide Icons & Supabase Client -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      font-family: 'Outfit', sans-serif;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-[#0B131E] text-slate-100 h-screen w-full overflow-hidden antialiased selection:bg-[#CCFF00] selection:text-[#0B131E]">
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed top-3 z-50 left-1/2 -translate-x-1/2 hidden flex items-center gap-2 bg-[#111827] border border-[#CCFF00]/40 text-slate-100 px-3.5 py-2 rounded-full shadow-2xl text-xs">
+    <div class="w-2 h-2 rounded-full bg-[#CCFF00] animate-pulse"></div>
+    <span id="toast-text" class="font-medium">Notification</span>
+  </div>
+
+  <!-- Full Frame Container (Fills App Shell) -->
+  <div class="w-full h-full flex flex-col justify-between overflow-hidden select-none">
+
+    <!-- Scrollable Main Viewport Content -->
+    <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col px-4 pt-3 pb-24">
+
+      <!-- ======================================================== -->
+      <!-- VIEW 1: LIVE COURT & QUEUE BOARD ("VIRTUAL PILA") -->
+      <!-- ======================================================== -->
+      <div class="shrink-0 space-y-2 mb-4">
+        <!-- Venue Switcher Dropdown (Connected to PostgreSQL) -->
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              Active Philippine Venue
+            </span>
+            <select id="venue-selector" onchange="changeVenue(this.value)" class="w-full bg-[#111827] border border-slate-800 text-white font-extrabold text-sm rounded-xl px-2.5 py-1.5 mt-0.5 focus:outline-none focus:border-[#CCFF00]">
+              <option value="">Loading venues...</option>
+            </select>
+          </div>
+
+          <div class="bg-[#111827] border border-[#CCFF00]/40 px-2.5 py-1.5 rounded-xl text-right shrink-0">
+            <span class="text-[9px] text-slate-400 font-bold block uppercase">House Rule</span>
+            <span class="text-xs font-extrabold text-[#CCFF00]">4-In / 4-Out</span>
+          </div>
+        </div>
+
+        <!-- Live Player Count & Avg Match Time -->
+        <div class="flex items-center justify-between text-xs bg-[#111827] border border-[#1E293B] rounded-2xl px-3 py-2">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+            <span id="live-player-count" class="font-bold text-slate-200">Checking queue...</span>
+          </div>
+          <div class="text-[11px] text-slate-400 flex items-center gap-1">
+            <i data-lucide="clock" class="w-3 h-3 text-slate-500"></i>
+            <span>Avg Game: ~12m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION A: Active Courts (Populated Live from Supabase) -->
+      <div class="shrink-0 mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-400"></i>
+            Active Courts Live Status
+          </span>
+          <span id="courts-status-summary" class="text-[11px] text-slate-500 font-semibold">Live from DB</span>
+        </div>
+
+        <div id="courts-carousel" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
+          <!-- Populated dynamically by renderLiveCourts() -->
+        </div>
+      </div>
+
+      <!-- SECTION B: The Digital Paddle Rack ("Nasa Pila") -->
+      <div class="shrink-0 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="users" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+              The Digital Paddle Rack
+            </span>
+            <span class="text-[10px] text-slate-500">Live queue mapped to digital rack</span>
+          </div>
+          <button onclick="loadLivePilaQueue()" class="text-[11px] font-bold text-[#CCFF00] bg-[#CCFF00]/15 hover:bg-[#CCFF00]/25 px-2.5 py-1 rounded-full flex items-center gap-1">
+            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+            <span>Sync</span>
+          </button>
+        </div>
+
+        <!-- Paddle Rack Container -->
+        <div id="paddle-rack-slots" class="space-y-2.5">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Bottom Action Bar -->
+    <div id="bottom-bar" class="p-4 bg-[#111827]/95 backdrop-blur-md border-t border-[#1E293B] shadow-2xl shrink-0 z-30">
+      <!-- Default: Join Pila CTA -->
+      <div id="bar-join-state">
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+          <span>Estimated Wait Time:</span>
+          <span id="est-wait-time" class="font-bold text-white">~12 mins (Next Slot)</span>
+        </div>
+        <button
+          onclick="openJoinModal()"
+          class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d8ff33] active:scale-[0.98] transition-all shadow-xl shadow-[#CCFF00]/25 cursor-pointer"
+        >
+          <span>Put Paddle in Rack (Join Pila)</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 stroke-[3]"></i>
+        </button>
+      </div>
+
+      <!-- Queued State (When User has dropped paddle) -->
+      <div id="bar-queued-state" class="hidden space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#CCFF00] animate-pulse"></span>
+            <div>
+              <span class="text-xs font-black text-white block">You are in Pila!</span>
+              <span id="user-queue-status" class="text-[10px] text-slate-400">Position: Rack Slot 1</span>
+            </div>
+          </div>
+          <button
+            onclick="leavePila()"
+            class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-400 text-xs font-bold transition-colors cursor-pointer"
+          >
+            Leave Pila
+          </button>
+        </div>
+
+        <button
+          onclick="openCallAlert()"
+          class="w-full py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-700 hover:border-[#CCFF00] text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+        >
+          <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Simulate Court Call Alert</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOIN DRAWER MODAL -->
+  <div id="join-drawer" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-end justify-center p-0 sm:p-4">
+    <div class="bg-[#111827] border-t sm:border border-[#1E293B] rounded-t-[36px] sm:rounded-3xl p-5 max-w-sm w-full shadow-2xl relative">
+      <div class="w-10 h-1 bg-slate-700 rounded-full mx-auto mb-4"></div>
+
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h3 class="text-base font-black text-white">Join the Virtual Pila</h3>
+          <span id="modal-venue-name" class="text-[11px] text-slate-400">Select Mode</span>
+        </div>
+        <button onclick="closeJoinModal()" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-2 mb-4">
+        <!-- Option 1: Solo Queuer -->
+        <div
+          id="mode-solo"
+          onclick="selectQueueMode('solo')"
+          class="p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#CCFF00]/10 border-[#CCFF00] shadow-sm"
+        >
+          <div>
+            <div class="text-xs font-bold text-white flex items-center gap-1.5">
+              Solo Queuer (Single)
+              <span class="text-[9px] bg-[#CCFF00] text-[#0B131E] font-extrabold px-1.5 py-0.2 rounded-xs">FASTEST</span>
+            </div>
+            <span class="text-[11px] text-slate-400 block mt-0.5">
+              Auto-grouped with 3 waiting singles near your DUPR
+            </span>
+          </div>
+          <div id="check-solo" class="w-5 h-5 rounded-full border border-[#CCFF00] bg-[#CCFF00] text-[#0B131E] flex items-center justify-center">
+            <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+          </div>
+        </div>
+
+        <!-- Option 2: Ready Doubles Pair -->
+        <div
+          id="mode-pair"
+          onclick="selectQueueMode('pair')"
+          class="p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#0B131E] border-slate-800 hover:border-slate-700"
+        >
+          <div>
+            <div class="text-xs font-bold text-white">Ready Doubles Pair</div>
+            <span class="text-[11px] text-slate-400 block mt-0.5">
+              Queue together with your confirmed court partner
+            </span>
+          </div>
+          <div id="check-pair" class="w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center"></div>
+        </div>
+
+        <div id="partner-input-wrap" class="hidden pl-2 pt-1">
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">
+            Partner's Nickname
+          </label>
+          <input
+            id="input-partner"
+            type="text"
+            value="Sarah M."
+            placeholder="e.g. Sarah M."
+            class="w-full bg-[#0B131E] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#CCFF00]"
+          />
+        </div>
+      </div>
+
+      <button
+        id="btn-confirm-drop"
+        onclick="confirmDropPaddle()"
+        class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d8ff33] active:scale-[0.98] transition-all shadow-xl shadow-[#CCFF00]/25 cursor-pointer"
+      >
+        <span>Confirm & Drop Paddle</span>
+        <i data-lucide="arrow-right" class="w-4 h-4 stroke-[3]"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- CALL ALERT MODAL -->
+  <div id="call-alert-modal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-[#111827] border-2 border-[#CCFF00] rounded-3xl p-6 max-w-sm w-full shadow-[0_0_50px_rgba(204,255,0,0.3)] text-center relative overflow-hidden">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#CCFF00] text-[#0B131E] font-black text-[11px] uppercase tracking-widest rounded-full mb-3">
+        <span class="w-2 h-2 rounded-full bg-[#0B131E] animate-ping"></span>
+        <span>Paging Athlete</span>
+      </div>
+
+      <h2 class="text-2xl font-black text-white tracking-tight uppercase leading-tight">
+        Court Is Ready For You!
+      </h2>
+      <p id="alert-venue-sub" class="text-xs text-slate-300 mt-1">
+        Please proceed to your assigned court entrance
+      </p>
+
+      <div class="my-5 p-4 rounded-2xl bg-[#0B131E] border border-slate-800">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+          Check-in Window Closes In
+        </span>
+        <div id="countdown-timer" class="text-5xl font-black tracking-tight tabular-nums font-mono text-[#CCFF00]">
+          01:58
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <button
+          onclick="checkInOnCourt()"
+          class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-sm uppercase tracking-wider hover:bg-[#d8ff33] active:scale-[0.98] transition-all shadow-xl shadow-[#CCFF00]/30 cursor-pointer flex items-center justify-center gap-2"
+        >
+          <span>I'm on Court! (Check In)</span>
+          <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
+        </button>
+        <button
+          onclick="skipPass()"
+          class="w-full py-2.5 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-xs transition-colors cursor-pointer"
+        >
+          Skip / Pass to Next
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Controller -->
+  <script>
+    // 1. SUPABASE CLIENT
+    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let venuesList = [];
+    let currentVenue = null;
+    let currentUserQueueId = null;
+
+    const state = {
+      inQueue: false,
+      queueMode: 'solo',
+      timerSeconds: 118,
+      timerInterval: null
+    };
+
+    function refreshIcons() {
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-text').innerText = text;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2600);
+    }
+
+    // 2. LOAD LIVE VENUES & POPULATE SELECTOR
+    async function loadVenues() {
+      const selector = document.getElementById('venue-selector');
+      try {
+        const { data, error } = await supabaseClient
+          .from('venues')
+          .select('id, name, city, courts (id, name, is_active)')
+          .order('name', { ascending: true });
+
+        if (error) throw error;
+
+        venuesList = data || [];
+        if (venuesList.length === 0) {
+          selector.innerHTML = '<option value="">No venues found</option>';
+          return;
+        }
+
+        selector.innerHTML = venuesList.map(v => `
+          <option value="${v.id}">${v.name} (${v.city || 'PH'})</option>
+        `).join('');
+
+        currentVenue = venuesList[0];
+        document.getElementById('modal-venue-name').innerText = currentVenue.name;
+        renderLiveCourts();
+        loadLivePilaQueue();
+      } catch (err) {
+        console.error(err);
+        showToast('Database error: ' + err.message);
+      }
+    }
+
+    function changeVenue(venueId) {
+      currentVenue = venuesList.find(v => v.id === venueId);
+      if (currentVenue) {
+        document.getElementById('modal-venue-name').innerText = currentVenue.name;
+        renderLiveCourts();
+        loadLivePilaQueue();
+      }
+    }
+
+    // 3. RENDER REAL COURTS FROM POSTGRESQL
+    function renderLiveCourts() {
+      const carousel = document.getElementById('courts-carousel');
+      const summary = document.getElementById('courts-status-summary');
+      carousel.innerHTML = '';
+
+      if (!currentVenue || !currentVenue.courts || currentVenue.courts.length === 0) {
+        carousel.innerHTML = '<div class="text-xs text-slate-400 p-4">No registered courts for this venue.</div>';
+        summary.innerText = '0 Courts';
+        return;
+      }
+
+      const courts = currentVenue.courts;
+      const activeCount = courts.filter(c => c.is_active).length;
+      summary.innerText = `${activeCount} of ${courts.length} Active`;
+
+      courts.forEach((c, idx) => {
+        const card = document.createElement('div');
+        card.className = 'min-w-[220px] max-w-[220px] bg-[#111827] border border-[#1E293B] rounded-2xl p-3 flex flex-col justify-between shrink-0 shadow-lg';
+        
+        if (c.is_active) {
+          card.innerHTML = `
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-extrabold text-white">${c.name}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                In Play
+              </span>
+            </div>
+            <div class="my-2 py-2 bg-[#0B131E] rounded-xl border border-slate-800 text-center">
+              <span class="text-[11px] text-slate-300 font-bold block">Match in Progress</span>
+              <span class="text-[10px] text-slate-500">Regular Queue Rotation</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800">
+              <span>Status: Active</span>
+              <span class="text-[#CCFF00] font-mono text-[10px]">Open Play</span>
+            </div>
+          `;
+        } else {
+          card.innerHTML = `
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-extrabold text-slate-400">${c.name}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                Maintenance
+              </span>
+            </div>
+            <div class="my-2 py-2 bg-[#0B131E] rounded-xl border border-slate-800 text-center">
+              <span class="text-[11px] text-amber-400 font-bold block">Court Closed</span>
+              <span class="text-[10px] text-slate-500">Surface / Net Service</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-800">
+              <span>Status: Down</span>
+              <span class="text-rose-400 text-[10px]">Unavailable</span>
+            </div>
+          `;
+        }
+        carousel.appendChild(card);
+      });
+      refreshIcons();
+    }
+
+    // 4. LOAD & SYNC QUEUE ROWS FROM SUPABASE
+    async function loadLivePilaQueue() {
+      if (!currentVenue) return;
+      const container = document.getElementById('paddle-rack-slots');
+      container.innerHTML = '<div class="text-xs text-slate-400 py-4 text-center">Syncing live rack...</div>';
+
+      try {
+        const { data: queueRows, error } = await supabaseClient
+          .from('pila_queue')
+          .select('*')
+          .eq('venue_id', currentVenue.id)
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        const totalWaiting = queueRows ? queueRows.length : 0;
+        document.getElementById('live-player-count').innerText = `${totalWaiting} Queued in Pila`;
+
+        if (!queueRows || queueRows.length === 0) {
+          container.innerHTML = `
+            <div class="p-6 text-center text-slate-400 text-xs bg-[#111827] border border-slate-800 rounded-2xl">
+              The paddle rack is currently empty. Be the first to join the pila!
+            </div>
+          `;
+          return;
+        }
+
+        // Group into 4-player virtual slots
+        container.innerHTML = '';
+        const slotsCount = Math.ceil(queueRows.length / 4);
+
+        for (let i = 0; i < slotsCount; i++) {
+          const playersInSlot = queueRows.slice(i * 4, (i + 1) * 4);
+          const isSlotOne = i === 0;
+
+          const card = document.createElement('div');
+          card.className = `rounded-2xl p-3.5 border transition-all ${isSlotOne ? 'bg-[#111827] border-amber-500/40 shadow-sm' : 'bg-[#111827] border-[#1E293B]'}`;
+
+          const playersHtml = playersInSlot.map(p => `
+            <div class="flex items-center gap-2 p-2 rounded-xl border ${p.id === currentUserQueueId ? 'bg-[#CCFF00]/15 border-[#CCFF00]' : 'bg-[#0B131E] border-slate-800'}">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${p.id === currentUserQueueId ? 'bg-[#CCFF00] text-[#0B131E]' : 'bg-slate-800 text-slate-300'}">
+                ${p.player_name.charAt(0)}
+              </div>
+              <div class="truncate">
+                <span class="text-xs font-bold text-white block truncate leading-tight">${p.player_name}</span>
+                <span class="text-[10px] text-slate-400 font-mono">DUPR ${p.dupr_rating || '3.5'}</span>
+              </div>
+            </div>
+          `).join('');
+
+          card.innerHTML = `
+            <div class="flex items-center justify-between mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-md text-[10px] font-black flex items-center justify-center ${isSlotOne ? 'bg-amber-400 text-black' : 'bg-slate-800 text-slate-300'}">#${i + 1}</span>
+                <span class="text-xs font-bold text-white">Rack Slot ${i + 1}</span>
+              </div>
+              <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md ${isSlotOne ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-800 text-slate-400'}">
+                ${isSlotOne ? 'Next Up (On Deck)' : 'In Line'}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">${playersHtml}</div>
+          `;
+          container.appendChild(card);
+        }
+      } catch (err) {
+        container.innerHTML = `<div class="text-xs text-rose-400">Queue error: ${err.message}</div>`;
+      }
+      refreshIcons();
+    }
+
+    // 5. QUEUE MUTATIONS (JOIN & LEAVE SUPABASE PILA)
+    function openJoinModal() {
+      if (state.inQueue) {
+        showToast('You are already queued in this Pila!');
+        return;
+      }
+      document.getElementById('join-drawer').classList.remove('hidden');
+      refreshIcons();
+    }
+
+    function closeJoinModal() {
+      document.getElementById('join-drawer').classList.add('hidden');
+    }
+
+    function selectQueueMode(mode) {
+      state.queueMode = mode;
+      ['solo', 'pair'].forEach(m => {
+        const row = document.getElementById(`mode-${m}`);
+        const check = document.getElementById(`check-${m}`);
+        if (m === mode) {
+          row.className = 'p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#CCFF00]/10 border-[#CCFF00] shadow-sm';
+          check.className = 'w-5 h-5 rounded-full border border-[#CCFF00] bg-[#CCFF00] text-[#0B131E] flex items-center justify-center';
+          check.innerHTML = '<i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>';
+        } else {
+          row.className = 'p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#0B131E] border-slate-800 hover:border-slate-700';
+          check.className = 'w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center';
+          check.innerHTML = '';
+        }
+      });
+      document.getElementById('partner-input-wrap').classList.toggle('hidden', mode !== 'pair');
+      refreshIcons();
+    }
+
+    async function confirmDropPaddle() {
+      if (!currentVenue) return;
+      const btn = document.getElementById('btn-confirm-drop');
+      btn.disabled = true;
+      btn.innerText = 'Dropping paddle in Supabase...';
+
+      const partnerName = state.queueMode === 'pair' ? (document.getElementById('input-partner').value.trim() || 'Partner') : null;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('pila_queue')
+          .insert([{
+            venue_id: currentVenue.id,
+            player_name: 'Dave H. (You)',
+            dupr_rating: 3.6,
+            queue_mode: state.queueMode,
+            partner_name: partnerName,
+            status: 'waiting'
+          }])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        currentUserQueueId = data.id;
+        state.inQueue = true;
+        closeJoinModal();
+
+        document.getElementById('bar-join-state').classList.add('hidden');
+        document.getElementById('bar-queued-state').classList.remove('hidden');
+
+        showToast('Paddle dropped! Synced with PostgreSQL database');
+        loadLivePilaQueue();
+      } catch (err) {
+        alert('Failed to join queue: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Confirm & Drop Paddle';
+      }
+    }
+
+    async function leavePila() {
+      if (!currentUserQueueId) return;
+
+      const { error } = await supabaseClient
+        .from('pila_queue')
+        .delete()
+        .eq('id', currentUserQueueId);
+
+      if (error) {
+        showToast('Error leaving pila: ' + error.message);
+        return;
+      }
+
+      state.inQueue = false;
+      currentUserQueueId = null;
+
+      document.getElementById('bar-join-state').classList.remove('hidden');
+      document.getElementById('bar-queued-state').classList.add('hidden');
+
+      showToast('Removed from Pila queue');
+      loadLivePilaQueue();
+    }
+
+    // 6. CALL SIMULATION
+    function openCallAlert() {
+      state.timerSeconds = 120;
+      document.getElementById('call-alert-modal').classList.remove('hidden');
+      updateTimerDisplay();
+
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        state.timerSeconds--;
+        updateTimerDisplay();
+        if (state.timerSeconds <= 0) {
+          clearInterval(state.timerInterval);
+          document.getElementById('call-alert-modal').classList.add('hidden');
+          showToast('Check-in window expired.');
+        }
+      }, 1000);
+      refreshIcons();
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(state.timerSeconds / 60);
+      const secs = state.timerSeconds % 60;
+      document.getElementById('countdown-timer').innerText = 
+        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function checkInOnCourt() {
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      document.getElementById('call-alert-modal').classList.add('hidden');
+      leavePila();
+      showToast('Checked in! Court unlocked for your match.');
+    }
+
+    function skipPass() {
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      document.getElementById('call-alert-modal').classList.add('hidden');
+      showToast('Passed to next group.');
+    }
+
+    // 7. INITIALIZE ON LOAD
+    window.addEventListener('DOMContentLoaded', () => {
+      loadVenues();
+      refreshIcons();
+    });
+  </script>
+</body>
+</html>
