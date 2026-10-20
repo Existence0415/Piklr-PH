@@ -599,6 +599,10 @@
           <label class="block text-slate-400 mb-1">Playing Surface</label>
           <input type="text" id="editVenueDetailSurface" placeholder="cushioned_acrylic, concrete, etc." class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
         </div>
+        <div>
+          <label class="block text-slate-400 mb-1">Promotional Image URL</label>
+          <input type="text" id="editVenueDetailImage" placeholder="https://..." class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon" />
+        </div>
       </div>
 
       <div class="flex gap-2 pt-2">
@@ -1127,12 +1131,13 @@
       }
     }
 
-    function openEditVenueModal(venueId, name, city, env, surface) {
+    function openEditVenueModal(venueId, name, city, env, surface, imageUrl) {
       document.getElementById('editVenueDetailId').value = venueId;
       document.getElementById('editVenueDetailName').value = name;
       document.getElementById('editVenueDetailCity').value = city;
       document.getElementById('editVenueDetailEnv').value = env;
       document.getElementById('editVenueDetailSurface').value = surface;
+      document.getElementById('editVenueDetailImage').value = imageUrl || '';
       openModal('editVenueModal');
     }
 
@@ -1142,17 +1147,19 @@
       const city = document.getElementById('editVenueDetailCity').value.trim();
       const env = document.getElementById('editVenueDetailEnv').value;
       const surface = document.getElementById('editVenueDetailSurface').value.trim();
+      const imageUrl = document.getElementById('editVenueDetailImage').value.trim();
 
       await supabaseClient.from('venues').update({
-        name: name,
-        city: city,
+        name,
+        city,
         environment: env,
-        surface: surface
+        surface,
+        image_url: imageUrl
       }).eq('id', id);
 
       closeModal('editVenueModal');
       loadVenuesFromSupabase();
-      alert('Venue details updated!');
+      alert('Venue details & cover photo updated!');
     }
 
     function openPricingModal(venueId, venueName, baseRate, peakRate) {
