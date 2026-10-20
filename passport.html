@@ -78,9 +78,6 @@
     }
   </style>
 
-  <!-- Lucide Icons CDN -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -719,6 +716,46 @@
         </div>
       </div>
     </div>
+
+    <!-- Embedded Persistent Mobile App Navigation Bar (Synced to parent shell) -->
+    <nav class="h-16 bg-[#111827]/95 backdrop-blur-lg border-t border-slate-800 px-3 py-1 flex items-center justify-around z-40 shrink-0">
+      
+      <!-- Tab 1: Courts -->
+      <button onclick="handleTabNavigation('courts')" class="flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+        <i data-lucide="map-pin" class="w-4 h-4"></i>
+        <span class="text-[9px] font-bold mt-0.5">Courts</span>
+      </button>
+
+      <!-- Tab 2: Live Pila Rack -->
+      <button onclick="handleTabNavigation('pila')" class="flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+        <i data-lucide="users" class="w-4 h-4"></i>
+        <span class="text-[9px] font-bold mt-0.5">Pila</span>
+      </button>
+
+      <!-- Tab 3: Referee -->
+      <button onclick="handleTabNavigation('referee')" class="flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+        <div class="relative">
+          <div class="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
+            <i data-lucide="activity" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+          </div>
+        </div>
+        <span class="text-[9px] font-bold mt-0.5">Referee</span>
+      </button>
+
+      <!-- Tab 4: Exchange -->
+      <button onclick="handleTabNavigation('exchange')" class="flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+        <span class="text-[9px] font-bold mt-0.5">Exchange</span>
+      </button>
+
+      <!-- Tab 5: Passport (Active) -->
+      <button onclick="handleTabNavigation('passport')" class="flex-1 flex flex-col items-center justify-center py-1 text-[#CCFF00] transition cursor-pointer">
+        <i data-lucide="user" class="w-4 h-4"></i>
+        <span class="text-[9px] font-black mt-0.5">Passport</span>
+      </button>
+
+    </nav>
+
   </div>
 
   <!-- ======================================================== -->
@@ -921,8 +958,8 @@
     };
 
     // Supabase Configuration
-    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co'; // Replace with your project URL
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY'; // Replace with your anon key
+    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Current player UUID for Dave Hernandez from your seed script
@@ -962,6 +999,26 @@
       }
 
       refreshIcons();
+    }
+
+    // Smart Navigation Handler: Syncs with app.html parent frame or navigates standalone
+    function handleTabNavigation(tabKey) {
+      if (window.parent && typeof window.parent.switchModule === 'function') {
+        window.parent.switchModule(tabKey);
+        return;
+      }
+
+      const routeFiles = {
+        courts: 'module2.html',
+        pila: 'pila.html',
+        referee: 'module4.html',
+        exchange: 'module7.html',
+        passport: 'passport.html'
+      };
+
+      if (routeFiles[tabKey]) {
+        window.location.href = routeFiles[tabKey];
+      }
     }
 
     // Screen 1: Auth
@@ -1048,7 +1105,6 @@
     function handleCustomCityInput(value) {
       const trimmed = value.trim();
       state.city = trimmed || 'Metro Manila';
-      // Re-render chips to dynamically unselect any chip if the user types a custom city
       renderCityChips();
     }
 
@@ -1164,7 +1220,7 @@
       if (state.onboardingStep === 1) {
         const nameVal = document.getElementById('input-fullname').value;
         const nickVal = document.getElementById('input-nickname').value;
-        const cityVal = document.getElementById('custom-city-input').value; // <-- Read custom city
+        const cityVal = document.getElementById('custom-city-input').value;
         if (nameVal) state.fullName = nameVal;
         if (nickVal) state.nickname = nickVal;
         if (cityVal) state.city = cityVal.trim();

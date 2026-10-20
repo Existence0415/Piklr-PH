@@ -7,7 +7,7 @@
 
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#0B131E">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.json">
 
@@ -51,19 +51,19 @@
     <nav class="h-18 bg-[#111827]/95 backdrop-blur-lg border-t border-slate-800 px-3 py-1 flex items-center justify-around z-40 shrink-0">
       
       <!-- Tab 1: Book Courts -->
-      <button onclick="navigateTab('module2.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-[#CCFF00] transition cursor-pointer">
+      <button id="tab-btn-courts" onclick="navigateTab('module2.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-[#CCFF00] transition cursor-pointer">
         <i data-lucide="map-pin" class="w-5 h-5"></i>
         <span class="text-[10px] font-black mt-0.5">Courts</span>
       </button>
 
-      <!-- Tab 2: Live Pila -->
-      <button onclick="navigateTab('module3.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+      <!-- Tab 2: Live Pila (Module 3 Digital Paddle Rack) -->
+      <button id="tab-btn-pila" onclick="navigateTab('pila.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
         <i data-lucide="users" class="w-5 h-5"></i>
         <span class="text-[10px] font-bold mt-0.5">Pila</span>
       </button>
 
       <!-- Tab 3: Match Scorer / Tourneys -->
-      <button onclick="navigateTab('module4.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+      <button id="tab-btn-referee" onclick="navigateTab('module4.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
         <div class="relative">
           <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
             <i data-lucide="activity" class="w-4 h-4 text-[#CCFF00]"></i>
@@ -73,13 +73,13 @@
       </button>
 
       <!-- Tab 4: Shop & Perks -->
-      <button onclick="navigateTab('module7.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+      <button id="tab-btn-exchange" onclick="navigateTab('module7.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
         <i data-lucide="shopping-bag" class="w-5 h-5"></i>
         <span class="text-[10px] font-bold mt-0.5">Exchange</span>
       </button>
 
       <!-- Tab 5: Athlete Passport -->
-      <button onclick="navigateTab('passport.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+      <button id="tab-btn-passport" onclick="navigateTab('passport.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
         <i data-lucide="user" class="w-5 h-5"></i>
         <span class="text-[10px] font-bold mt-0.5">Passport</span>
       </button>
@@ -89,7 +89,10 @@
 
   <script>
     function navigateTab(moduleUrl, btnElement) {
-      document.getElementById('app-viewport').src = moduleUrl;
+      const viewport = document.getElementById('app-viewport');
+      if (viewport) {
+        viewport.src = moduleUrl;
+      }
 
       document.querySelectorAll('.app-tab').forEach(b => {
         b.className = 'app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer';
@@ -97,15 +100,38 @@
         if (span) span.className = 'text-[10px] font-bold mt-0.5';
       });
 
-      btnElement.className = 'app-tab flex-1 flex flex-col items-center justify-center py-1 text-[#CCFF00] transition cursor-pointer';
-      const activeSpan = btnElement.querySelector('span');
-      if (activeSpan) activeSpan.className = 'text-[10px] font-black mt-0.5';
+      if (btnElement) {
+        btnElement.className = 'app-tab flex-1 flex flex-col items-center justify-center py-1 text-[#CCFF00] transition cursor-pointer';
+        const activeSpan = btnElement.querySelector('span');
+        if (activeSpan) activeSpan.className = 'text-[10px] font-black mt-0.5';
+      }
 
-      lucide.createIcons();
+      if (window.lucide) {
+        lucide.createIcons();
+      }
     }
 
+    // Support window.parent.switchModule('pila') from inside child pages
+    window.switchModule = function(moduleName) {
+      const routeMap = {
+        courts: { url: 'module2.html', id: 'tab-btn-courts' },
+        pila: { url: 'pila.html', id: 'tab-btn-pila' },
+        referee: { url: 'module4.html', id: 'tab-btn-referee' },
+        exchange: { url: 'module7.html', id: 'tab-btn-exchange' },
+        passport: { url: 'passport.html', id: 'tab-btn-passport' }
+      };
+
+      const target = routeMap[moduleName];
+      if (target) {
+        const btn = document.getElementById(target.id);
+        navigateTab(target.url, btn);
+      }
+    };
+
     window.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
+      if (window.lucide) {
+        lucide.createIcons();
+      }
     });
   </script>
 </body>
