@@ -296,32 +296,49 @@
             </div>
 
             <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-4">
-              <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center justify-between mb-1.5">
                 <label class="text-xs font-semibold text-slate-400">Home City / Court Hub</label>
-                <span class="text-[11px] text-slate-500">Philippines</span>
+                <span class="text-[11px] text-[#CCFF00] font-medium">Type or tap preset</span>
               </div>
 
-              <div id="city-chips" class="flex flex-wrap gap-1.5 mb-2.5"></div>
+              <!-- Quick Preset Chips -->
+              <div id="city-chips" class="flex flex-wrap gap-1.5 mb-3"></div>
 
-              <div class="relative">
-                <select
-                  id="select-city"
-                  onchange="selectCity(this.value)"
-                  class="w-full bg-[#0B131E] border border-slate-800 text-slate-200 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#CCFF00] appearance-none"
-                >
-                  <option value="Quezon City">Quezon City</option>
-                  <option value="BGC / Taguig" selected>BGC / Taguig</option>
-                  <option value="Pasig">Pasig</option>
-                  <option value="Makati">Makati</option>
-                  <option value="Mandaluyong">Mandaluyong</option>
-                  <option value="Cebu City">Cebu City</option>
-                  <option value="Davao City">Davao City</option>
-                  <option value="Pampanga">Pampanga</option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                  <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+              <!-- Editable Input with Datalist Autocomplete -->
+              <div class="relative flex items-center bg-[#0B131E] border border-slate-800 rounded-xl px-3 py-2.5 focus-within:border-[#CCFF00] transition-colors">
+                <input
+                  id="custom-city-input"
+                  type="text"
+                  list="city-datalist"
+                  value="BGC / Taguig"
+                  placeholder="Enter custom city or province (e.g. Iloilo, Antipolo)"
+                  oninput="handleCustomCityInput(this.value)"
+                  class="w-full bg-transparent text-white font-medium text-xs focus:outline-none placeholder:text-slate-600 pr-6"
+                />
+                <div class="pointer-events-none absolute right-3 text-slate-400">
+                  <i data-lucide="map-pin" class="w-4 h-4 text-slate-500"></i>
                 </div>
+                
+                <datalist id="city-datalist">
+                  <option value="Quezon City"></option>
+                  <option value="BGC / Taguig"></option>
+                  <option value="Pasig"></option>
+                  <option value="Makati"></option>
+                  <option value="Mandaluyong"></option>
+                  <option value="Cebu City"></option>
+                  <option value="Davao City"></option>
+                  <option value="Pampanga"></option>
+                  <option value="Iloilo City"></option>
+                  <option value="Bacolod"></option>
+                  <option value="Baguio City"></option>
+                  <option value="Cagayan de Oro"></option>
+                  <option value="Antipolo"></option>
+                  <option value="Alabang / Muntinlupa"></option>
+                </datalist>
               </div>
+              <p class="text-[10px] text-slate-500 mt-1.5">
+                Not on the list? Just type your city or home court location above.
+              </p>
             </div>
           </div>
 
@@ -883,9 +900,9 @@
     const state = {
       screen: 1,
       onboardingStep: 1,
-      fullName: 'Dave Hernandez',
-      nickname: 'D-Train',
-      city: 'BGC / Taguig',
+      fullName: 'Dave Payumo',
+      nickname: 'D-PAY',
+      city: 'Alabang',
       duprRating: 3.6,
       dominantHand: 'Right',
       playStyle: 'All-Court Balanced',
@@ -1006,6 +1023,7 @@
     // Screen 2: Onboarding
     function renderCityChips() {
       const container = document.getElementById('city-chips');
+      if (!container) return;
       container.innerHTML = '';
       state.cities.forEach(city => {
         const btn = document.createElement('button');
@@ -1022,7 +1040,15 @@
 
     function selectCity(city) {
       state.city = city;
-      document.getElementById('select-city').value = city;
+      const input = document.getElementById('custom-city-input');
+      if (input) input.value = city;
+      renderCityChips();
+    }
+
+    function handleCustomCityInput(value) {
+      const trimmed = value.trim();
+      state.city = trimmed || 'Metro Manila';
+      // Re-render chips to dynamically unselect any chip if the user types a custom city
       renderCityChips();
     }
 
@@ -1138,8 +1164,10 @@
       if (state.onboardingStep === 1) {
         const nameVal = document.getElementById('input-fullname').value;
         const nickVal = document.getElementById('input-nickname').value;
+        const cityVal = document.getElementById('custom-city-input').value; // <-- Read custom city
         if (nameVal) state.fullName = nameVal;
         if (nickVal) state.nickname = nickVal;
+        if (cityVal) state.city = cityVal.trim();
         state.onboardingStep = 2;
         updateOnboardingStepUI();
       } else if (state.onboardingStep === 2) {
