@@ -1,5 +1,6 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/app.html" }
+  "redirects": [
+    { "source": "/", "destination": "/app.html", "permanent": false },
+    { "source": "/index.html", "destination": "/app.html", "permanent": false }
   ]
 }
