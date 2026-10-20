@@ -77,6 +77,12 @@
       scrollbar-width: none;
     }
   </style>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-[#0B131E] text-slate-100 h-screen w-full overflow-hidden antialiased selection:bg-[#CCFF00] selection:text-[#0B131E]">
 
@@ -636,6 +642,38 @@
               </button>
             </div>
           </div>
+
+          <!-- ======================================================== -->
+          <!-- PENDING SCORE CONFIRMATIONS (OPPONENT SUBMITTED) -->
+          <!-- ======================================================== -->
+          <div id="pending-confirmations-section" class="hidden">
+            <div class="flex items-center justify-between mb-2 px-1">
+              <div class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400">
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                <span>Action Required: Confirm Match</span>
+              </div>
+              <span class="text-[10px] bg-amber-400/10 text-amber-400 px-2 py-0.5 rounded-full font-bold">1 Pending</span>
+            </div>
+            <div id="pending-cards-container" class="space-y-3"></div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- RECENT DUPR MATCH HISTORY -->
+          <!-- ======================================================== -->
+          <div class="pt-1">
+            <div class="mb-2 px-1 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i data-lucide="activity" class="w-4 h-4 text-[#CCFF00]"></i>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Recent DUPR Matches</h3>
+              </div>
+              <span class="text-[10px] text-slate-500">Official Club Logs</span>
+            </div>
+            <div id="recent-matches-container" class="space-y-2">
+              <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-xs text-slate-500">
+                Loading official match history...
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Prototype Review Mini Controls -->
@@ -728,6 +766,14 @@
       ]
     };
 
+    // Supabase Configuration
+    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co'; // Replace with your project URL
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY'; // Replace with your anon key
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Current player UUID for Dave Hernandez from your seed script
+    const CURRENT_PLAYER_ID = '09111111-0000-0000-0000-000000000001';
+
     function refreshIcons() {
       if (window.lucide) {
         window.lucide.createIcons();
@@ -758,6 +804,7 @@
       }
       if (screenNumber === 3) {
         syncPassportCard();
+        loadPassportMatchHistory();
       }
 
       refreshIcons();
@@ -1048,10 +1095,175 @@
       showToast('Prototype reset to Screen 1');
     }
 
+    async function loadPassportMatchHistory() {
+      const pendingSection = document.getElementById('pending-confirmations-section');
+      const pendingContainer = document.getElementById('pending-cards-container');
+      const matchesContainer = document.getElementById('recent-matches-container');
+
+      if (!pendingContainer || !matchesContainer) return;
+
+      try {
+        // 1. Fetch pending score confirmations where Dave is the confirmer
+        const { data: confirmations, error: confError } = await supabaseClient
+          .from('match_confirmations')
+          .select(`
+            id,
+            status,
+            match:matches (
+              id,
+              match_type,
+              game_format,
+              set1_team1, set1_team2,
+              set2_team1, set2_team2,
+              set3_team1, set3_team2,
+              winning_team,
+              played_at,
+              submitted_by:submitted_by(display_name, full_name),
+              venue:venue_id(name)
+            )
+          `)
+          .eq('confirmer_id', CURRENT_PLAYER_ID)
+          .eq('status', 'pending');
+
+        if (confirmations && confirmations.length > 0) {
+          pendingSection.classList.remove('hidden');
+          pendingContainer.innerHTML = confirmations.map(c => {
+            const m = c.match;
+            const opponentName = m.submitted_by?.display_name || m.submitted_by?.full_name || 'Opponent';
+            const venueName = m.venue?.name || 'Local NCR Court';
+            const scoreString = `${m.set1_team1}-${m.set1_team2}${m.set2_team1 !== null ? `, ${m.set2_team1}-${m.set2_team2}` : ''}${m.set3_team1 !== null ? `, ${m.set3_team1}-${m.set3_team2}` : ''}`;
+
+            return `
+              <div class="bg-gradient-to-r from-amber-950/40 to-slate-900 border border-amber-500/30 rounded-2xl p-4 shadow-lg">
+                <div class="flex items-center justify-between text-[11px] mb-2">
+                  <span class="text-amber-400 font-semibold flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    Submitted by ${opponentName}
+                  </span>
+                  <span class="text-slate-400 text-[10px]">${venueName}</span>
+                </div>
+
+                <div class="flex items-center justify-between my-2 bg-black/40 rounded-xl px-3 py-2 border border-white/5">
+                  <span class="text-xs text-slate-300 font-medium capitalize">${m.match_type} (${m.game_format.replace(/_/g, ' ')})</span>
+                  <span class="text-sm font-black text-white tracking-wider">${scoreString}</span>
+                </div>
+
+                <p class="text-[10px] text-slate-400 mb-3">Does this score match your result? Approving updates official DUPR standing.</p>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <button 
+                    onclick="resolveConfirmation('${c.id}', '${m.id}', 'rejected')"
+                    class="w-full py-2 bg-slate-800/80 hover:bg-rose-950/50 text-rose-400 border border-slate-700 hover:border-rose-500/40 text-xs font-bold rounded-xl transition cursor-pointer"
+                  >
+                    Dispute Score
+                  </button>
+                  <button 
+                    onclick="resolveConfirmation('${c.id}', '${m.id}', 'approved')"
+                    class="w-full py-2 bg-[#CCFF00] hover:bg-[#d8ff33] text-[#0B131E] text-xs font-black rounded-xl shadow-md transition cursor-pointer"
+                  >
+                    Approve Result
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          pendingSection.classList.add('hidden');
+        }
+
+        // 2. Fetch Confirmed Matches for Dave
+        const { data: matches, error: matchError } = await supabaseClient
+          .from('matches')
+          .select(`
+            id,
+            match_type,
+            set1_team1, set1_team2,
+            set2_team1, set2_team2,
+            set3_team1, set3_team2,
+            winning_team,
+            status,
+            played_at,
+            team1_player1_id, team1_player2_id,
+            team2_player1_id, team2_player2_id,
+            venue:venues(name)
+          `)
+          .or(`team1_player1_id.eq.${CURRENT_PLAYER_ID},team1_player2_id.eq.${CURRENT_PLAYER_ID},team2_player1_id.eq.${CURRENT_PLAYER_ID},team2_player2_id.eq.${CURRENT_PLAYER_ID}`)
+          .eq('status', 'confirmed')
+          .order('played_at', { ascending: false });
+
+        if (!matches || matches.length === 0) {
+          matchesContainer.innerHTML = `
+            <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-xs text-slate-500">
+              No confirmed matches logged yet. Play and record games to build your rating!
+            </div>
+          `;
+        } else {
+          matchesContainer.innerHTML = matches.map(m => {
+            const isTeam1 = (m.team1_player1_id === CURRENT_PLAYER_ID || m.team1_player2_id === CURRENT_PLAYER_ID);
+            const won = (isTeam1 && m.winning_team === 1) || (!isTeam1 && m.winning_team === 2);
+            const scoreDisplay = `${m.set1_team1}-${m.set1_team2}${m.set2_team1 !== null ? `, ${m.set2_team1}-${m.set2_team2}` : ''}${m.set3_team1 !== null ? `, ${m.set3_team1}-${m.set3_team2}` : ''}`;
+            const dateFormatted = new Date(m.played_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            return `
+              <div class="p-3 bg-slate-900/80 rounded-2xl border ${won ? 'border-emerald-500/25' : 'border-rose-500/25'} flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs ${won ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}">
+                    ${won ? 'W' : 'L'}
+                  </span>
+                  <div>
+                    <div class="text-xs font-bold text-white flex items-center gap-1">
+                      <span class="capitalize">${m.match_type}</span>
+                      <span class="text-[10px] font-normal text-slate-500">• ${m.venue?.name || 'NCR Court'}</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400">${dateFormatted} • Verified DUPR Match</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-black text-slate-100 tracking-wider">${scoreDisplay}</div>
+                  <span class="text-[10px] font-bold ${won ? 'text-emerald-400' : 'text-slate-500'}">
+                    ${won ? '+0.035 DUPR' : '-0.025 DUPR'}
+                  </span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        refreshIcons();
+      } catch (err) {
+        console.error('Error fetching passport history:', err);
+      }
+    }
+
+    async function resolveConfirmation(confirmationId, matchId, action) {
+      try {
+        await supabaseClient
+          .from('match_confirmations')
+          .update({
+            status: action,
+            confirmed_at: new Date().toISOString()
+          })
+          .eq('id', confirmationId);
+
+        const newStatus = (action === 'approved') ? 'confirmed' : 'disputed';
+        await supabaseClient
+          .from('matches')
+          .update({ status: newStatus })
+          .eq('id', matchId);
+
+        showToast(action === 'approved' ? 'Match result approved!' : 'Score marked as disputed.');
+        loadPassportMatchHistory();
+      } catch (err) {
+        console.error(err);
+        showToast('Error updating status.');
+      }
+    }
+
     // Initialize on load
     window.addEventListener('DOMContentLoaded', () => {
       renderCityChips();
       refreshIcons();
+      loadPassportMatchHistory();
     });
   </script>
 </body>
