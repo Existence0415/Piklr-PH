@@ -557,12 +557,14 @@
   </div>
 
   <!-- JavaScript Prototype Engine Connected to Supabase -->
+  <!-- JavaScript Prototype Engine Connected to Supabase -->
   <script>
     const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let venues = [];
+    let currentFilter = 'All';
 
     const dates = [
       { id: 'today', day: 'Today', num: '19' },
@@ -623,7 +625,7 @@
       try {
         const { data: dbVenues, error } = await supabaseClient
           .from('venues')
-          .select('id, name, city, address, environment, surface, image_url, courts (id, name, base_hourly_rate, peak_hourly_rate, is_active)')
+          .select('id, name, city, address, environment, surface, image_url, opening_time, closing_time, entrance_fee, latitude, longitude, courts (id, name, base_hourly_rate, peak_hourly_rate, is_active)')
           .order('name', { ascending: true });
 
         if (error) throw error;
@@ -654,32 +656,67 @@
             reviewsCount: 128,
             imageUrl: v.image_url || 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=800&q=80',
             statusBadge: activeCourts.length > 0 ? `${activeCourts.length} Active Courts` : 'Maintenance',
-            features: [v.surface ? v.surface.replace('_', ' ') : 'Acrylic', 'DUPR Verified']
+            features: [v.surface ? v.surface.replace('_', ' ') : 'Acrylic', 'DUPR Verified'],
+            openingTime: v.opening_time || '06:00',
+            closingTime: v.closing_time || '22:00',
+            entranceFee: Number(v.entrance_fee || 0),
+            latitude: v.latitude || 14.5512,
+            longitude: v.longitude || 121.0506
           };
         });
 
-        renderVenues();
+        filterVenues();
       } catch (err) {
         console.error('Supabase fetch failed:', err);
+        if (feed) {
+          feed.innerHTML = `
+            <div class="p-6 text-center text-xs text-rose-400 bg-rose-950/20 rounded-2xl border border-rose-500/20">
+              Failed to connect to database.
+            </div>`;
+        }
       }
     }
 
-    function renderVenues() {
-      // Safe extraction of times and coords
-      const openTime = (venue.opening_time || venue.openingTime || '06:00').slice(0, 5);
-      const closeTime = (venue.closing_time || venue.closingTime || '22:00').slice(0, 5);
-      const entranceFee = Number(venue.entrance_fee ?? venue.entranceFee ?? 0);
-      const lat = venue.latitude || 14.5512;
-      const lng = venue.longitude || 121.0506;
+    function filterVenues() {
+      const searchInput = document.getElementById('search-input');
+      const query = (searchInput?.value || '').toLowerCase().trim();
+
+      const filtered = venues.filter(v => {
+        const name = (v.name || '').toLowerCase();
+        const city = (v.city || '').toLowerCase();
+        const loc = (v.location || '').toLowerCase();
+
+        const matchesSearch = !query || name.includes(query) || city.includes(query) || loc.includes(query);
+        const matchesFilter = currentFilter === 'All' || v.type.toLowerCase().includes(currentFilter.toLowerCase());
+
+        return matchesSearch && matchesFilter;
+      });
+
+      renderVenues(filtered);
+    }
+
+    function renderVenues(venueList = venues) {
       const feed = document.getElementById('venue-feed');
+      if (!feed) return;
       feed.innerHTML = '';
 
-      venues.forEach(venue => {
+      if (venueList.length === 0) {
+        feed.innerHTML = `
+          <div class="p-8 text-center text-xs text-slate-400 bg-slate-900/60 rounded-2xl border border-slate-800">
+            No courts found matching your search.
+          </div>`;
+        return;
+      }
+
+      venueList.forEach(venue => {
         const card = document.createElement('div');
         card.className = 'bg-[#111827] border border-[#1E293B] hover:border-slate-700/80 rounded-3xl p-3.5 shadow-xl transition-all relative overflow-hidden group';
 
+        const openTime = String(venue.openingTime || '06:00').slice(0, 5);
+        const closeTime = String(venue.closingTime || '22:00').slice(0, 5);
+
         card.innerHTML = `
-          <!-- Photo Banner with Dark Overlay Gradients -->
+          <!-- Photo Banner -->
           <div class="w-full h-32 rounded-2xl relative overflow-hidden mb-3 border border-slate-800">
             <img 
               src="${venue.imageUrl}" 
@@ -732,37 +769,18 @@
             <span class="text-[10px] font-semibold px-2 py-0.5 bg-slate-800/80 text-[#CCFF00] rounded-md">🏓 Rental Avail.</span>
           </div>
 
-          <!-- Inside each venue card in renderVenues() -->
+          <!-- Operating Hours & Map -->
           <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-800/80 pt-2.5 mt-2">
             <div class="flex items-center gap-1.5">
               <i data-lucide="clock" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
-              <span>${venue.openingTime?.slice(0,5)} - ${venue.closingTime?.slice(0,5)}</span>
+              <span>${openTime} - ${closeTime}</span>
             </div>
             <div class="flex items-center gap-2">
-              ${venue.entranceFee > 0 ? `<span class="text-[10px] text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">₱${venue.entranceFee} Entrance</span>` : '<span class="text-[10px] text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded">Free Entry</span>'}
-              <a 
-                href="https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}" 
-                target="_blank"
-                class="text-[#CCFF00] font-bold flex items-center gap-0.5 hover:underline"
-                onclick="event.stopPropagation()"
-              >
-                <span>Map</span>
-                <i data-lucide="navigation" class="w-3 h-3"></i>
-              </a>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-800/80 pt-2.5 mt-2">
-            <div class="flex items-center gap-1.5">
-              <i data-lucide="clock" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
-              <span>${openTime} -${closeTime}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              ${entranceFee > 0 
-                ? `<span class="text-[10px] text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded font-semibold">₱${entranceFee} Entrance</span>` 
+              ${venue.entranceFee > 0 
+                ? `<span class="text-[10px] text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded font-semibold">₱${venue.entranceFee} Entrance</span>` 
                 : '<span class="text-[10px] text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded font-semibold">Free Entry</span>'}
               <a 
-                href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" 
+                href="https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}" 
                 target="_blank"
                 class="text-[#CCFF00] font-bold flex items-center gap-0.5 hover:underline"
                 onclick="event.stopPropagation()"
@@ -776,7 +794,7 @@
           <!-- Action Button -->
           <button
             onclick="selectVenueAndProceed('${venue.id}')"
-            class="w-full mt-1 py-2.5 px-4 rounded-xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#d8ff33] active:scale-[0.98] transition-all shadow-md shadow-[#CCFF00]/20 cursor-pointer"
+            class="w-full mt-3 py-2.5 px-4 rounded-xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#d8ff33] active:scale-[0.98] transition-all shadow-md shadow-[#CCFF00]/20 cursor-pointer"
           >
             <span>Book Court</span>
             <i data-lucide="chevron-right" class="w-4 h-4 stroke-[3]"></i>
@@ -788,44 +806,8 @@
       refreshIcons();
     }
 
-    // Robust search and category filter
-    function filterVenues() {
-      const searchInput = document.getElementById('search-input') || document.querySelector('input[type="text"]');
-      const query = (searchInput?.value || '').toLowerCase().trim();
-
-      const filtered = allVenues.filter(venue => {
-        // Check search term against name, city, address, or tags
-        const name = (venue.name || '').toLowerCase();
-        const city = (venue.city || '').toLowerCase();
-        const address = (venue.address || '').toLowerCase();
-        const tags = Array.isArray(venue.tags) ? venue.tags.join(' ').toLowerCase() : '';
-
-        const matchesSearch = !query || 
-          name.includes(query) || 
-          city.includes(query) || 
-          address.includes(query) || 
-          tags.includes(query);
-
-        // Check category filter (All, Indoor A/C, Covered, Outdoor)
-        const matchesCategory = 
-          currentCategory === 'All' || 
-          (venue.court_type || venue.surface_type || '').toLowerCase().includes(currentCategory.toLowerCase()) ||
-          (venue.tags || []).some(t => t.toLowerCase().includes(currentCategory.toLowerCase()));
-
-        return matchesSearch && matchesCategory;
-      });
-
-      renderVenues(filtered);
-    }
-
-    // Bind input event so it filters live as you type
-    const searchEl = document.getElementById('search-input') || document.querySelector('input[placeholder*="Search"], input[placeholder*="bgc"]');
-    if (searchEl) {
-      searchEl.addEventListener('input', filterVenues);
-    }
-
     function setFilter(type) {
-      state.filter = type;
+      currentFilter = type;
       ['All', 'Indoor', 'Covered', 'Outdoor'].forEach(key => {
         const btn = document.getElementById(`chip-${key}`);
         if (!btn) return;
@@ -839,7 +821,7 @@
           btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap bg-[#111827] text-slate-400 border border-[#1E293B] hover:text-white cursor-pointer';
         }
       });
-      renderVenues();
+      filterVenues();
     }
 
     function selectVenueAndProceed(venueId) {
@@ -859,6 +841,7 @@
 
     function renderDatePills() {
       const container = document.getElementById('date-pills');
+      if (!container) return;
       container.innerHTML = '';
       dates.forEach(d => {
         const isSelected = state.selectedDate === d.id;
@@ -882,9 +865,10 @@
 
     function renderCourtsPicker() {
       const container = document.getElementById('court-picker-container');
+      if (!container) return;
       container.innerHTML = '';
 
-      const courts = state.selectedVenue.courtsList || [];
+      const courts = state.selectedVenue?.courtsList || [];
       if (courts.length === 0) {
         container.innerHTML = `<div class="col-span-3 text-xs text-amber-400 p-2 bg-amber-500/10 rounded-xl">No specific courts listed. Base rates apply.</div>`;
         return;
@@ -913,12 +897,14 @@
 
     function renderTimeSlots() {
       const grid = document.getElementById('slot-grid');
+      if (!grid) return;
       grid.innerHTML = '';
 
       const baseRate = state.selectedCourt ? (state.selectedCourt.base_hourly_rate || 800) : 800;
       const peakRate = state.selectedCourt ? (state.selectedCourt.peak_hourly_rate || 1000) : 1000;
 
-      document.getElementById('slot-rate-label').innerText = `Base: ₱${baseRate} / Peak: ₱${peakRate}`;
+      const rateLabel = document.getElementById('slot-rate-label');
+      if (rateLabel) rateLabel.innerText = `Base: ₱${baseRate} / Peak: ₱${peakRate}`;
 
       const dynamicSlots = [
         { time: '04:00 PM', price: baseRate, isPeak: false, status: 'available' },
