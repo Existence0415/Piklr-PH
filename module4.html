@@ -3,1060 +3,196 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PiklrPH - Live Referee & Smartwatch Scoring (Module 4)</title>
+  <title>PiklrPH - Easy Match Scorer</title>
   
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
-  <!-- Lucide Icons CDN & Supabase Client -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .court-grid {
-      background-size: 16px 16px;
-      background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    }
-    @keyframes pulse-serve {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(204, 255, 0, 0.6); }
-      50% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(204, 255, 0, 0); }
-    }
-    .serving-pulse {
-      animation: pulse-serve 1.8s infinite ease-in-out;
-    }
-    @keyframes dash {
-      to {
-        stroke-dashoffset: -20;
-      }
-    }
-    .serve-vector {
-      stroke-dasharray: 6;
-      animation: dash 1s linear infinite;
-    }
+    * { font-family: 'Outfit', sans-serif; user-select: none; }
   </style>
 </head>
 <body class="bg-[#070B11] text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
 
-  <!-- Main Mobile Viewport Frame -->
-  <div class="w-full max-w-[420px] h-[880px] max-h-screen bg-[#0B131E] sm:rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.85)] border border-[#1E293B] flex flex-col relative overflow-hidden">
+  <div class="w-full max-w-[420px] h-[880px] max-h-screen bg-[#0B131E] sm:rounded-3xl shadow-2xl border border-slate-800 flex flex-col justify-between overflow-hidden">
     
-    <!-- Top System / Dynamic Island Bar -->
-    <div class="pt-3 px-6 pb-2 flex items-center justify-between z-30 shrink-0 bg-[#0B131E]">
-      <span class="text-xs font-semibold text-slate-400">09:41</span>
-      <div class="w-24 h-4 bg-black rounded-full flex items-center justify-center gap-1.5 border border-slate-800">
-        <span class="w-2 h-2 rounded-full bg-[#CCFF00] animate-ping"></span>
-        <span class="text-[9px] font-bold tracking-wider text-[#CCFF00]">LIVE REF</span>
-      </div>
+    <!-- Top Bar -->
+    <div class="p-3 bg-[#111827] border-b border-slate-800 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <a href="admin.html" class="text-[10px] font-bold text-[#CCFF00] hover:underline">HQ Admin</a>
-        <div class="flex items-center gap-1 text-slate-400 text-xs">
-          <i data-lucide="radio" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
-          <span class="text-[10px] font-bold">5G</span>
+        <div class="w-7 h-7 rounded-lg bg-[#CCFF00]/15 text-[#CCFF00] flex items-center justify-center font-bold">
+          <i data-lucide="award" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <h2 class="text-xs font-black text-white">Easy Match Scorer</h2>
+          <span class="text-[10px] text-slate-400">First to 11 points (Win by 2)</span>
         </div>
       </div>
+      <button onclick="resetMatch()" class="text-[10px] font-bold text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">
+        Reset
+      </button>
     </div>
 
-    <!-- VIEW 1: THE LIVE ON-COURT REFEREE -->
-    <!-- Top Bar: Connected Venue & Court Selectors -->
-    <div class="px-4 py-2 bg-[#111827] border-y border-[#1E293B] flex flex-col gap-1.5 shrink-0">
-      <div class="flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2 flex-1 min-w-0">
-          <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-            <i data-lucide="activity" class="w-4 h-4"></i>
-          </div>
-          <div class="flex-1 min-w-0">
-            <select id="ref-venue-select" onchange="onVenueChange(this.value)" class="w-full bg-[#0B131E] border border-slate-700 text-white font-extrabold text-xs rounded-lg px-2 py-1 truncate focus:outline-none focus:border-[#CCFF00]">
-              <option value="">Loading venues...</option>
-            </select>
-          </div>
-        </div>
+    <!-- Main Score Area -->
+    <div class="flex-1 p-4 flex flex-col justify-between">
 
-        <div class="flex items-center gap-1.5 shrink-0">
-          <select id="ref-court-select" onchange="onCourtChange(this.value)" class="bg-[#0B131E] border border-slate-700 text-[#CCFF00] font-black text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-[#CCFF00]">
-            <option value="">Court...</option>
-          </select>
-          <button id="voice-toggle-btn" onclick="toggleVoiceAnnounce()" class="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-[#CCFF00] hover:brightness-125 transition" title="Toggle Voice Referee">
-            <i id="voice-icon" data-lucide="volume-2" class="w-3.5 h-3.5"></i>
-          </button>
-          <button id="undo-btn" onclick="handleUndo()" class="px-2 py-1 rounded-lg bg-slate-800 border border-slate-700 flex items-center gap-1 text-slate-300 hover:text-white transition disabled:opacity-30 disabled:pointer-events-none cursor-pointer" title="Undo Last Rally">
-            <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
-            <span class="text-[10px] font-bold">Undo</span>
-          </button>
-        </div>
-      </div>
-      <div class="flex items-center justify-between text-[10px] text-slate-400">
-        <span>Competitive Doubles · Side-Out to 11</span>
-        <span id="live-db-sync-tag" class="text-emerald-400 font-bold flex items-center gap-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Supabase Synced
+      <!-- Who is Serving Callout -->
+      <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-center">
+        <span class="text-[10px] font-extrabold uppercase text-[#CCFF00] tracking-wider block">
+          Current Server
         </span>
+        <h3 id="serving-callout" class="text-sm font-black text-white mt-0.5">
+          Team A is Serving from the Right Side
+        </h3>
+        <p class="text-[10px] text-slate-400 mt-0.5">
+          Rule: Only the serving team gets a point if they win the rally!
+        </p>
       </div>
-    </div>
 
-    <!-- Center Arena Area -->
-    <div class="flex-1 overflow-y-auto px-4 py-3 space-y-3 flex flex-col justify-between">
-
-      <!-- SECTION 1: Live Vocal Score Banner -->
-      <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-3.5 shadow-lg relative overflow-hidden shrink-0">
-        <div id="serving-glow" class="absolute -top-10 -right-10 w-32 h-32 bg-[#38BDF8]/20 rounded-full blur-2xl pointer-events-none transition-all duration-500"></div>
-
-        <div class="flex items-center justify-between mb-1">
-          <div class="flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-[#CCFF00] animate-pulse"></span>
-            <span class="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Official Call</span>
-          </div>
-          <div id="server-badge" class="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30">
-            TEAM A SERVING (S2)
-          </div>
-        </div>
-
-        <div class="flex items-baseline justify-center gap-2 py-1">
-          <span id="score-digits" class="text-5xl font-black tracking-tight text-white font-mono drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-            0 - 0 - 2
+      <!-- Big Two-Team Scoreboard -->
+      <div class="grid grid-cols-2 gap-3 my-auto">
+        <!-- Team A -->
+        <div id="card-team-a" class="p-4 rounded-3xl bg-sky-950/30 border-2 border-sky-400 text-center shadow-lg">
+          <span class="text-xs font-black text-sky-400 uppercase tracking-wide block">Team A (Us)</span>
+          <span id="score-team-a" class="text-6xl font-black text-white font-mono my-2 block">0</span>
+          <span id="serve-indicator-a" class="text-[10px] font-bold bg-[#CCFF00] text-black px-2 py-0.5 rounded-full inline-block">
+            ⚡ Serving Now
           </span>
         </div>
 
-        <div class="text-center mt-1 flex items-center justify-center gap-1.5">
-          <i data-lucide="mic" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
-          <p id="score-words" class="text-xs font-semibold text-slate-300 tracking-wide">
-            "Zero serves Zero, Server Two"
-          </p>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-slate-800/80 text-xs font-bold">
-          <div id="team-a-card" class="p-2 rounded-xl bg-[#38BDF8]/15 border-2 border-[#38BDF8] flex items-center justify-between shadow-[0_0_12px_rgba(56,189,248,0.25)]">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#38BDF8]"></span>
-              <span class="text-[#38BDF8] font-black">TEAM A</span>
-            </div>
-            <span id="team-a-score-pill" class="text-base font-black text-white">0</span>
-          </div>
-
-          <div id="team-b-card" class="p-2 rounded-xl bg-slate-800/40 border border-slate-700/50 flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span>
-              <span class="text-[#F59E0B] font-black">TEAM B</span>
-            </div>
-            <span id="team-b-score-pill" class="text-base font-black text-white">0</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECTION 2: Tactical Mini-Court Diagram -->
-      <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-3 shadow-md relative shrink-0">
-        <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-1.5">
-            <i data-lucide="map" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
-            <span class="text-[11px] font-black tracking-wider text-slate-300 uppercase">Tactical Court Alignment</span>
-          </div>
-          <span id="crosscourt-hint" class="text-[10px] text-[#CCFF00] font-semibold bg-[#CCFF00]/10 px-2 py-0.5 rounded-md border border-[#CCFF00]/20">
-            Mico ⚡ → Dan (Crosscourt)
+        <!-- Team B -->
+        <div id="card-team-b" class="p-4 rounded-3xl bg-slate-900/40 border border-slate-800 text-center">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Team B (Them)</span>
+          <span id="score-team-b" class="text-6xl font-black text-slate-300 font-mono my-2 block">0</span>
+          <span id="serve-indicator-b" class="text-[10px] font-bold bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full inline-block">
+            Receiving
           </span>
         </div>
-
-        <div class="relative w-full h-[180px] bg-[#0c1626] rounded-xl border-2 border-slate-600 court-grid overflow-hidden flex flex-col">
-          <!-- Team A Half -->
-          <div class="flex-1 border-b border-white/20 relative grid grid-cols-2">
-            <div id="court-box-a-left" class="border-r border-dashed border-white/25 relative flex items-center justify-center p-2">
-              <span class="absolute top-1 left-2 text-[9px] font-bold text-slate-500 uppercase">Odd (L)</span>
-              <div id="player-slot-a-left"></div>
-            </div>
-            <div id="court-box-a-right" class="relative flex items-center justify-center p-2">
-              <span class="absolute top-1 right-2 text-[9px] font-bold text-slate-500 uppercase">Even (R)</span>
-              <div id="player-slot-a-right"></div>
-            </div>
-          </div>
-
-          <!-- Non-Volley Zone -->
-          <div class="h-10 bg-[#162032] border-y-2 border-white/40 relative flex items-center justify-center shadow-inner">
-            <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] bg-white flex items-center justify-between px-2">
-              <span class="text-[7px] font-black text-slate-400">NET</span>
-              <span class="text-[8px] font-black text-[#CCFF00] tracking-wider uppercase px-1 rounded bg-black/60">KITCHEN / NVZ</span>
-              <span class="text-[7px] font-black text-slate-400">NET</span>
-            </div>
-          </div>
-
-          <!-- Team B Half -->
-          <div class="flex-1 relative grid grid-cols-2">
-            <div id="court-box-b-left" class="border-r border-dashed border-white/25 relative flex items-center justify-center p-2">
-              <span class="absolute bottom-1 left-2 text-[9px] font-bold text-slate-500 uppercase">Odd (L)</span>
-              <div id="player-slot-b-left"></div>
-            </div>
-            <div id="court-box-b-right" class="relative flex items-center justify-center p-2">
-              <span class="absolute bottom-1 right-2 text-[9px] font-bold text-slate-500 uppercase">Even (R)</span>
-              <div id="player-slot-b-right"></div>
-            </div>
-          </div>
-
-          <svg class="absolute inset-0 w-full h-full pointer-events-none z-20">
-            <defs>
-              <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-                <polygon points="0 0, 6 3, 0 6" fill="#CCFF00" />
-              </marker>
-            </defs>
-            <line id="serve-arrow-line" x1="290" y1="35" x2="100" y2="145" stroke="#CCFF00" stroke-width="2.5" class="serve-vector" marker-end="url(#arrowhead)" />
-          </svg>
-        </div>
-
-        <div class="flex items-center justify-between mt-2 text-[10px] text-slate-400">
-          <div class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-[#CCFF00]"></span>
-            <span>Server (⚡)</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span>Target Receiver</span>
-          </div>
-          <span class="text-slate-500">Auto-swaps on scored points</span>
-        </div>
       </div>
 
-      <!-- SECTION 3: Point Scoring Touch Controls -->
-      <div class="space-y-2 shrink-0">
+      <!-- Who Won the Rally? Buttons -->
+      <div class="space-y-2.5">
+        <span class="text-[11px] font-bold text-slate-400 text-center block uppercase tracking-wider">
+          Tap Who Won the Last Point:
+        </span>
+
         <div class="grid grid-cols-2 gap-2.5">
-          <button onclick="handlePoint('A')" class="p-3.5 rounded-2xl bg-gradient-to-br from-[#0284c7] to-[#0369a1] hover:from-[#38bdf8] hover:to-[#0284c7] text-white border border-[#38bdf8]/50 shadow-[0_4px_16px_rgba(2,132,199,0.35)] transition-all active:scale-[0.97] flex flex-col items-center justify-center cursor-pointer">
-            <div class="flex items-center gap-1.5">
-              <i data-lucide="plus-circle" class="w-5 h-5 text-white"></i>
-              <span class="text-sm font-black tracking-wide uppercase">+ POINT TEAM A</span>
-            </div>
-            <span class="text-[10px] text-sky-100 font-semibold mt-0.5">Mico & Carlo</span>
+          <button
+            onclick="addPoint('A')"
+            class="py-4 px-3 rounded-2xl bg-gradient-to-br from-sky-600 to-sky-700 hover:from-sky-500 text-white font-black text-xs flex flex-col items-center justify-center gap-1 shadow-lg active:scale-95 transition cursor-pointer"
+          >
+            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+            <span>TEAM A WON RALLY</span>
           </button>
 
-          <button onclick="handlePoint('B')" class="p-3.5 rounded-2xl bg-gradient-to-br from-[#d97706] to-[#b45309] hover:from-[#f59e0b] hover:to-[#d97706] text-white border border-[#f59e0b]/50 shadow-[0_4px_16px_rgba(217,119,6,0.35)] transition-all active:scale-[0.97] flex flex-col items-center justify-center cursor-pointer">
-            <div class="flex items-center gap-1.5">
-              <i data-lucide="plus-circle" class="w-5 h-5 text-white"></i>
-              <span class="text-sm font-black tracking-wide uppercase">+ POINT TEAM B</span>
-            </div>
-            <span class="text-[10px] text-amber-100 font-semibold mt-0.5">Dan & Paolo</span>
+          <button
+            onclick="addPoint('B')"
+            class="py-4 px-3 rounded-2xl bg-gradient-to-br from-amber-600 to-amber-700 hover:from-amber-500 text-white font-black text-xs flex flex-col items-center justify-center gap-1 shadow-lg active:scale-95 transition cursor-pointer"
+          >
+            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+            <span>TEAM B WON RALLY</span>
           </button>
         </div>
 
-        <button onclick="handleFault()" class="w-full py-3 px-4 rounded-2xl bg-[#1E293B] hover:bg-slate-700 text-[#CCFF00] border border-[#CCFF00]/40 font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-lg transition active:scale-[0.98] cursor-pointer">
-          <i data-lucide="zap-off" class="w-4 h-4 text-[#CCFF00]"></i>
-          <span>FAULT / SWITCH SERVER (SIDE-OUT)</span>
+        <button
+          onclick="handleSideOut()"
+          class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
+        >
+          <i data-lucide="rotate-cw" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
+          <span>Fault / Pass Serve to Other Team</span>
         </button>
       </div>
 
     </div>
 
-    <!-- Bottom Navigation Bar -->
-    <div class="p-3 bg-[#111827] border-t border-[#1E293B] flex items-center justify-between shrink-0">
-      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800">
-        <i data-lucide="timer" class="w-4 h-4 text-[#CCFF00] animate-spin" style="animation-duration: 8s;"></i>
-        <div>
-          <span class="text-[9px] uppercase font-bold text-slate-400 block leading-none">Match Time</span>
-          <span id="match-timer" class="text-xs font-black text-white font-mono leading-tight">00:00</span>
-        </div>
-      </div>
-
-      <button onclick="resetMatch()" class="text-xs font-semibold text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition cursor-pointer">
-        Reset
-      </button>
-
-      <button onclick="openWatchModal()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#CCFF00] to-[#99cc00] text-black font-extrabold text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(204,255,0,0.3)] hover:brightness-110 active:scale-95 transition cursor-pointer">
-        <i data-lucide="watch" class="w-4 h-4"></i>
-        <span>Smartwatch Mode</span>
-      </button>
-    </div>
-
-    <!-- VIEW 2: SMARTWATCH COMPANION OVERLAY -->
-    <div id="watch-overlay" class="absolute inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-4 transition-all">
-      <div class="text-center mb-3">
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E293B] border border-slate-700 text-[11px] font-bold text-slate-300">
-          <i data-lucide="watch" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
-          <span>PiklrPH Watch Companion</span>
-        </div>
-        <p class="text-[10px] text-slate-400 mt-1">Simulating Apple Watch Ultra & Wear OS</p>
-      </div>
-
-      <div class="relative w-[300px] h-[360px] bg-[#0c121c] rounded-[48px] p-4 shadow-[0_0_60px_rgba(204,255,0,0.25)] border-4 border-slate-700 flex flex-col justify-between overflow-hidden">
-        <div class="absolute -right-3 top-16 w-3 h-12 bg-slate-600 rounded-r-md border border-slate-500"></div>
-        <div class="absolute -right-2.5 top-32 w-2 h-8 bg-slate-700 rounded-r-sm"></div>
-
-        <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 z-10 shrink-0">
-          <span id="watch-clock">09:41</span>
-          <div class="flex items-center gap-1 text-[#CCFF00]">
-            <i data-lucide="activity" class="w-3 h-3"></i>
-            <span id="watch-haptic" class="text-[9px] uppercase tracking-wider font-extrabold">Haptic On</span>
-          </div>
-        </div>
-
-        <div class="flex-1 my-2 flex flex-col gap-2">
-          <button onclick="watchAddPoint()" class="flex-1 rounded-2xl bg-gradient-to-b from-[#111e33] to-[#0e1726] border border-slate-700 active:bg-[#CCFF00]/20 flex flex-col items-center justify-center relative group transition active:scale-95 shadow-inner cursor-pointer">
-            <div class="text-[10px] uppercase font-black tracking-widest text-[#CCFF00] flex items-center gap-1">
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-              <span>Rally Won (+1 Pt)</span>
-            </div>
-            
-            <div class="flex items-baseline gap-2 mt-1">
-              <span id="watch-digits" class="text-4xl font-black text-white font-mono">0 - 0</span>
-              <span id="watch-server-tag" class="text-sm font-black px-1.5 py-0.5 rounded bg-[#CCFF00] text-black">S2</span>
-            </div>
-            <span id="watch-serving-team-hint" class="text-[10px] font-bold text-[#38BDF8] mt-0.5">Team A Serving</span>
-          </button>
-
-          <button onclick="watchFault()" class="h-16 rounded-2xl bg-[#1c1917] border border-amber-600/40 hover:bg-amber-950/40 active:bg-amber-600/30 flex items-center justify-center gap-2 text-amber-400 font-extrabold text-xs transition active:scale-95 cursor-pointer">
-            <i data-lucide="zap-off" class="w-4 h-4"></i>
-            <span>FAULT / SIDE-OUT</span>
-          </button>
-        </div>
-
-        <div class="flex items-center justify-between pt-1 z-10 shrink-0">
-          <button onclick="handleUndo(); updateWatchUI(); triggerHaptic('Undo');" class="text-[11px] font-bold text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer">
-            <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
-            <span>Undo</span>
-          </button>
-
-          <button onclick="triggerWinSimulation()" class="text-[10px] font-extrabold text-rose-400 hover:text-rose-300 px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 cursor-pointer">
-            End Game
-          </button>
-        </div>
-      </div>
-
-      <button onclick="closeWatchModal()" class="mt-4 px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center gap-1.5 border border-slate-600 transition active:scale-95 cursor-pointer">
-        <i data-lucide="chevron-down" class="w-4 h-4"></i>
-        <span>Exit Watch View</span>
-      </button>
-    </div>
-
-    <!-- VIEW 3: MATCH SUMMARY & DUPR RATING SYNC MODAL -->
-    <div id="summary-modal" class="absolute inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex-col justify-end transition-all">
-      <div class="bg-[#111827] border-t border-[#1E293B] rounded-t-3xl p-5 max-h-[90%] overflow-y-auto space-y-4 shadow-2xl">
-        <div class="text-center pt-2">
-          <div class="w-14 h-14 mx-auto rounded-full bg-[#CCFF00]/10 border-2 border-[#CCFF00] flex items-center justify-center text-[#CCFF00] mb-2 shadow-[0_0_25px_rgba(204,255,0,0.4)]">
-            <i data-lucide="trophy" class="w-7 h-7"></i>
-          </div>
-          <span class="text-xs uppercase tracking-widest font-black text-[#CCFF00]">Official Game Result</span>
-          <h2 id="summary-winner-title" class="text-2xl font-black text-white mt-0.5">Team A Wins! (11 - 8)</h2>
-          <p class="text-xs text-slate-400">Match verified under Official Philippine Pickleball Rules</p>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2 text-center">
-          <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-            <span class="text-[10px] font-bold text-slate-400 block uppercase">Duration</span>
-            <span id="summary-duration" class="text-sm font-black text-white">12:44</span>
-          </div>
-          <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-            <span class="text-[10px] font-bold text-slate-400 block uppercase">Rallies</span>
-            <span id="summary-rallies" class="text-sm font-black text-[#CCFF00]">26</span>
-          </div>
-          <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-            <span class="text-[10px] font-bold text-slate-400 block uppercase">Side-Outs</span>
-            <span id="summary-sideouts" class="text-sm font-black text-sky-400">11</span>
-          </div>
-        </div>
-
-        <!-- 4-Player DUPR Consensus Card -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-              <span class="text-xs font-black text-white uppercase tracking-wider">DUPR Consensus & Rating Sync</span>
-            </div>
-            <span id="dupr-consensus-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">3/4 Confirmed</span>
-          </div>
-
-          <div class="p-2 rounded-xl bg-[#111827] border border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-[#38BDF8] text-black font-black flex items-center justify-center text-xs">M</div>
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold text-white">Mico (You)</span>
-                  <span class="text-[10px] text-slate-400">Team A</span>
-                </div>
-                <div class="text-[10px] font-semibold text-emerald-400">3.42 → <span class="font-black text-[#CCFF00]">+0.06</span> (3.48)</div>
-              </div>
-            </div>
-            <span class="text-[10px] font-extrabold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <i data-lucide="check" class="w-3 h-3"></i> Host Confirmed
-            </span>
-          </div>
-
-          <div class="p-2 rounded-xl bg-[#111827] border border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-[#38BDF8]/70 text-black font-black flex items-center justify-center text-xs">C</div>
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold text-white">Carlo</span>
-                  <span class="text-[10px] text-slate-400">Team A</span>
-                </div>
-                <div class="text-[10px] font-semibold text-emerald-400">3.35 → <span class="font-black text-[#CCFF00]">+0.05</span> (3.40)</div>
-              </div>
-            </div>
-            <span class="text-[10px] font-extrabold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <i data-lucide="check" class="w-3 h-3"></i> Carlo Confirmed
-            </span>
-          </div>
-
-          <div class="p-2 rounded-xl bg-[#111827] border border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-[#F59E0B] text-black font-black flex items-center justify-center text-xs">D</div>
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold text-white">Dan</span>
-                  <span class="text-[10px] text-slate-400">Team B</span>
-                </div>
-                <div class="text-[10px] font-semibold text-rose-400">3.50 → <span class="font-black">-0.05</span> (3.45)</div>
-              </div>
-            </div>
-            <span id="badge-dan" class="text-[10px] font-extrabold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <i data-lucide="clock" class="w-3 h-3 animate-spin" style="animation-duration: 4s;"></i> Waiting for Dan
-            </span>
-          </div>
-
-          <div class="p-2 rounded-xl bg-[#111827] border border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-[#F59E0B]/70 text-black font-black flex items-center justify-center text-xs">P</div>
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold text-white">Paolo</span>
-                  <span class="text-[10px] text-slate-400">Team B</span>
-                </div>
-                <div class="text-[10px] font-semibold text-rose-400">3.30 → <span class="font-black">-0.04</span> (3.26)</div>
-              </div>
-            </div>
-            <span id="badge-paolo" class="text-[10px] font-extrabold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <i data-lucide="clock" class="w-3 h-3 animate-spin" style="animation-duration: 4s;"></i> Waiting for Paolo
-            </span>
-          </div>
-        </div>
-
-        <div class="space-y-2 pt-1">
-          <button id="dupr-submit-btn" onclick="submitToDupr()" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#CCFF00] to-[#a3e635] text-black font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.35)] hover:brightness-110 active:scale-98 transition cursor-pointer">
-            <i data-lucide="send" class="w-4 h-4"></i>
-            <span>SUBMIT TO SUPABASE & DUPR</span>
-          </button>
-
-          <button onclick="closeSummaryModal()" class="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-            <span>New Match / Rematch</span>
-          </button>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Toast Notification Banner -->
-    <div id="toast" class="absolute top-14 inset-x-4 bg-slate-900 border border-[#CCFF00] text-white p-3 rounded-xl shadow-2xl z-50 text-xs font-bold flex items-center gap-2.5 transform -translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
-      <i data-lucide="bell" class="w-4 h-4 text-[#CCFF00] shrink-0"></i>
-      <span id="toast-text" class="flex-1">Point added</span>
+    <!-- Match Timer Footer -->
+    <div class="p-3 bg-[#111827] border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+      <span>Match Time: <strong id="timer-display" class="text-white font-mono">00:00</strong></span>
+      <span class="text-emerald-400 font-semibold">Game active</span>
     </div>
 
   </div>
 
-  <!-- JavaScript Controller -->
   <script>
-    // 1. SUPABASE CLIENT
-    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let scoreA = 0;
+    let scoreB = 0;
+    let serving = 'A';
+    let seconds = 0;
 
-    let venuesList = [];
-    let selectedVenueId = null;
-    let selectedCourtId = null;
-    let activeMatchId = null;
-
-    const numWords = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"];
-
-    let gameState = {
-      teamAScore: 0,
-      teamBScore: 0,
-      servingTeam: 'A',
-      serverNumber: 2,
-      teamAPositions: { mico: 'R', carlo: 'L' },
-      teamBPositions: { dan: 'R', paolo: 'L' },
-      rallyCount: 0,
-      sideOutCount: 0,
-      isFirstServiceOfGame: true
-    };
-
-    let historyStack = [];
-    let matchSeconds = 0;
-    let timerInterval = null;
-    let voiceEnabled = true;
-
-    function showToast(text, duration = 2200) {
-      const toast = document.getElementById('toast');
-      const toastText = document.getElementById('toast-text');
-      toastText.innerText = text;
-      toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
-      toast.classList.add('translate-y-0', 'opacity-100');
-      
-      setTimeout(() => {
-        toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
-        toast.classList.remove('translate-y-0', 'opacity-100');
-      }, duration);
-    }
-
-    // 2. LOAD VENUES & COURTS FROM SUPABASE
-    async function loadVenuesAndCourts() {
-      try {
-        const { data, error } = await supabaseClient
-          .from('venues')
-          .select('id, name, courts (id, name, is_active)')
-          .order('name', { ascending: true });
-
-        if (error) throw error;
-
-        venuesList = data || [];
-        const venueSelect = document.getElementById('ref-venue-select');
-
-        if (venuesList.length === 0) {
-          venueSelect.innerHTML = '<option value="">No venues found</option>';
-          return;
-        }
-
-        venueSelect.innerHTML = venuesList.map(v => `
-          <option value="${v.id}">${v.name}</option>
-        `).join('');
-
-        selectedVenueId = venuesList[0].id;
-        populateCourts(venuesList[0]);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    function onVenueChange(venueId) {
-      selectedVenueId = venueId;
-      const venue = venuesList.find(v => v.id === venueId);
-      if (venue) populateCourts(venue);
-    }
-
-    function populateCourts(venue) {
-      const courtSelect = document.getElementById('ref-court-select');
-      const courts = venue.courts || [];
-
-      if (courts.length === 0) {
-        courtSelect.innerHTML = '<option value="">No courts</option>';
-        selectedCourtId = null;
-        return;
-      }
-
-      courtSelect.innerHTML = courts.map(c => `
-        <option value="${c.id}">${c.name}</option>
-      `).join('');
-
-      selectedCourtId = courts[0].id;
-      initLiveMatchRecord();
-    }
-
-    function onCourtChange(courtId) {
-      selectedCourtId = courtId;
-      initLiveMatchRecord();
-    }
-
-    // 3. PERSIST LIVE MATCH IN SUPABASE
-    async function initLiveMatchRecord() {
-      if (!selectedVenueId || !selectedCourtId) return;
-
-      try {
-        const { data, error } = await supabaseClient
-          .from('matches')
-          .insert([{
-            venue_id: selectedVenueId,
-            court_id: selectedCourtId,
-            team_a_name: 'Mico & Carlo',
-            team_b_name: 'Dan & Paolo',
-            team_a_score: gameState.teamAScore,
-            team_b_score: gameState.teamBScore,
-            server_number: gameState.serverNumber,
-            serving_team: gameState.servingTeam,
-            status: 'in_progress'
-          }])
-          .select()
-          .single();
-
-        if (error) throw error;
-        activeMatchId = data.id;
-      } catch (err) {
-        console.warn('Matches table sync note:', err.message);
-      }
-    }
-
-    async function syncScoreToSupabase() {
-      if (!activeMatchId) return;
-
-      try {
-        await supabaseClient
-          .from('matches')
-          .update({
-            team_a_score: gameState.teamAScore,
-            team_b_score: gameState.teamBScore,
-            server_number: gameState.serverNumber,
-            serving_team: gameState.servingTeam,
-            duration_seconds: matchSeconds
-          })
-          .eq('id', activeMatchId);
-      } catch (err) {
-        console.warn('Live score sync error:', err.message);
-      }
-    }
-
-    // Voice announcement
-    function announceScore() {
-      const servingScore = gameState.servingTeam === 'A' ? gameState.teamAScore : gameState.teamBScore;
-      const receivingScore = gameState.servingTeam === 'A' ? gameState.teamBScore : gameState.teamAScore;
-      const serverNum = gameState.serverNumber;
-      const text = `${servingScore}, ${receivingScore}, ${serverNum}`;
-
-      if (voiceEnabled && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.05;
-        window.speechSynthesis.speak(utterance);
-      }
-    }
-
-    function toggleVoiceAnnounce() {
-      voiceEnabled = !voiceEnabled;
-      const btn = document.getElementById('voice-toggle-btn');
-      if (voiceEnabled) {
-        btn.classList.add('text-[#CCFF00]');
-        btn.classList.remove('text-slate-400');
-        showToast('Voice referee calls: ENABLED');
+    function addPoint(team) {
+      if (team === serving) {
+        if (team === 'A') scoreA++;
+        else scoreB++;
       } else {
-        btn.classList.remove('text-[#CCFF00]');
-        btn.classList.add('text-slate-400');
-        showToast('Voice referee calls: MUTED');
+        // Switch serve if receiver wins rally
+        serving = (serving === 'A') ? 'B' : 'A';
       }
-    }
-
-    function pushHistory() {
-      historyStack.push(JSON.parse(JSON.stringify(gameState)));
-      updateUndoButton();
-    }
-
-    function updateUndoButton() {
-      const btn = document.getElementById('undo-btn');
-      if (btn) btn.disabled = historyStack.length === 0;
-    }
-
-    // POINT & FAULT LOGIC
-    function handlePoint(scoringTeam) {
-      pushHistory();
-      gameState.rallyCount++;
-
-      if (scoringTeam === gameState.servingTeam) {
-        if (scoringTeam === 'A') {
-          gameState.teamAScore++;
-          const currentMico = gameState.teamAPositions.mico;
-          gameState.teamAPositions.mico = currentMico === 'R' ? 'L' : 'R';
-          gameState.teamAPositions.carlo = currentMico === 'R' ? 'R' : 'L';
-        } else {
-          gameState.teamBScore++;
-          const currentDan = gameState.teamBPositions.dan;
-          gameState.teamBPositions.dan = currentDan === 'R' ? 'L' : 'R';
-          gameState.teamBPositions.paolo = currentDan === 'R' ? 'R' : 'L';
-        }
-        showToast(`Point Team ${scoringTeam}! Score: ${getScoreString()}`);
-      } else {
-        executeFaultLogic();
-      }
-
-      checkWinCondition();
       updateUI();
-      announceScore();
-      syncScoreToSupabase();
+      checkWin();
     }
 
-    function handleFault() {
-      pushHistory();
-      gameState.rallyCount++;
-      executeFaultLogic();
+    function handleSideOut() {
+      serving = (serving === 'A') ? 'B' : 'A';
       updateUI();
-      announceScore();
-      syncScoreToSupabase();
-    }
-
-    function executeFaultLogic() {
-      if (gameState.isFirstServiceOfGame) {
-        gameState.isFirstServiceOfGame = false;
-        gameState.servingTeam = 'B';
-        gameState.serverNumber = 1;
-        gameState.sideOutCount++;
-        showToast(`Side-Out! Ball to Team B. Score: ${getScoreString()}`);
-      } else if (gameState.serverNumber === 1) {
-        gameState.serverNumber = 2;
-        showToast(`Fault! Second Server (S2) up for Team ${gameState.servingTeam}`);
-      } else {
-        gameState.servingTeam = gameState.servingTeam === 'A' ? 'B' : 'A';
-        gameState.serverNumber = 1;
-        gameState.sideOutCount++;
-        showToast(`SIDE-OUT! Ball to Team ${gameState.servingTeam}. Score: ${getScoreString()}`);
-      }
-    }
-
-    function handleUndo() {
-      if (historyStack.length === 0) return;
-      gameState = historyStack.pop();
-      updateUndoButton();
-      updateUI();
-      showToast(`Undo: Score reverted to ${getScoreString()}`);
-      announceScore();
-      syncScoreToSupabase();
-    }
-
-    function getScoreString() {
-      const sScore = gameState.servingTeam === 'A' ? gameState.teamAScore : gameState.teamBScore;
-      const rScore = gameState.servingTeam === 'A' ? gameState.teamBScore : gameState.teamAScore;
-      return `${sScore} - ${rScore} - ${gameState.serverNumber}`;
-    }
-
-    function getSpokenWords() {
-      const sScore = gameState.servingTeam === 'A' ? gameState.teamAScore : gameState.teamBScore;
-      const rScore = gameState.servingTeam === 'A' ? gameState.teamBScore : gameState.teamAScore;
-      const sWord = numWords[sScore] || sScore;
-      const rWord = numWords[rScore] || rScore;
-      const serverWord = gameState.serverNumber === 1 ? "Server One" : "Server Two";
-      return `"${sWord} serves ${rWord}, ${serverWord}"`;
-    }
-
-    function getActiveMatchups() {
-      let serverName = '';
-      let serverTeam = gameState.servingTeam;
-      let serverBox = 'R';
-
-      if (serverTeam === 'A') {
-        if (gameState.serverNumber === 1) {
-          serverName = gameState.teamAScore % 2 === 0 
-            ? (gameState.teamAPositions.mico === 'R' ? 'Mico' : 'Carlo')
-            : (gameState.teamAPositions.mico === 'L' ? 'Mico' : 'Carlo');
-          serverBox = gameState.teamAScore % 2 === 0 ? 'R' : 'L';
-        } else {
-          serverName = gameState.teamAScore % 2 === 0 
-            ? (gameState.teamAPositions.mico === 'L' ? 'Mico' : 'Carlo')
-            : (gameState.teamAPositions.mico === 'R' ? 'Mico' : 'Carlo');
-          serverBox = (serverName === 'Mico') ? gameState.teamAPositions.mico : gameState.teamAPositions.carlo;
-        }
-      } else {
-        if (gameState.serverNumber === 1) {
-          serverName = gameState.teamBScore % 2 === 0 
-            ? (gameState.teamBPositions.dan === 'R' ? 'Dan' : 'Paolo')
-            : (gameState.teamBPositions.dan === 'L' ? 'Dan' : 'Paolo');
-          serverBox = gameState.teamBScore % 2 === 0 ? 'R' : 'L';
-        } else {
-          serverName = gameState.teamBScore % 2 === 0 
-            ? (gameState.teamBPositions.dan === 'L' ? 'Dan' : 'Paolo')
-            : (gameState.teamBPositions.dan === 'R' ? 'Dan' : 'Paolo');
-          serverBox = (serverName === 'Dan') ? gameState.teamBPositions.dan : gameState.teamBPositions.paolo;
-        }
-      }
-
-      let receiverBox = serverBox;
-      let receiverName = '';
-      if (serverTeam === 'A') {
-        receiverName = (gameState.teamBPositions.dan === receiverBox) ? 'Dan' : 'Paolo';
-      } else {
-        receiverName = (gameState.teamAPositions.mico === receiverBox) ? 'Mico' : 'Carlo';
-      }
-
-      return { serverName, serverTeam, serverBox, receiverName, receiverBox };
-    }
-
-    function checkWinCondition() {
-      const a = gameState.teamAScore;
-      const b = gameState.teamBScore;
-      if ((a >= 11 && a - b >= 2) || (b >= 11 && b - a >= 2)) {
-        triggerWinModal(a > b ? 'Team A' : 'Team B', a, b);
-      }
-    }
-
-    function triggerWinSimulation() {
-      closeWatchModal();
-      triggerWinModal(gameState.teamAScore >= gameState.teamBScore ? 'Team A' : 'Team B', Math.max(gameState.teamAScore, 11), Math.min(gameState.teamBScore, 8));
-    }
-
-    function triggerWinModal(winner, aScore, bScore) {
-      document.getElementById('summary-winner-title').innerText = `${winner} Wins! (${aScore} - ${bScore})`;
-      document.getElementById('summary-rallies').innerText = gameState.rallyCount || 26;
-      document.getElementById('summary-sideouts').innerText = gameState.sideOutCount || 11;
-      
-      const modal = document.getElementById('summary-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      
-      setTimeout(() => {
-        const bDan = document.getElementById('badge-dan');
-        if (bDan) {
-          bDan.className = "text-[10px] font-extrabold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1";
-          bDan.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Dan Confirmed';
-          lucide.createIcons();
-        }
-      }, 1500);
-
-      setTimeout(() => {
-        const bPaolo = document.getElementById('badge-paolo');
-        const consensusBadge = document.getElementById('dupr-consensus-badge');
-        if (bPaolo) {
-          bPaolo.className = "text-[10px] font-extrabold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1";
-          bPaolo.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Paolo Confirmed';
-          if (consensusBadge) consensusBadge.innerText = '4/4 Confirmed';
-          lucide.createIcons();
-        }
-      }, 2500);
-
-      lucide.createIcons();
-    }
-
-    function closeSummaryModal() {
-      document.getElementById('summary-modal').classList.add('hidden');
-      document.getElementById('summary-modal').classList.remove('flex');
-      resetMatch();
-    }
-
-    async function submitToDupr() {
-      const btn = document.getElementById('dupr-submit-btn');
-      btn.innerHTML = '<span class="text-xs">Saving to PostgreSQL...</span>';
-
-      const winner = gameState.teamAScore > gameState.teamBScore ? 'Team A' : 'Team B';
-
-      if (activeMatchId) {
-        await supabaseClient
-          .from('matches')
-          .update({
-            status: 'completed',
-            winner: winner,
-            team_a_score: gameState.teamAScore,
-            team_b_score: gameState.teamBScore,
-            duration_seconds: matchSeconds
-          })
-          .eq('id', activeMatchId);
-      }
-
-      btn.innerHTML = '<i data-lucide="check-circle-2" class="w-5 h-5 text-black"></i> <span>SAVED & SYNCED WITH DUPR!</span>';
-      btn.classList.remove('from-[#CCFF00]', 'to-[#a3e635]');
-      btn.classList.add('bg-emerald-400');
-      lucide.createIcons();
-      showToast('Match record permanently saved to database!', 3000);
-      setTimeout(() => {
-        closeSummaryModal();
-      }, 2000);
-    }
-
-    function resetMatch() {
-      gameState = {
-        teamAScore: 0,
-        teamBScore: 0,
-        servingTeam: 'A',
-        serverNumber: 2,
-        teamAPositions: { mico: 'R', carlo: 'L' },
-        teamBPositions: { dan: 'R', paolo: 'L' },
-        rallyCount: 0,
-        sideOutCount: 0,
-        isFirstServiceOfGame: true
-      };
-      historyStack = [];
-      updateUndoButton();
-      updateUI();
-      showToast('Match reset to 0 - 0 - 2');
-      announceScore();
-      initLiveMatchRecord();
     }
 
     function updateUI() {
-      document.getElementById('score-digits').innerText = getScoreString();
-      document.getElementById('score-words').innerText = getSpokenWords();
-      document.getElementById('team-a-score-pill').innerText = gameState.teamAScore;
-      document.getElementById('team-b-score-pill').innerText = gameState.teamBScore;
+      document.getElementById('score-team-a').innerText = scoreA;
+      document.getElementById('score-team-b').innerText = scoreB;
 
-      const glow = document.getElementById('serving-glow');
-      const badge = document.getElementById('server-badge');
-      const teamACard = document.getElementById('team-a-card');
-      const teamBCard = document.getElementById('team-b-card');
+      const cardA = document.getElementById('card-team-a');
+      const cardB = document.getElementById('card-team-b');
+      const indA = document.getElementById('serve-indicator-a');
+      const indB = document.getElementById('serve-indicator-b');
+      const callout = document.getElementById('serving-callout');
 
-      if (gameState.servingTeam === 'A') {
-        glow.className = "absolute -top-10 -right-10 w-32 h-32 bg-[#38BDF8]/25 rounded-full blur-2xl pointer-events-none transition-all duration-500";
-        badge.innerText = `TEAM A SERVING (S${gameState.serverNumber})`;
-        badge.className = "px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/40";
-        teamACard.className = "p-2 rounded-xl bg-[#38BDF8]/15 border-2 border-[#38BDF8] flex items-center justify-between shadow-[0_0_12px_rgba(56,189,248,0.25)]";
-        teamBCard.className = "p-2 rounded-xl bg-slate-800/40 border border-slate-700/50 flex items-center justify-between";
+      if (serving === 'A') {
+        cardA.className = "p-4 rounded-3xl bg-sky-950/30 border-2 border-sky-400 text-center shadow-lg";
+        cardB.className = "p-4 rounded-3xl bg-slate-900/40 border border-slate-800 text-center";
+        indA.className = "text-[10px] font-bold bg-[#CCFF00] text-black px-2 py-0.5 rounded-full inline-block";
+        indA.innerText = "⚡ Serving Now";
+        indB.className = "text-[10px] font-bold bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full inline-block";
+        indB.innerText = "Receiving";
+        callout.innerText = "Team A (Us) is Serving!";
       } else {
-        glow.className = "absolute -top-10 -left-10 w-32 h-32 bg-[#F59E0B]/25 rounded-full blur-2xl pointer-events-none transition-all duration-500";
-        badge.innerText = `TEAM B SERVING (S${gameState.serverNumber})`;
-        badge.className = "px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/40";
-        teamBCard.className = "p-2 rounded-xl bg-[#F59E0B]/15 border-2 border-[#F59E0B] flex items-center justify-between shadow-[0_0_12px_rgba(245,158,11,0.25)]";
-        teamACard.className = "p-2 rounded-xl bg-slate-800/40 border border-slate-700/50 flex items-center justify-between";
-      }
-
-      renderTacticalCourt();
-      updateWatchUI();
-      lucide.createIcons();
-    }
-
-    function renderTacticalCourt() {
-      const matchups = getActiveMatchups();
-
-      ['slot-a-left', 'slot-a-right', 'slot-b-left', 'slot-b-right'].forEach(id => {
-        const el = document.getElementById(`player-${id}`);
-        if (el) el.innerHTML = '';
-      });
-
-      function makePlayerChip(name, teamColor, isServer, isReceiver) {
-        const borderClass = isServer 
-          ? 'border-2 border-[#CCFF00] serving-pulse shadow-[0_0_15px_rgba(204,255,0,0.8)]' 
-          : isReceiver 
-            ? 'border-2 border-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]'
-            : 'border border-slate-600';
-        
-        const badge = isServer 
-          ? '<span class="absolute -top-2 -right-1 text-[9px] bg-[#CCFF00] text-black font-black px-1 rounded-full shadow">⚡ S</span>'
-          : isReceiver
-            ? '<span class="absolute -top-2 -right-1 text-[9px] bg-emerald-400 text-black font-black px-1 rounded-full shadow">🎯</span>'
-            : '';
-
-        return `
-          <div class="relative flex flex-col items-center">
-            <div class="w-9 h-9 rounded-full ${teamColor} text-black font-black flex items-center justify-center text-xs ${borderClass} relative transition-all duration-300">
-              ${name[0]}
-              ${badge}
-            </div>
-            <span class="text-[10px] font-extrabold text-white mt-1 drop-shadow">${name}</span>
-          </div>
-        `;
-      }
-
-      const micoPos = gameState.teamAPositions.mico;
-      const danPos = gameState.teamBPositions.dan;
-
-      const micoChip = makePlayerChip('Mico', 'bg-[#38BDF8]', matchups.serverName === 'Mico', matchups.receiverName === 'Mico');
-      const carloChip = makePlayerChip('Carlo', 'bg-[#38BDF8]/80', matchups.serverName === 'Carlo', matchups.receiverName === 'Carlo');
-
-      if (micoPos === 'R') {
-        document.getElementById('player-slot-a-right').innerHTML = micoChip;
-        document.getElementById('player-slot-a-left').innerHTML = carloChip;
-      } else {
-        document.getElementById('player-slot-a-left').innerHTML = micoChip;
-        document.getElementById('player-slot-a-right').innerHTML = carloChip;
-      }
-
-      const danChip = makePlayerChip('Dan', 'bg-[#F59E0B]', matchups.serverName === 'Dan', matchups.receiverName === 'Dan');
-      const paoloChip = makePlayerChip('Paolo', 'bg-[#F59E0B]/80', matchups.serverName === 'Paolo', matchups.receiverName === 'Paolo');
-
-      if (danPos === 'R') {
-        document.getElementById('player-slot-b-right').innerHTML = danChip;
-        document.getElementById('player-slot-b-left').innerHTML = paoloChip;
-      } else {
-        document.getElementById('player-slot-b-left').innerHTML = danChip;
-        document.getElementById('player-slot-b-right').innerHTML = paoloChip;
-      }
-
-      const line = document.getElementById('serve-arrow-line');
-      const hint = document.getElementById('crosscourt-hint');
-
-      if (matchups.serverTeam === 'A') {
-        if (matchups.serverBox === 'R') {
-          line.setAttribute('x1', '290'); line.setAttribute('y1', '35');
-          line.setAttribute('x2', '100'); line.setAttribute('y2', '145');
-        } else {
-          line.setAttribute('x1', '100'); line.setAttribute('y1', '35');
-          line.setAttribute('x2', '290'); line.setAttribute('y2', '145');
-        }
-      } else {
-        if (matchups.serverBox === 'R') {
-          line.setAttribute('x1', '290'); line.setAttribute('y1', '145');
-          line.setAttribute('x2', '100'); line.setAttribute('y2', '35');
-        } else {
-          line.setAttribute('x1', '100'); line.setAttribute('y1', '145');
-          line.setAttribute('x2', '290'); line.setAttribute('y2', '35');
-        }
-      }
-      hint.innerText = `${matchups.serverName} ⚡ → ${matchups.receiverName} (Crosscourt)`;
-    }
-
-    function openWatchModal() {
-      updateWatchUI();
-      document.getElementById('watch-overlay').classList.remove('hidden');
-      document.getElementById('watch-overlay').classList.add('flex');
-      lucide.createIcons();
-    }
-
-    function closeWatchModal() {
-      document.getElementById('watch-overlay').classList.add('hidden');
-      document.getElementById('watch-overlay').classList.remove('flex');
-    }
-
-    function updateWatchUI() {
-      const sScore = gameState.servingTeam === 'A' ? gameState.teamAScore : gameState.teamBScore;
-      const rScore = gameState.servingTeam === 'A' ? gameState.teamBScore : gameState.teamAScore;
-      
-      const digitsEl = document.getElementById('watch-digits');
-      const tagEl = document.getElementById('watch-server-tag');
-      const teamHint = document.getElementById('watch-serving-team-hint');
-
-      if (digitsEl) digitsEl.innerText = `${sScore} - ${rScore}`;
-      if (tagEl) tagEl.innerText = `S${gameState.serverNumber}`;
-      if (teamHint) {
-        teamHint.innerText = `Team ${gameState.servingTeam} Serving`;
-        teamHint.className = gameState.servingTeam === 'A' 
-          ? "text-[10px] font-bold text-[#38BDF8] mt-0.5" 
-          : "text-[10px] font-bold text-[#F59E0B] mt-0.5";
+        cardB.className = "p-4 rounded-3xl bg-amber-950/30 border-2 border-amber-400 text-center shadow-lg";
+        cardA.className = "p-4 rounded-3xl bg-slate-900/40 border border-slate-800 text-center";
+        indB.className = "text-[10px] font-bold bg-[#CCFF00] text-black px-2 py-0.5 rounded-full inline-block";
+        indB.innerText = "⚡ Serving Now";
+        indA.className = "text-[10px] font-bold bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full inline-block";
+        indA.innerText = "Receiving";
+        callout.innerText = "Team B (Them) is Serving!";
       }
     }
 
-    function triggerHaptic(type) {
-      const haptic = document.getElementById('watch-haptic');
-      if (haptic) {
-        haptic.innerText = `${type}!`;
-        haptic.classList.add('text-white');
-        setTimeout(() => {
-          haptic.innerText = 'Haptic On';
-          haptic.classList.remove('text-white');
-        }, 800);
+    function checkWin() {
+      if ((scoreA >= 11 && scoreA - scoreB >= 2) || (scoreB >= 11 && scoreB - scoreA >= 2)) {
+        alert(`Game Over! ${scoreA > scoreB ? 'Team A' : 'Team B'} Wins (${scoreA} - ${scoreB})!`);
+        resetMatch();
       }
-      if ('vibrate' in navigator) navigator.vibrate([40, 30, 40]);
     }
 
-    function watchAddPoint() {
-      triggerHaptic('+1 Pt');
-      handlePoint(gameState.servingTeam);
+    function resetMatch() {
+      scoreA = 0;
+      scoreB = 0;
+      serving = 'A';
+      updateUI();
     }
 
-    function watchFault() {
-      triggerHaptic('Fault');
-      handleFault();
-    }
-
-    function startTimer() {
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        matchSeconds++;
-        const mins = String(Math.floor(matchSeconds / 60)).padStart(2, '0');
-        const secs = String(matchSeconds % 60).padStart(2, '0');
-        const timerEl = document.getElementById('match-timer');
-        if (timerEl) timerEl.innerText = `${mins}:${secs}`;
-        
-        const summaryDur = document.getElementById('summary-duration');
-        if (summaryDur) summaryDur.innerText = `${mins}:${secs}`;
-      }, 1000);
-    }
-
-    function updateClock() {
-      const now = new Date();
-      const hrs = String(now.getHours()).padStart(2, '0');
-      const mns = String(now.getMinutes()).padStart(2, '0');
-      const clockEl = document.getElementById('watch-clock');
-      if (clockEl) clockEl.innerText = `${hrs}:${mns}`;
-    }
-    setInterval(updateClock, 10000);
+    setInterval(() => {
+      seconds++;
+      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      document.getElementById('timer-display').innerText = `${m}:${s}`;
+    }, 1000);
 
     window.addEventListener('DOMContentLoaded', () => {
-      loadVenuesAndCourts();
-      startTimer();
-      updateClock();
-      updateUI();
-      updateUndoButton();
+      lucide.createIcons();
     });
   </script>
 </body>

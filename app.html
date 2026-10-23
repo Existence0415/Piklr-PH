@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PiklrPH — The Home Court of Philippine Pickleball</title>
+  <title>PiklrPH — Play Pickleball in the Philippines</title>
 
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#0B131E">
@@ -30,58 +30,60 @@
   <!-- Mobile Frame Container (max-w: 420px, h: 880px) -->
   <div class="relative w-full max-w-[420px] h-screen sm:h-[880px] bg-[#0B131E] sm:rounded-[40px] border border-slate-800 shadow-2xl flex flex-col justify-between overflow-hidden">
     
-    <!-- Top System Dynamic Bar -->
-    <header class="pt-3 pb-2 px-6 flex items-center justify-between z-30 shrink-0 bg-[#0B131E]/95 backdrop-blur-md border-b border-slate-800/40">
+    <!-- Top System Header Bar -->
+    <header class="pt-3 pb-2 px-5 flex items-center justify-between z-30 shrink-0 bg-[#0B131E]/95 backdrop-blur-md border-b border-slate-800/60">
       <div class="flex items-center gap-2">
         <img src="logo.png" alt="PiklrPH" class="h-6 w-auto object-contain" />
-        <span class="text-[10px] font-black uppercase text-[#CCFF00] tracking-widest">LIVE</span>
+        <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#CCFF00]/15 text-[#CCFF00] border border-[#CCFF00]/30">
+          Philippine Pickleball
+        </span>
       </div>
       <div class="flex items-center gap-2">
-        <a href="admin.html" class="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/80 px-2 py-0.5 rounded-lg border border-slate-700">HQ Admin</a>
+        <a href="admin.html" class="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700">HQ Admin</a>
         <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
       </div>
     </header>
 
-    <!-- Dynamic Module Viewport (Iframe / Inline Dynamic Loader) -->
+    <!-- Dynamic Module Viewport (Iframe) -->
     <main class="flex-1 relative overflow-hidden bg-[#070B11]">
       <iframe id="app-viewport" src="module2.html" class="w-full h-full border-none" loading="eager"></iframe>
     </main>
 
-    <!-- Persistent Bottom Mobile App Tab Bar -->
-    <nav class="h-18 bg-[#111827]/95 backdrop-blur-lg border-t border-slate-800 px-3 py-1 flex items-center justify-around z-40 shrink-0">
+    <!-- Simplified Bottom Tab Bar -->
+    <nav class="h-16 bg-[#111827]/95 backdrop-blur-lg border-t border-slate-800 px-2 py-1 flex items-center justify-around z-40 shrink-0">
       
       <!-- Tab 1: Book Courts -->
       <button id="tab-btn-courts" onclick="navigateTab('module2.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-[#CCFF00] transition cursor-pointer">
-        <i data-lucide="map-pin" class="w-5 h-5"></i>
+        <i data-lucide="map-pin" class="w-4 h-4"></i>
         <span class="text-[10px] font-black mt-0.5">Courts</span>
       </button>
 
-      <!-- Tab 2: Live Pila (Module 3 Digital Paddle Rack) -->
+      <!-- Tab 2: Queue (Pila) -->
       <button id="tab-btn-pila" onclick="navigateTab('pila.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
-        <i data-lucide="users" class="w-5 h-5"></i>
-        <span class="text-[10px] font-bold mt-0.5">Pila</span>
+        <i data-lucide="clock" class="w-4 h-4"></i>
+        <span class="text-[10px] font-bold mt-0.5">Queue</span>
       </button>
 
-      <!-- Tab 3: Match Scorer / Tourneys -->
+      <!-- Tab 3: Easy Scorekeeper (Referee) -->
       <button id="tab-btn-referee" onclick="navigateTab('module4.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
         <div class="relative">
-          <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
-            <i data-lucide="activity" class="w-4 h-4 text-[#CCFF00]"></i>
+          <div class="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
+            <i data-lucide="award" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
           </div>
         </div>
-        <span class="text-[10px] font-bold mt-0.5">Referee</span>
+        <span class="text-[10px] font-bold mt-0.5">Scorer</span>
       </button>
 
-      <!-- Tab 4: Shop & Perks -->
+      <!-- Tab 4: Shop Gear & Perks -->
       <button id="tab-btn-exchange" onclick="navigateTab('module7.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
-        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-        <span class="text-[10px] font-bold mt-0.5">Exchange</span>
+        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+        <span class="text-[10px] font-bold mt-0.5">Shop</span>
       </button>
 
-      <!-- Tab 5: Athlete Passport -->
+      <!-- Tab 5: Player Profile & Card -->
       <button id="tab-btn-passport" onclick="navigateTab('passport.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
-        <i data-lucide="user" class="w-5 h-5"></i>
-        <span class="text-[10px] font-bold mt-0.5">Passport</span>
+        <i data-lucide="user" class="w-4 h-4"></i>
+        <span class="text-[10px] font-bold mt-0.5">Profile</span>
       </button>
 
     </nav>
@@ -106,9 +108,7 @@
         if (activeSpan) activeSpan.className = 'text-[10px] font-black mt-0.5';
       }
 
-      if (window.lucide) {
-        lucide.createIcons();
-      }
+      if (window.lucide) lucide.createIcons();
     }
 
     // Support window.parent.switchModule('pila') from inside child pages
@@ -129,9 +129,7 @@
     };
 
     window.addEventListener('DOMContentLoaded', () => {
-      if (window.lucide) {
-        lucide.createIcons();
-      }
+      if (window.lucide) lucide.createIcons();
     });
   </script>
 </body>

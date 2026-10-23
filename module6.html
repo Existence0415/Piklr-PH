@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PiklrPH - Partner Matchmaker & Coach Marketplace (Module 6)</title>
+  <title>PiklrPH - Partner Matchmaker & Coaches (Module 6)</title>
 
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Lucide Icons CDN & Supabase Client -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -32,43 +32,42 @@
     .beacon-pulse { animation: pulse-ring 2s infinite ease-in-out; }
   </style>
 </head>
-<body class="bg-[#070B11] text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
+<body class="bg-[#0B131E] text-slate-100 min-h-screen flex flex-col justify-between overflow-hidden select-none">
 
   <!-- Mobile Frame Container -->
-  <div class="w-full max-w-[420px] h-[880px] max-h-screen bg-[#0B131E] sm:rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.85)] border border-[#1E293B] flex flex-col relative overflow-hidden">
+  <div class="w-full h-full flex flex-col justify-between overflow-hidden">
     
     <!-- Top System Bar -->
-    <div class="pt-3 px-6 pb-2 flex items-center justify-between z-30 shrink-0 bg-[#0B131E]">
-      <span class="text-xs font-semibold text-slate-400">09:41</span>
-      <div class="w-28 h-4 bg-black rounded-full flex items-center justify-center gap-1.5 border border-slate-800">
-        <span class="w-2 h-2 rounded-full bg-[#CCFF00] animate-ping"></span>
-        <span class="text-[9px] font-bold tracking-wider text-[#CCFF00]">COMMUNITY HUB</span>
+    <div class="pt-3 px-4 pb-2 flex items-center justify-between z-30 shrink-0 bg-[#0B131E] border-b border-slate-800/80">
+      <div class="flex items-center gap-2">
+        <button onclick="openAppTab('courts')" class="p-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white" title="Back to Courts">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </button>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[#CCFF00] animate-ping"></span>
+          <span class="text-xs font-black uppercase tracking-wider text-white">Community & Coaches</span>
+        </div>
       </div>
       <div class="flex items-center gap-2">
-        <a href="admin.html" class="text-[10px] font-bold text-[#CCFF00] hover:underline">HQ Admin</a>
-        <div class="flex items-center gap-1 text-slate-400 text-xs">
-          <i data-lucide="radio" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
-          <span class="text-[10px] font-bold">5G</span>
-        </div>
+        <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-[#CCFF00] bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700 hover:brightness-125">HQ Admin ↗</a>
       </div>
     </div>
 
     <!-- Top App Bar & Segmented Navigation -->
-    <div class="px-4 py-2.5 bg-[#111827] border-y border-[#1E293B] shrink-0 space-y-2.5">
+    <div class="px-4 py-2.5 bg-[#111827] border-b border-[#1E293B] shrink-0 space-y-2.5">
       <div class="flex items-center justify-between">
         <div>
           <div class="flex items-center gap-1.5">
             <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#CCFF00]">PiklrPH Network</span>
-            <span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Live Database</span>
+            <span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Live DB</span>
           </div>
           <h1 class="text-sm font-black text-white tracking-wide">
-            Doubles Matchmaker & Academy
+            Doubles Partners & Coaches
           </h1>
         </div>
 
-        <button onclick="showToast('You have 2 pending partner requests in BGC!')" class="relative w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition active:scale-95 cursor-pointer">
-          <i data-lucide="bell" class="w-4 h-4"></i>
-          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#CCFF00] rounded-full"></span>
+        <button onclick="openAppTab('passport')" class="relative w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition active:scale-95 cursor-pointer" title="My Profile">
+          <i data-lucide="user" class="w-4 h-4"></i>
         </button>
       </div>
 
@@ -80,13 +79,13 @@
         </button>
         <button id="seg-btn-coach" onclick="switchSegment('coach')" class="py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition cursor-pointer">
           <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
-          <span>Book Coach & Clinics</span>
+          <span>Coaches & Clinics</span>
         </button>
       </div>
     </div>
 
     <!-- MAIN SCROLLABLE CONTENT BODY -->
-    <div class="flex-1 overflow-y-auto px-4 py-3 flex flex-col justify-between">
+    <div class="flex-1 overflow-y-auto no-scrollbar px-4 py-3 flex flex-col justify-between">
 
       <!-- ================= VIEW 1: FIND A DOUBLES PARTNER ================= -->
       <div id="view-partner" class="space-y-3 flex-1 flex flex-col">
@@ -94,16 +93,16 @@
         <!-- Filter Chips Bar -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 shrink-0">
           <button onclick="filterPartners('all', this)" class="filter-chip px-3 py-1.5 rounded-xl bg-[#CCFF00] text-black text-xs font-black shrink-0 transition cursor-pointer shadow-sm">
-            All DUPR
+            All Levels
           </button>
-          <button onclick="filterPartners('3.0-3.5', this)" class="filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer">
-            3.0 - 3.5
+          <button onclick="filterPartners('beginner', this)" class="filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer">
+            Beginners
+          </button>
+          <button onclick="filterPartners('intermediate', this)" class="filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer">
+            3.0 - 3.5 Club
           </button>
           <button onclick="filterPartners('lefty', this)" class="filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer">
-            ⚡ Lefty Only
-          </button>
-          <button onclick="filterPartners('left-side', this)" class="filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer">
-            Left-Side Specialist
+            ⚡ Lefty
           </button>
         </div>
 
@@ -119,7 +118,7 @@
                 <span class="text-xs font-black text-white">Your Partner Beacon is</span>
                 <span id="beacon-status-text" class="text-xs font-black text-[#CCFF00]">ON</span>
               </div>
-              <p class="text-[10px] text-slate-400">Broadcasting to athletes across Philippine courts</p>
+              <p class="text-[10px] text-slate-400">Broadcasting your profile to players looking for doubles</p>
             </div>
           </div>
 
@@ -131,7 +130,7 @@
         <!-- Discovery Card Stack -->
         <div class="space-y-3 flex-1">
           <!-- Partner 1 -->
-          <div class="partner-card p-3.5 rounded-2xl bg-[#111827] border border-[#1E293B] shadow-md space-y-2.5" data-category="3.0-3.5">
+          <div class="partner-card p-3.5 rounded-2xl bg-[#111827] border border-[#1E293B] shadow-md space-y-2.5" data-category="intermediate">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-2.5">
                 <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-base shadow-md">
@@ -157,24 +156,24 @@
 
             <div class="flex flex-wrap gap-1.5 text-[10px] font-bold">
               <span class="px-2 py-0.5 rounded-md bg-slate-900 text-slate-300 border border-slate-800">Right-Handed</span>
-              <span class="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-300 border border-purple-500/20">Soft Game / Dinker</span>
-              <span class="px-2 py-0.5 rounded-md bg-slate-900 text-sky-400 border border-slate-800">Prefers Right Side</span>
+              <span class="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-300 border border-purple-500/20">Patient Touch & Dinks</span>
+              <span class="px-2 py-0.5 rounded-md bg-slate-900 text-sky-400 border border-slate-800">Right Side</span>
             </div>
 
             <div class="p-2.5 rounded-xl bg-slate-900/70 border border-slate-800/80 text-[11px] space-y-1">
               <div class="text-slate-300">
-                <span class="font-extrabold text-[#CCFF00]">Seeking:</span> "Partner for upcoming BGC Open 3.5 Mixed Doubles"
+                <span class="font-extrabold text-[#CCFF00]">Looking for:</span> "A partner for weekend friendly games at Arcovia or BGC"
               </div>
             </div>
 
             <button onclick="openInviteDrawer('Bea Ramirez', '3.42', 'Right-Side Dinker', 94, 'Taguig / BGC')" class="w-full py-2.5 px-4 rounded-xl bg-[#CCFF00] hover:brightness-110 active:scale-98 text-black font-black text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(204,255,0,0.25)] transition cursor-pointer">
               <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
-              <span>INVITE TO PAIR UP</span>
+              <span>INVITE TO PLAY DOUBLES</span>
             </button>
           </div>
 
           <!-- Partner 2 -->
-          <div class="partner-card p-3.5 rounded-2xl bg-[#111827] border border-[#1E293B] shadow-md space-y-2.5" data-category="lefty left-side">
+          <div class="partner-card p-3.5 rounded-2xl bg-[#111827] border border-[#1E293B] shadow-md space-y-2.5" data-category="lefty intermediate">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-2.5">
                 <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-black text-base shadow-md">
@@ -182,7 +181,7 @@
                 </div>
                 <div>
                   <div class="flex items-center gap-1.5">
-                    <h3 class="text-sm font-black text-white">Marco "The Cannon" Tan</h3>
+                    <h3 class="text-sm font-black text-white">Marco Tan</h3>
                     <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5">
                       <i data-lucide="shield-check" class="w-3 h-3"></i> 3.85 DUPR
                     </span>
@@ -202,19 +201,19 @@
               <span class="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1">
                 <i data-lucide="zap" class="w-3 h-3"></i> Left-Handed
               </span>
-              <span class="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/20">Aggressive Banger</span>
-              <span class="px-2 py-0.5 rounded-md bg-slate-900 text-sky-400 border border-slate-800">Prefers Left Side</span>
+              <span class="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/20">Aggressive Drives</span>
+              <span class="px-2 py-0.5 rounded-md bg-slate-900 text-sky-400 border border-slate-800">Left Side</span>
             </div>
 
             <div class="p-2.5 rounded-xl bg-slate-900/70 border border-slate-800/80 text-[11px] space-y-1">
               <div class="text-slate-300">
-                <span class="font-extrabold text-[#CCFF00]">Seeking:</span> "Drill partner & Weekend Tournaments (3.5+)"
+                <span class="font-extrabold text-[#CCFF00]">Looking for:</span> "Drill partner & casual weekend tournaments"
               </div>
             </div>
 
             <button onclick="openInviteDrawer('Marco Tan', '3.85', 'Left-Handed Power Banger', 91, 'Pasig / Mandaluyong')" class="w-full py-2.5 px-4 rounded-xl bg-[#CCFF00] hover:brightness-110 active:scale-98 text-black font-black text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(204,255,0,0.25)] transition cursor-pointer">
               <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
-              <span>INVITE TO PAIR UP</span>
+              <span>INVITE TO PLAY DOUBLES</span>
             </button>
           </div>
         </div>
@@ -226,12 +225,12 @@
         
         <div class="p-3 rounded-2xl bg-gradient-to-r from-sky-950 via-slate-900 to-[#111827] border border-sky-500/30 flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 shrink-0">
-            <i data-lucide="award" class="w-5 h-5"></i>
+            <i data-lucide="graduation-cap" class="w-5 h-5"></i>
           </div>
           <div>
-            <h2 class="text-xs font-black text-white uppercase tracking-wide">PiklrPH Academy</h2>
+            <h2 class="text-xs font-black text-white uppercase tracking-wide">PiklrPH Coaching Academy</h2>
             <p class="text-[11px] text-slate-300 leading-tight">
-              Verified PPR & IPTPA certified instructors synchronized with Admin HQ.
+              Certified instructors to help you learn scoring, dinking, and tournament tactics.
             </p>
           </div>
         </div>
@@ -239,13 +238,12 @@
         <!-- Section 1: Live Coaches Container from PostgreSQL -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-black uppercase tracking-wider text-slate-300">Verified Pro Coaches</span>
+            <span class="text-xs font-black uppercase tracking-wider text-slate-300">Verified Coaches</span>
             <span id="coaches-sync-badge" class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live from Supabase
             </span>
           </div>
 
-          <!-- Dynamic Container for Coaches -->
           <div id="coaches-container" class="space-y-3">
             <div class="text-xs text-slate-400 text-center py-6">Loading coaches...</div>
           </div>
@@ -254,20 +252,18 @@
         <!-- Section 2: Group Clinics Spotlight -->
         <div class="space-y-2.5 pt-1">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-black uppercase tracking-wider text-slate-300">Featured Group Clinics</span>
-            <span class="text-[10px] text-[#CCFF00] font-bold">Fast-Track Progress</span>
+            <span class="text-xs font-black uppercase tracking-wider text-slate-300">Beginner Group Clinics</span>
+            <span class="text-[10px] text-[#CCFF00] font-bold">Learn in a Group</span>
           </div>
 
-          <div id="clinics-container" class="space-y-2.5">
-            <!-- Dynamic Clinic Cards -->
-          </div>
+          <div id="clinics-container" class="space-y-2.5"></div>
         </div>
 
       </div>
 
     </div>
 
-    <!-- Bottom Mini Status Bar -->
+    <!-- Bottom Status Bar -->
     <div class="p-3 bg-[#111827] border-t border-[#1E293B] flex items-center justify-between shrink-0">
       <div class="flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -276,21 +272,21 @@
         </span>
       </div>
 
-      <button onclick="showQuickProfile()" class="text-xs font-bold text-[#CCFF00] hover:underline flex items-center gap-1 cursor-pointer">
+      <button onclick="openAppTab('passport')" class="text-xs font-bold text-[#CCFF00] hover:underline flex items-center gap-1 cursor-pointer">
         <i data-lucide="user" class="w-3.5 h-3.5"></i>
-        <span>My Passport</span>
+        <span>My Player Profile</span>
       </button>
     </div>
 
     <!-- VIEW 3: INVITATION DRAWER -->
-    <div id="invite-drawer" class="absolute inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col justify-end transition-all">
+    <div id="invite-drawer" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col justify-end transition-all">
       <div class="bg-[#111827] border-t border-[#1E293B] rounded-t-3xl p-5 max-h-[90%] overflow-y-auto space-y-4 shadow-2xl">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-[#CCFF00]/10 border border-[#CCFF00]/30 flex items-center justify-center text-[#CCFF00]">
               <i data-lucide="sparkles" class="w-4 h-4"></i>
             </span>
-            <span class="text-xs font-black uppercase tracking-wider text-white">Partner Pairing Request</span>
+            <span class="text-xs font-black uppercase tracking-wider text-white">Invite to Play Doubles</span>
           </div>
           <button onclick="closeInviteDrawer()" class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white cursor-pointer">
             <i data-lucide="x" class="w-4 h-4"></i>
@@ -314,12 +310,12 @@
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-[11px] font-bold text-slate-300">Custom Pitch / Intro Message:</label>
-          <textarea id="drawer-message" rows="3" class="w-full p-3 rounded-xl bg-[#0B131E] border border-slate-700 text-xs text-white focus:outline-none focus:border-[#CCFF00] resize-none" placeholder="Hey, let's drill and partner up!"></textarea>
+          <label class="text-[11px] font-bold text-slate-300">Message:</label>
+          <textarea id="drawer-message" rows="3" class="w-full p-3 rounded-xl bg-[#0B131E] border border-slate-700 text-xs text-white focus:outline-none focus:border-[#CCFF00] resize-none" placeholder="Hey, let's play a friendly game!"></textarea>
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-[11px] font-bold text-slate-300">Suggested Meeting Venue:</label>
+          <label class="text-[11px] font-bold text-slate-300">Pick Court Location:</label>
           <select id="invite-venue-select" class="w-full p-2.5 rounded-xl bg-[#0B131E] border border-slate-700 text-xs text-white focus:outline-none focus:border-[#CCFF00]">
             <!-- Dynamically populated from Supabase venues -->
           </select>
@@ -327,56 +323,78 @@
 
         <button id="send-invite-btn" onclick="sendPartnerInvite()" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#CCFF00] to-[#a3e635] text-black font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.35)] hover:brightness-110 active:scale-98 transition cursor-pointer">
           <i data-lucide="send" class="w-4 h-4"></i>
-          <span>SEND IN-APP INVITE (SAVE TO DB)</span>
+          <span>SEND GAME INVITATION</span>
         </button>
       </div>
     </div>
 
     <!-- BOOKING SUCCESS MODAL -->
-    <div id="booking-modal" class="absolute inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center transition-all">
+    <div id="booking-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center transition-all">
       <div class="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 mb-3 shadow-[0_0_30px_rgba(52,211,153,0.4)]">
         <i data-lucide="check-circle-2" class="w-8 h-8"></i>
       </div>
-      <span class="text-[10px] uppercase tracking-widest font-black text-emerald-400">Reservation Confirmed</span>
+      <span class="text-[10px] uppercase tracking-widest font-black text-emerald-400">Lesson Confirmed</span>
       <h2 id="booking-item-title" class="text-lg font-black text-white mt-1">Lesson Confirmation</h2>
       <p id="booking-item-venue" class="text-xs text-slate-300 mt-0.5">Venue</p>
 
       <div class="my-4 p-3 rounded-2xl bg-slate-900 border border-slate-800 w-full text-xs space-y-1.5">
         <div class="flex items-center justify-between text-slate-400">
-          <span>Booking Reference:</span>
+          <span>Booking Code:</span>
           <span id="booking-ref-code" class="text-white font-mono font-bold">#PKLR-CLN-77492</span>
         </div>
         <div class="flex items-center justify-between text-slate-400">
-          <span>Paid via:</span>
-          <span id="booking-price-pill" class="text-[#005CE6] font-black">GCash</span>
+          <span>Payment:</span>
+          <span id="booking-price-pill" class="text-[#005CE6] font-black">GCash Paid</span>
         </div>
         <div class="flex items-center justify-between text-slate-400">
-          <span>Database Status:</span>
-          <span class="text-emerald-400 font-bold">Confirmed & Synced</span>
+          <span>Status:</span>
+          <span class="text-emerald-400 font-bold">Saved in Supabase</span>
         </div>
       </div>
 
-      <button onclick="closeBookingModal()" class="w-full py-3 rounded-xl bg-[#CCFF00] text-black font-black text-xs tracking-wider shadow-lg hover:brightness-110 cursor-pointer">
-        DONE & RETURN TO APP
-      </button>
+      <div class="grid grid-cols-2 gap-2 w-full">
+        <button onclick="closeBookingModal()" class="py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">
+          Close
+        </button>
+        <button onclick="openAppTab('courts')" class="py-3 rounded-xl bg-[#CCFF00] text-black font-black text-xs tracking-wider shadow-lg hover:brightness-110 cursor-pointer">
+          VIEW COURTS →
+        </button>
+      </div>
     </div>
 
     <!-- Floating Toast Notification -->
-    <div id="toast" class="absolute top-14 inset-x-4 bg-slate-900 border border-[#CCFF00] text-white p-3 rounded-xl shadow-2xl z-50 text-xs font-bold flex items-center gap-2.5 transform -translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
-      <i data-lucide="bell" class="w-4 h-4 text-[#CCFF00] shrink-0"></i>
-      <span id="toast-text" class="flex-1">Notification message</span>
+    <div id="toast" class="fixed top-3 z-50 left-1/2 -translate-x-1/2 hidden flex items-center gap-2 bg-[#111827] border border-[#CCFF00]/40 text-slate-100 px-3.5 py-2 rounded-full shadow-2xl text-xs">
+      <div class="w-2 h-2 rounded-full bg-[#CCFF00] animate-pulse"></div>
+      <span id="toast-text" class="font-medium">Notification message</span>
     </div>
 
   </div>
 
   <!-- JavaScript Community Hub Logic with Supabase -->
   <script>
-    // 1. SUPABASE CLIENT
     const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let venuesList = [];
+
+    // Standard Cross-Module Bridge to app.html
+    function openAppTab(tabKey) {
+      if (window.parent && typeof window.parent.switchModule === 'function') {
+        window.parent.switchModule(tabKey);
+        return;
+      }
+      const routeFiles = {
+        courts: 'module2.html',
+        pila: 'pila.html',
+        referee: 'module4.html',
+        exchange: 'module7.html',
+        passport: 'passport.html'
+      };
+      if (routeFiles[tabKey]) {
+        window.location.href = routeFiles[tabKey];
+      }
+    }
 
     function switchSegment(tab) {
       const pBtn = document.getElementById('seg-btn-partner');
@@ -400,23 +418,20 @@
         pView.classList.remove('flex');
         loadCoachesAndClinics();
       }
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     function showToast(text, duration = 2400) {
       const toast = document.getElementById('toast');
       const toastText = document.getElementById('toast-text');
       toastText.innerText = text;
-      toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
-      toast.classList.add('translate-y-0', 'opacity-100');
+      toast.classList.remove('hidden');
 
       setTimeout(() => {
-        toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
-        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('hidden');
       }, duration);
     }
 
-    // 2. LOAD LIVE COACHES & VENUES FROM POSTGRESQL
     async function loadCoachesAndClinics() {
       const container = document.getElementById('coaches-container');
       const clinicsContainer = document.getElementById('clinics-container');
@@ -444,13 +459,12 @@
                   </div>
                   <div>
                     <h3 class="text-sm font-black text-white">${c.name}</h3>
-                    <p class="text-[10px] font-semibold text-emerald-400">${c.title} • License ${c.license_number || 'PH-8921'}</p>
+                    <p class="text-[10px] font-semibold text-emerald-400">${c.title || 'Certified Coach'}</p>
                     <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
                       <span class="text-amber-400 font-extrabold flex items-center gap-0.5">
-                        <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i> ${c.rating}
+                        <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i> ${c.rating || '4.9'}
                       </span>
-                      <span>• ${c.students_count} students</span>
-                      <span>• ${c.city}</span>
+                      <span>• ${c.city || 'Metro Manila'}</span>
                     </div>
                   </div>
                 </div>
@@ -458,15 +472,15 @@
 
               <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] space-y-1">
                 <div class="text-slate-300">
-                  <span class="font-extrabold text-[#CCFF00]">Specialization:</span> ${c.specialization}
+                  <span class="font-extrabold text-[#CCFF00]">Specialty:</span> ${c.specialization || 'Beginner Fundamentals & Dinks'}
                 </div>
                 <div class="flex items-center justify-between pt-1 border-t border-slate-800/80 text-[11px]">
-                  <span class="text-slate-400">Private 1-on-1 Rate:</span>
-                  <span class="text-sm font-black text-[#CCFF00]">₱${c.hourly_rate.toLocaleString()} / hr</span>
+                  <span class="text-slate-400">Lesson Rate:</span>
+                  <span class="text-sm font-black text-[#CCFF00]">₱${(c.hourly_rate || 1200).toLocaleString()} / hr</span>
                 </div>
               </div>
 
-              <button onclick="openCoachBooking('${c.name}', '₱${c.hourly_rate}/hr')" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:brightness-110 active:scale-98 text-white font-black text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-md transition cursor-pointer">
+              <button onclick="openCoachBooking('${c.name.replace(/'/g, "\\'")}', '₱${c.hourly_rate || 1200}/hr')" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:brightness-110 active:scale-98 text-white font-black text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-md transition cursor-pointer">
                 <i data-lucide="calendar-check" class="w-3.5 h-3.5"></i>
                 <span>BOOK 1-ON-1 LESSON</span>
               </button>
@@ -474,26 +488,25 @@
           `).join('');
         }
 
-        // Render dynamic clinics matching live venues
         const defaultVenueName = venuesList.length > 0 ? venuesList[0].name : 'The Dink Yard BGC';
         clinicsContainer.innerHTML = `
           <div class="p-3.5 rounded-2xl bg-gradient-to-b from-[#131f33] to-[#111827] border-2 border-sky-500/40 shadow-lg space-y-2.5">
             <div class="flex items-center justify-between">
               <span class="text-[9px] font-black px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">
-                4-TO-1 COACH RATIO
+                BEGINNER FRIENDLY
               </span>
               <span class="text-[10px] font-black text-rose-400 animate-pulse">2 SLOTS LEFT</span>
             </div>
             <div>
-              <h3 class="text-sm font-black text-white">Sunday Morning Fast-Track Clinic</h3>
+              <h3 class="text-sm font-black text-white">Sunday Morning Beginner Clinic</h3>
               <p class="text-[11px] text-slate-300">${defaultVenueName} • Sun 7:00 AM - 9:00 AM</p>
             </div>
             <div class="flex items-center justify-between pt-1 text-xs">
               <div>
-                <span class="text-[10px] text-slate-400 block leading-tight">Registration Fee</span>
+                <span class="text-[10px] text-slate-400 block leading-tight">Fee</span>
                 <span class="text-base font-black text-[#CCFF00]">₱650 <span class="text-[10px] text-slate-400 font-normal">/ pax</span></span>
               </div>
-              <button onclick="reserveClinic('Sunday Morning Fast-Track Clinic', '${defaultVenueName}', 650)" class="py-2 px-3.5 rounded-xl bg-[#005CE6] hover:bg-[#004dc2] text-white font-black text-xs flex items-center gap-1.5 shadow-md transition active:scale-95 cursor-pointer">
+              <button onclick="reserveClinic('Sunday Morning Beginner Clinic', '${defaultVenueName}', 650)" class="py-2 px-3.5 rounded-xl bg-[#005CE6] hover:bg-[#004dc2] text-white font-black text-xs flex items-center gap-1.5 shadow-md transition active:scale-95 cursor-pointer">
                 <span>Reserve via GCash</span>
                 <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
               </button>
@@ -504,7 +517,7 @@
       } catch (err) {
         console.error(err);
       }
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     async function loadVenues() {
@@ -528,7 +541,6 @@
       }
     }
 
-    // Filter Chips Logic
     function filterPartners(category, btnElement) {
       document.querySelectorAll('.filter-chip').forEach(btn => {
         btn.className = "filter-chip px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold shrink-0 transition cursor-pointer";
@@ -537,7 +549,7 @@
 
       const cards = document.querySelectorAll('.partner-card');
       cards.forEach(card => {
-        const cats = card.getAttribute('data-category');
+        const cats = card.getAttribute('data-category') || '';
         if (category === 'all' || cats.includes(category)) {
           card.style.display = 'block';
         } else {
@@ -559,7 +571,7 @@
         statusText.className = "text-xs font-black text-[#CCFF00]";
         btn.className = "w-11 h-6 rounded-full bg-[#CCFF00] p-0.5 transition cursor-pointer flex items-center justify-end";
         ring.style.display = 'block';
-        showToast("Partner Beacon ON: Visible across Philippine courts.");
+        showToast("Partner Beacon ON: Visible to other players.");
       } else {
         statusText.innerText = "OFF";
         statusText.className = "text-xs font-black text-slate-500";
@@ -575,12 +587,12 @@
       document.getElementById('drawer-dupr').innerText = `${dupr} DUPR`;
       document.getElementById('drawer-style').innerText = `${style} • ${location}`;
       document.getElementById('drawer-match').innerText = `${match}% Match`;
-      document.getElementById('drawer-message').value = `Hey ${name.split(' ')[0]}, saw you're looking for a partner. I'm a 3.6 Left-Side player, let's drill!`;
+      document.getElementById('drawer-message').value = `Hey ${name.split(' ')[0]}, saw you play at ${location}. Let's play doubles sometime!`;
 
       const drawer = document.getElementById('invite-drawer');
       drawer.classList.remove('hidden');
       drawer.classList.add('flex');
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     function closeInviteDrawer() {
@@ -589,7 +601,6 @@
       drawer.classList.remove('flex');
     }
 
-    // 3. PERSIST PARTNER INVITE TO SUPABASE
     async function sendPartnerInvite() {
       const btn = document.getElementById('send-invite-btn');
       const name = document.getElementById('drawer-name').innerText;
@@ -597,7 +608,7 @@
       const venue = document.getElementById('invite-venue-select').value;
 
       btn.disabled = true;
-      btn.innerText = 'Delivering via Supabase...';
+      btn.innerText = 'Sending invitation...';
 
       try {
         const { error } = await supabaseClient
@@ -612,25 +623,24 @@
 
         if (error) throw error;
 
-        btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> <span>SAVED & DELIVERED!</span>`;
+        btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> <span>INVITATION DELIVERED!</span>`;
         btn.className = "w-full py-3.5 px-4 rounded-2xl bg-emerald-400 text-black font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-lg cursor-default";
-        lucide.createIcons();
-        showToast("Invite permanently saved and sent to athlete!");
+        if (window.lucide) lucide.createIcons();
+        showToast("Game invite delivered to player!");
 
         setTimeout(() => {
           closeInviteDrawer();
           btn.disabled = false;
-          btn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> <span>SEND IN-APP INVITE (SAVE TO DB)</span>`;
+          btn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> <span>SEND GAME INVITATION</span>`;
           btn.className = "w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#CCFF00] to-[#a3e635] text-black font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.35)] hover:brightness-110 active:scale-98 transition cursor-pointer";
         }, 1500);
       } catch (err) {
-        alert('Invite failed: ' + err.message);
+        alert('Invite note: ' + err.message);
         btn.disabled = false;
-        btn.innerText = 'SEND IN-APP INVITE (SAVE TO DB)';
+        btn.innerText = 'SEND GAME INVITATION';
       }
     }
 
-    // 4. BOOK COACH OR CLINIC TO SUPABASE
     function openCoachBooking(coachName, rate) {
       document.getElementById('booking-item-title').innerText = `1-on-1 Lesson with ${coachName}`;
       document.getElementById('booking-item-venue').innerText = `Private Court Session (${rate})`;
@@ -640,7 +650,7 @@
       const m = document.getElementById('booking-modal');
       m.classList.remove('hidden');
       m.classList.add('flex');
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     async function reserveClinic(clinicName, venue, price) {
@@ -668,23 +678,19 @@
       const m = document.getElementById('booking-modal');
       m.classList.remove('hidden');
       m.classList.add('flex');
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     function closeBookingModal() {
       const m = document.getElementById('booking-modal');
       m.classList.add('hidden');
       m.classList.remove('flex');
-      showToast("Confirmation recorded in database & receipt sent.");
-    }
-
-    function showQuickProfile() {
-      showToast("Opening Player Passport (Dave H. • DUPR 3.6)");
+      showToast("Lesson confirmed! Check receipt in Profile.");
     }
 
     window.addEventListener('DOMContentLoaded', () => {
       loadVenues();
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     });
   </script>
 </body>
