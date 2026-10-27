@@ -55,9 +55,9 @@
 
   <!-- SIDEBAR NAVIGATION -->
   <aside class="w-64 border-r border-borderDark bg-surface flex flex-col justify-between shrink-0">
-    <div>
+    <div class="overflow-y-auto no-scrollbar">
       <div class="py-5 px-6 border-b border-borderDark flex items-center justify-between gap-3">
-        <img src="logo.png" alt="PiklrPH" class="h-24 w-auto object-contain shrink-0" />
+        <img src="logo.png" alt="PiklrPH" class="h-20 w-auto object-contain shrink-0" />
         <div class="flex flex-col items-end shrink-0">
           <span class="text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded bg-neon/20 text-neon border border-neon/30">HQ</span>
           <p class="text-[10px] text-slate-400 font-medium mt-1">Master CRUD</p>
@@ -102,6 +102,45 @@
           <i data-lucide="sliders-horizontal" class="w-4 h-4 text-neon"></i>
           <span>Admin Settings</span>
         </button>
+
+        <!-- Quick Submodule Links -->
+        <div class="pt-2 border-t border-borderDark/60 my-1">
+          <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block px-2 mb-1">Direct Module Tests</span>
+          <div class="space-y-0.5 text-[11px]">
+            <a href="module2.html" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-neon hover:bg-card">
+              <span>Courts Discovery (M2)</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+            <a href="module3.html" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-neon hover:bg-card">
+              <span>Queue Line-up (M3)</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+            <a href="module4.html" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-neon hover:bg-card">
+              <span>Live Scorer (M4)</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+            <a href="module5.html" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-neon hover:bg-card">
+              <span>Tournament Desk (M5)</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+            <a href="module6.html" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-neon hover:bg-card">
+              <span>Partners & Coaches (M6)</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+            <a href="module7.html" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-neon hover:bg-card">
+              <span>Marketplace (M7)</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+            <a href="module8.html" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-neon hover:bg-card">
+              <span>Tambayan & Perks (M8)</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+            <a href="passport.html" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-neon hover:bg-card">
+              <span>Player Profile</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+        </div>
       </nav>
     </div>
 
@@ -127,11 +166,22 @@
       </div>
 
       <div class="flex items-center gap-3">
+        <!-- Direct Mobile App Launch Button with Safe Breakout -->
+        <a 
+          href="app.html" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="px-3 py-1.5 rounded-xl bg-card border border-borderDark hover:border-neon text-white text-xs font-bold flex items-center gap-1.5 transition"
+        >
+          <i data-lucide="smartphone" class="w-3.5 h-3.5 text-neon"></i>
+          <span>Launch App Shell ↗</span>
+        </a>
+
         <span id="syncBadge" class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 font-bold">
           <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
           Supabase Connected
         </span>
-        <button onclick="refreshAllHQData()" class="p-2 rounded-xl bg-card border border-borderDark text-slate-300 hover:text-white transition-colors" title="Sync All Tables">
+        <button onclick="refreshAllHQData()" class="p-2 rounded-xl bg-card border border-borderDark text-slate-300 hover:text-white transition-colors cursor-pointer" title="Sync All Tables">
           <i data-lucide="refresh-cw" class="w-4 h-4"></i>
         </button>
       </div>
@@ -292,10 +342,15 @@
             <h3 class="text-sm font-black text-white">Registered Philippine Venues</h3>
             <p class="text-xs text-slate-400">Full CRUD: Add/Edit/Delete Venues, Configure Pricing, Manage Individual Courts.</p>
           </div>
-          <button onclick="openModal('addVenueModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-            <span>Add Venue</span>
-          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="clearCompletedQueueHQ()" class="px-3 py-1.5 rounded-xl bg-slate-800 text-rose-400 border border-rose-500/30 text-xs font-bold hover:bg-rose-950/40 cursor-pointer">
+              Reset Finished Queue
+            </button>
+            <button onclick="openModal('addVenueModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Add Venue</span>
+            </button>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="venuesGrid">
@@ -310,7 +365,7 @@
             <h3 class="text-sm font-black text-white">Active Tournaments (Module 5 Engine)</h3>
             <p class="text-xs text-slate-400">Create tournaments, adjust prize pools, manage brackets, and delete records.</p>
           </div>
-          <button onclick="openModal('addTourneyModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5">
+          <button onclick="openModal('addTourneyModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span>Create Tournament</span>
           </button>
@@ -328,7 +383,7 @@
             <h3 class="text-sm font-black text-white">Verified Coaches & Accreditations (Module 6)</h3>
             <p class="text-xs text-slate-400">Add instructors, update hourly rates, approve/revoke PPR badges, or delete coaches.</p>
           </div>
-          <button onclick="openModal('addCoachModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5">
+          <button onclick="openModal('addCoachModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span>Add Coach</span>
           </button>
@@ -386,7 +441,7 @@
             <h3 class="text-sm font-black text-white">Kain at Kape & Highlights Moderation (Module 8)</h3>
             <p class="text-xs text-slate-400">Add cafe partner discounts, generate QR codes, and delete community posts.</p>
           </div>
-          <button onclick="openModal('addPerkModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5">
+          <button onclick="openModal('addPerkModal')" class="bg-neon hover:bg-[#b8e600] text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span>Add Cafe Perk</span>
           </button>
@@ -510,10 +565,10 @@
       </div>
 
       <div class="flex gap-2 pt-2">
-        <button onclick="executeEraseAllData()" id="btnConfirmErase" class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white font-black rounded-xl text-xs uppercase tracking-wider transition">
+        <button onclick="executeEraseAllData()" id="btnConfirmErase" class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white font-black rounded-xl text-xs uppercase tracking-wider transition cursor-pointer">
           Permanently Erase
         </button>
-        <button onclick="closeModal('eraseModal')" class="px-5 py-3 bg-card text-slate-300 font-bold rounded-xl text-xs">
+        <button onclick="closeModal('eraseModal')" class="px-5 py-3 bg-card text-slate-300 font-bold rounded-xl text-xs cursor-pointer">
           Cancel
         </button>
       </div>
@@ -560,8 +615,8 @@
       </div>
 
       <div class="flex gap-2 pt-2">
-        <button id="saveVenueBtn" onclick="saveNewVenue()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Save & Publish</button>
-        <button onclick="closeModal('addVenueModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+        <button id="saveVenueBtn" onclick="saveNewVenue()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600] cursor-pointer">Save & Publish</button>
+        <button onclick="closeModal('addVenueModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs cursor-pointer">Cancel</button>
       </div>
     </div>
   </div>
@@ -606,15 +661,13 @@
       </div>
 
       <div class="flex gap-2 pt-2">
-        <button id="saveVenueDetailBtn" onclick="saveUpdatedVenueDetails()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Save Changes</button>
-        <button onclick="closeModal('editVenueModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+        <button id="saveVenueDetailBtn" onclick="saveUpdatedVenueDetails()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600] cursor-pointer">Save Changes</button>
+        <button onclick="closeModal('editVenueModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs cursor-pointer">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- VENUE PHOTO UPDATE MODAL (WITH EXIF ENGINE & PROGRESS BAR) -->
-  <!-- ========================================================================= -->
+  <!-- VENUE PHOTO UPDATE MODAL (EXIF & COMPRESSION) -->
   <div id="venue-photo-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#111827] border border-[#1E293B] rounded-3xl p-5 max-w-sm w-full shadow-2xl overflow-hidden flex flex-col">
     
@@ -689,35 +742,35 @@
           />
         </div>
 
-        <!-- Quick Preset Curated Pickleball Court Photos -->
+        <!-- Quick Preset Curated Photos -->
         <div>
           <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Preset High-Res Court Photos:</span>
           <div class="grid grid-cols-3 gap-1.5">
             <button 
               type="button" 
               onclick="setPresetPhoto('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80')" 
-              class="h-10 rounded-lg overflow-hidden border border-slate-800 hover:border-[#CCFF00] transition"
+              class="h-10 rounded-lg overflow-hidden border border-slate-800 hover:border-[#CCFF00] transition cursor-pointer"
             >
               <img src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=200&q=60" class="w-full h-full object-cover" />
             </button>
             <button 
               type="button" 
               onclick="setPresetPhoto('https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=800&q=80')" 
-              class="h-10 rounded-lg overflow-hidden border border-slate-800 hover:border-[#CCFF00] transition"
+              class="h-10 rounded-lg overflow-hidden border border-slate-800 hover:border-[#CCFF00] transition cursor-pointer"
             >
               <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=200&q=60" class="w-full h-full object-cover" />
             </button>
             <button 
               type="button" 
               onclick="setPresetPhoto('https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=800&q=80')" 
-              class="h-10 rounded-lg overflow-hidden border border-slate-800 hover:border-[#CCFF00] transition"
+              class="h-10 rounded-lg overflow-hidden border border-slate-800 hover:border-[#CCFF00] transition cursor-pointer"
             >
               <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=200&q=60" class="w-full h-full object-cover" />
             </button>
           </div>
         </div>
 
-        <!-- Progress Bar Container (Hidden by default) -->
+        <!-- Progress Bar Container -->
         <div id="upload-progress-container" class="hidden pt-1 space-y-1.5">
           <div class="flex items-center justify-between text-[11px]">
             <span id="upload-progress-label" class="font-bold text-[#CCFF00] flex items-center gap-1.5">
@@ -786,8 +839,8 @@
       </div>
 
       <div class="flex gap-2 pt-2">
-        <button id="savePricingBtn" onclick="saveUpdatedPricing()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Update Rates</button>
-        <button onclick="closeModal('editPricingModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+        <button id="savePricingBtn" onclick="saveUpdatedPricing()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600] cursor-pointer">Update Rates</button>
+        <button onclick="closeModal('editPricingModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs cursor-pointer">Cancel</button>
       </div>
     </div>
   </div>
@@ -805,21 +858,19 @@
 
       <input type="hidden" id="manageVenueId" />
 
-      <div class="space-y-2.5 max-h-72 overflow-y-auto pr-1" id="courtsListContainer">
-        <!-- Rendered by refreshCourtsList() -->
-      </div>
+      <div class="space-y-2.5 max-h-72 overflow-y-auto pr-1" id="courtsListContainer"></div>
 
       <div class="pt-3 border-t border-borderDark flex flex-col sm:flex-row gap-2">
         <input type="text" id="quickNewCourtName" placeholder="e.g. Court 4 (Acrylic)" class="flex-1 bg-card border border-borderDark rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-neon" />
         <div class="flex gap-2">
           <input type="number" id="quickNewCourtBase" placeholder="Base ₱" value="800" class="w-20 bg-card border border-borderDark rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-neon" />
           <input type="number" id="quickNewCourtPeak" placeholder="Peak ₱" value="1000" class="w-20 bg-card border border-borderDark rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-neon" />
-          <button onclick="addNewCourtToVenue()" class="px-3.5 py-2 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600] whitespace-nowrap">+ Add Court</button>
+          <button onclick="addNewCourtToVenue()" class="px-3.5 py-2 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600] whitespace-nowrap cursor-pointer">+ Add Court</button>
         </div>
       </div>
 
       <div class="flex justify-end pt-2">
-        <button onclick="closeModal('manageCourtsModal')" class="px-5 py-2 bg-card text-slate-300 hover:text-white font-bold rounded-xl text-xs">Done</button>
+        <button onclick="closeModal('manageCourtsModal')" class="px-5 py-2 bg-card text-slate-300 hover:text-white font-bold rounded-xl text-xs cursor-pointer">Done</button>
       </div>
     </div>
   </div>
@@ -850,8 +901,8 @@
       </div>
 
       <div class="flex gap-2 pt-2">
-        <button onclick="saveNewTournament()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Publish Tournament</button>
-        <button onclick="closeModal('addTourneyModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+        <button onclick="saveNewTournament()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600] cursor-pointer">Publish Tournament</button>
+        <button onclick="closeModal('addTourneyModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs cursor-pointer">Cancel</button>
       </div>
     </div>
   </div>
@@ -882,8 +933,8 @@
       </div>
 
       <div class="flex gap-2 pt-2">
-        <button onclick="saveNewCoach()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Add & Verify</button>
-        <button onclick="closeModal('addCoachModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+        <button onclick="saveNewCoach()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600] cursor-pointer">Add & Verify</button>
+        <button onclick="closeModal('addCoachModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs cursor-pointer">Cancel</button>
       </div>
     </div>
   </div>
@@ -922,8 +973,8 @@
       </div>
 
       <div class="flex gap-2 pt-2">
-        <button onclick="saveNewPerk()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600]">Publish Perk</button>
-        <button onclick="closeModal('addPerkModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+        <button onclick="saveNewPerk()" class="flex-1 py-2.5 bg-neon text-slate-950 font-bold rounded-xl text-xs hover:bg-[#b8e600] cursor-pointer">Publish Perk</button>
+        <button onclick="closeModal('addPerkModal')" class="px-4 py-2.5 bg-card text-slate-300 font-bold rounded-xl text-xs cursor-pointer">Cancel</button>
       </div>
     </div>
   </div>
@@ -958,6 +1009,18 @@
         activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-card');
       }
 
+      const titles = {
+        earnings: 'Financials & Platform Earnings',
+        venues: 'Venues & Courts Management (M2/M3)',
+        tournaments: 'Tournaments & Brackets (M5)',
+        coaches: 'Coaches & Academies (M6)',
+        marketplace: 'Marketplace & Escrow Ledger (M7)',
+        community: 'Social & Cafe Perks (M8)',
+        settings: 'Admin Settings & Database Utilities'
+      };
+      const titleEl = document.getElementById('page-title');
+      if (titleEl && titles[tabId]) titleEl.innerText = titles[tabId];
+
       if (tabId === 'earnings') loadAnalytics();
       if (tabId === 'venues') loadVenuesFromSupabase();
       if (tabId === 'tournaments') loadTournamentsHQ();
@@ -978,7 +1041,7 @@
       await loadCoachesHQ();
       await loadMarketplaceHQ();
       await loadCommunityHQ();
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     let revenueChartInstance = null;
@@ -1136,7 +1199,7 @@
       } catch (err) {
         console.warn('Analytics:', err.message);
       }
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     // 2. VENUES & COURTS MASTER CRUD [C, R, U, D]
@@ -1184,7 +1247,7 @@
             <div class="p-4 flex-1">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-neon/10 text-neon border border-neon/20">${v.city || 'Philippines'}</span>
-                <button onclick="deleteEntireVenue('${v.id}', '${safeName}')" class="text-rose-400 hover:text-white p-1 rounded hover:bg-rose-500/20" title="Delete Venue">
+                <button onclick="deleteEntireVenue('${v.id}', '${safeName}')" class="text-rose-400 hover:text-white p-1 rounded hover:bg-rose-500/20 cursor-pointer" title="Delete Venue">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
@@ -1197,20 +1260,20 @@
             </div>
 
             <div class="p-2.5 bg-card border-t border-borderDark grid grid-cols-3 gap-1.5">
-              <button onclick="openPricingModal('${v.id}', '${safeName}', ${minRate}, ${maxRate})" class="py-1 px-1.5 text-[11px] text-slate-300 hover:text-white rounded-lg bg-slate-800 hover:bg-slate-700 text-center">
+              <button onclick="openPricingModal('${v.id}', '${safeName}', ${minRate}, ${maxRate})" class="py-1 px-1.5 text-[11px] text-slate-300 hover:text-white rounded-lg bg-slate-800 hover:bg-slate-700 text-center cursor-pointer">
                 Rates
               </button>
-              <button onclick="openEditVenueModal('${v.id}', '${safeName}', '${safeCity}', '${safeEnv}', '${safeSurface}')" class="py-1 px-1.5 text-[11px] text-slate-300 hover:text-white rounded-lg bg-slate-800 hover:bg-slate-700 text-center">
+              <button onclick="openEditVenueModal('${v.id}', '${safeName}', '${safeCity}', '${safeEnv}', '${safeSurface}')" class="py-1 px-1.5 text-[11px] text-slate-300 hover:text-white rounded-lg bg-slate-800 hover:bg-slate-700 text-center cursor-pointer">
                 Edit
               </button>
-              <button onclick="openCourtsModal('${v.id}', '${safeName}')" class="py-1 px-1.5 text-[11px] font-bold text-neon bg-neon/10 hover:bg-neon hover:text-slate-950 rounded-lg text-center">
+              <button onclick="openCourtsModal('${v.id}', '${safeName}')" class="py-1 px-1.5 text-[11px] font-bold text-neon bg-neon/10 hover:bg-neon hover:text-slate-950 rounded-lg text-center cursor-pointer">
                 Courts (${courts.length})
               </button>
             </div>
           </div>
         `;
       }).join('');
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     async function saveNewVenue() {
@@ -1379,8 +1442,8 @@
             </div>
 
             <div class="flex items-center gap-1.5">
-              <button onclick="saveSingleCourt('${c.id}')" class="px-2.5 py-0.5 bg-neon/10 hover:bg-neon hover:text-slate-950 text-neon font-bold rounded text-xs">Save</button>
-              <button onclick="deleteSingleCourt('${c.id}')" class="px-2.5 py-0.5 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-400 font-bold rounded text-xs">Delete</button>
+              <button onclick="saveSingleCourt('${c.id}')" class="px-2.5 py-0.5 bg-neon/10 hover:bg-neon hover:text-slate-950 text-neon font-bold rounded text-xs cursor-pointer">Save</button>
+              <button onclick="deleteSingleCourt('${c.id}')" class="px-2.5 py-0.5 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-400 font-bold rounded text-xs cursor-pointer">Delete</button>
             </div>
           </div>
         </div>
@@ -1433,6 +1496,12 @@
       refreshCourtsList(venueId);
     }
 
+    async function clearCompletedQueueHQ() {
+      if (!confirm('Reset finished matches and expired slots in the Queue (Module 3)?')) return;
+      await supabaseClient.from('pila_queue').delete().in('status', ['completed', 'on_court']);
+      alert('Queue reset and updated for Module 3!');
+    }
+
     // 3. TOURNAMENTS MASTER CRUD [C, R, U, D]
     async function loadTournamentsHQ() {
       const grid = document.getElementById('tourneysGrid');
@@ -1455,22 +1524,22 @@
             </div>
             <div class="flex items-center gap-2">
               <span class="text-sm font-black text-neon">₱${(t.prize_pool || 25000).toLocaleString()}</span>
-              <button onclick="deleteTournamentHQ('${t.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20">
+              <button onclick="deleteTournamentHQ('${t.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20 cursor-pointer">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </div>
           </div>
           <div class="pt-2 border-t border-borderDark flex gap-2">
-            <button onclick="updateTourneyPrize('${t.id}')" class="flex-1 py-1.5 bg-slate-800 text-slate-200 hover:text-white rounded-lg text-xs font-bold">
+            <button onclick="updateTourneyPrize('${t.id}')" class="flex-1 py-1.5 bg-slate-800 text-slate-200 hover:text-white rounded-lg text-xs font-bold cursor-pointer">
               Adjust Prize
             </button>
-            <button onclick="releaseTourneyEscrow('${t.id}', '${t.title}', ${t.prize_pool || 25000})" class="flex-1 py-1.5 bg-neon text-slate-950 font-bold rounded-lg text-xs hover:bg-[#b8e600]">
+            <button onclick="releaseTourneyEscrow('${t.id}', '${t.title}', ${t.prize_pool || 25000})" class="flex-1 py-1.5 bg-neon text-slate-950 font-bold rounded-lg text-xs hover:bg-[#b8e600] cursor-pointer">
               Release Prize via GCash
             </button>
           </div>
         </div>
       `).join('');
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     async function saveNewTournament() {
@@ -1542,23 +1611,23 @@
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs font-black text-neon">₱${c.hourly_rate}/hr</span>
-                <button onclick="deleteCoachHQ('${c.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20">
+                <button onclick="deleteCoachHQ('${c.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20 cursor-pointer">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
             </div>
             <div class="pt-2 border-t border-borderDark flex gap-2">
-              <button onclick="toggleCoachVerification('${c.id}', ${!c.is_verified})" class="flex-1 py-1.5 rounded-lg text-xs font-bold ${c.is_verified ? 'bg-slate-800 text-slate-400' : 'bg-emerald-500 text-black font-black'}">
+              <button onclick="toggleCoachVerification('${c.id}', ${!c.is_verified})" class="flex-1 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${c.is_verified ? 'bg-slate-800 text-slate-400' : 'bg-emerald-500 text-black font-black'}">
                 ${c.is_verified ? 'Revoke Badge' : 'Approve PPR Badge'}
               </button>
-              <button onclick="editCoachRate('${c.id}', ${c.hourly_rate})" class="px-3 py-1.5 bg-card border border-borderDark text-slate-300 rounded-lg text-xs font-bold">
+              <button onclick="editCoachRate('${c.id}', ${c.hourly_rate})" class="px-3 py-1.5 bg-card border border-borderDark text-slate-300 rounded-lg text-xs font-bold cursor-pointer">
                 Rate
               </button>
             </div>
           </div>
         `;
       }).join('');
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     async function saveNewCoach() {
@@ -1611,22 +1680,22 @@
         tbody.innerHTML = orders.map(o => `
           <tr>
             <td class="p-2.5 font-bold text-white">${o.item_title}</td>
-            <td class="p-2.5 text-slate-400">${o.buyer_name}</td>
-            <td class="p-2.5 font-bold text-neon">₱${o.total_amount.toLocaleString()}</td>
+            <td class="p-2.5 text-slate-400">${o.buyer_name || 'Buyer'}</td>
+            <td class="p-2.5 font-bold text-neon">₱${(o.total_amount || 0).toLocaleString()}</td>
             <td class="p-2.5">
               <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${o.status === 'in_escrow' ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}">
-                ${o.status.toUpperCase()} (${o.delivery_method})
+                ${(o.status || 'in_escrow').toUpperCase()} (${o.delivery_method || 'courier'})
               </span>
             </td>
             <td class="p-2.5 text-right flex items-center justify-end gap-1.5">
               ${o.status === 'in_escrow' ? `
-                <button onclick="releaseGearEscrow('${o.id}')" class="px-2 py-1 rounded bg-neon text-slate-950 font-bold text-[10px] hover:bg-[#b8e600]">
+                <button onclick="releaseGearEscrow('${o.id}')" class="px-2 py-1 rounded bg-neon text-slate-950 font-bold text-[10px] hover:bg-[#b8e600] cursor-pointer">
                   Release
                 </button>
               ` : `
                 <span class="text-[10px] text-emerald-400 font-bold">Released</span>
               `}
-              <button onclick="deleteEscrowOrder('${o.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20">
+              <button onclick="deleteEscrowOrder('${o.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20 cursor-pointer">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </td>
@@ -1642,18 +1711,18 @@
           <div class="p-3 bg-card border border-borderDark rounded-xl flex items-center justify-between">
             <div>
               <span class="text-xs font-bold text-white block">${g.title}</span>
-              <span class="text-[10px] text-slate-400">₱${g.price.toLocaleString()} • ${g.seller_name} (${g.condition})</span>
+              <span class="text-[10px] text-slate-400">₱${(g.price || 0).toLocaleString()} • ${g.seller_name || 'Seller'} (${g.condition || 'Like New'})</span>
             </div>
             <div class="flex items-center gap-1.5">
-              <button onclick="editListingPrice('${g.id}', ${g.price})" class="px-2 py-0.5 text-[10px] bg-slate-800 text-slate-300 rounded hover:text-white">Price</button>
-              <button onclick="deleteGearListing('${g.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20">
+              <button onclick="editListingPrice('${g.id}', ${g.price})" class="px-2 py-0.5 text-[10px] bg-slate-800 text-slate-300 rounded hover:text-white cursor-pointer">Price</button>
+              <button onclick="deleteGearListing('${g.id}')" class="p-1 text-rose-400 hover:text-white rounded hover:bg-rose-500/20 cursor-pointer">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </div>
           </div>
         `).join('');
       }
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     async function editListingPrice(id, currentPrice) {
@@ -1701,7 +1770,7 @@
               </div>
               <p class="text-xs text-slate-300 mt-0.5">${p.perk_title}</p>
             </div>
-            <button onclick="deletePerk('${p.id}')" class="p-1.5 text-rose-400 hover:bg-rose-500/20 rounded-lg">
+            <button onclick="deletePerk('${p.id}')" class="p-1.5 text-rose-400 hover:bg-rose-500/20 rounded-lg cursor-pointer">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
@@ -1719,7 +1788,7 @@
               <span class="text-slate-300 ml-1">"${p.title}"</span>
               <span class="text-[10px] text-slate-500 block">🥒 ${p.pickle_reactions} • 🔥 ${p.fire_reactions}</span>
             </div>
-            <button onclick="deletePost('${p.id}')" class="text-rose-400 hover:text-white px-2 py-1 text-xs">
+            <button onclick="deletePost('${p.id}')" class="text-rose-400 hover:text-white px-2 py-1 text-xs cursor-pointer">
               Delete
             </button>
           </div>
@@ -1727,7 +1796,7 @@
       } else {
         postsContainer.innerHTML = '<div class="text-xs text-slate-400 p-4 text-center">No community posts found.</div>';
       }
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     async function saveNewPerk() {
@@ -1770,7 +1839,7 @@
       const btn = document.getElementById('btn-export-backup');
       btn.disabled = true;
       btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Exporting All Tables...</span>`;
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
       logSystem('Starting complete system database backup...');
 
       try {
@@ -1833,7 +1902,7 @@
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<i data-lucide="hard-drive-download" class="w-4 h-4"></i><span>Backup Data to Hard Drive</span>`;
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
       }
     }
 
@@ -1844,7 +1913,7 @@
       const btn = document.getElementById('btn-upload-backup');
       btn.disabled = true;
       btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Importing File...</span>`;
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
       logSystem(`Reading backup file from disk: ${file.name}...`);
 
       const reader = new FileReader();
@@ -1895,7 +1964,7 @@
           btn.disabled = false;
           btn.innerHTML = `<i data-lucide="hard-drive-upload" class="w-4 h-4"></i><span>Upload Data from Hard Drive</span>`;
           document.getElementById('backupFileInput').value = '';
-          lucide.createIcons();
+          if (window.lucide) lucide.createIcons();
         }
       };
 
@@ -2161,7 +2230,7 @@
 
     // 9. INITIALIZE ON LOAD
     window.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
       refreshAllHQData();
     });
   </script>

@@ -13,7 +13,7 @@
 
   <!-- Google Fonts & Tailwind -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -39,7 +39,7 @@
         </span>
       </div>
       <div class="flex items-center gap-2">
-        <a href="admin.html" class="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700">HQ Admin</a>
+        <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700">HQ Admin ↗</a>
         <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
       </div>
     </header>
@@ -59,7 +59,7 @@
       </button>
 
       <!-- Tab 2: Queue (Pila) -->
-      <button id="tab-btn-pila" onclick="navigateTab('pila.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
+      <button id="tab-btn-pila" onclick="navigateTab('module3.html', this)" class="app-tab flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-white transition cursor-pointer">
         <i data-lucide="clock" class="w-4 h-4"></i>
         <span class="text-[10px] font-bold mt-0.5">Queue</span>
       </button>
@@ -111,14 +111,18 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // Support window.parent.switchModule('pila') from inside child pages
+    // Standardized Global Shell Bridge for all child modules
     window.switchModule = function(moduleName) {
       const routeMap = {
         courts: { url: 'module2.html', id: 'tab-btn-courts' },
-        pila: { url: 'pila.html', id: 'tab-btn-pila' },
+        pila: { url: 'module3.html', id: 'tab-btn-pila' },
         referee: { url: 'module4.html', id: 'tab-btn-referee' },
         exchange: { url: 'module7.html', id: 'tab-btn-exchange' },
-        passport: { url: 'passport.html', id: 'tab-btn-passport' }
+        passport: { url: 'passport.html', id: 'tab-btn-passport' },
+        // Secondary modules accessible via in-app links:
+        tournaments: { url: 'module5.html', id: 'tab-btn-referee' },
+        coaches: { url: 'module6.html', id: 'tab-btn-courts' },
+        community: { url: 'module8.html', id: 'tab-btn-exchange' }
       };
 
       const target = routeMap[moduleName];
@@ -132,5 +136,22 @@
       if (window.lucide) lucide.createIcons();
     });
   </script>
+
+  <script>
+  // Register Service Worker for PWA & Android TWA offline readiness
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('./sw.js')
+        .then((reg) => {
+          console.log('[PWA] Service Worker registered successfully:', reg.scope);
+        })
+        .catch((err) => {
+          console.warn('[PWA] Service Worker registration failed:', err);
+        });
+    });
+  }
+  </script>
+  
 </body>
 </html>

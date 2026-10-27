@@ -7,7 +7,7 @@
   
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,12 +18,12 @@
     * { font-family: 'Outfit', sans-serif; user-select: none; }
   </style>
 </head>
-<body class="bg-[#070B11] text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
+<body class="bg-[#0B131E] text-slate-100 min-h-screen flex items-center justify-center p-0">
 
-  <div class="w-full max-w-[420px] h-[880px] max-h-screen bg-[#0B131E] sm:rounded-3xl shadow-2xl border border-slate-800 flex flex-col justify-between overflow-hidden">
+  <div class="w-full h-full min-h-screen bg-[#0B131E] flex flex-col justify-between overflow-hidden">
     
-    <!-- Top Bar -->
-    <div class="p-3 bg-[#111827] border-b border-slate-800 flex items-center justify-between">
+    <!-- Top System Header Bar -->
+    <header class="p-3.5 bg-[#111827] border-b border-slate-800 flex items-center justify-between shrink-0">
       <div class="flex items-center gap-2">
         <div class="w-7 h-7 rounded-lg bg-[#CCFF00]/15 text-[#CCFF00] flex items-center justify-center font-bold">
           <i data-lucide="award" class="w-4 h-4"></i>
@@ -33,21 +33,27 @@
           <span class="text-[10px] text-slate-400">First to 11 points (Win by 2)</span>
         </div>
       </div>
-      <button onclick="resetMatch()" class="text-[10px] font-bold text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">
-        Reset
-      </button>
-    </div>
+      <div class="flex items-center gap-2">
+        <button onclick="resetMatch()" class="text-[10px] font-bold text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">
+          Reset
+        </button>
+        <!-- Safe Breakout Admin Link -->
+        <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-[#CCFF00] bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700 hover:brightness-125">
+          HQ Admin ↗
+        </a>
+      </div>
+    </header>
 
     <!-- Main Score Area -->
-    <div class="flex-1 p-4 flex flex-col justify-between">
+    <div class="flex-1 p-4 flex flex-col justify-between overflow-y-auto no-scrollbar">
 
       <!-- Who is Serving Callout -->
-      <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-center">
+      <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-center shrink-0">
         <span class="text-[10px] font-extrabold uppercase text-[#CCFF00] tracking-wider block">
           Current Server
         </span>
         <h3 id="serving-callout" class="text-sm font-black text-white mt-0.5">
-          Team A is Serving from the Right Side
+          Team A (Us) is Serving!
         </h3>
         <p class="text-[10px] text-slate-400 mt-0.5">
           Rule: Only the serving team gets a point if they win the rally!
@@ -55,9 +61,9 @@
       </div>
 
       <!-- Big Two-Team Scoreboard -->
-      <div class="grid grid-cols-2 gap-3 my-auto">
+      <div class="grid grid-cols-2 gap-3 my-auto py-2">
         <!-- Team A -->
-        <div id="card-team-a" class="p-4 rounded-3xl bg-sky-950/30 border-2 border-sky-400 text-center shadow-lg">
+        <div id="card-team-a" class="p-4 rounded-3xl bg-sky-950/30 border-2 border-sky-400 text-center shadow-lg transition-all">
           <span class="text-xs font-black text-sky-400 uppercase tracking-wide block">Team A (Us)</span>
           <span id="score-team-a" class="text-6xl font-black text-white font-mono my-2 block">0</span>
           <span id="serve-indicator-a" class="text-[10px] font-bold bg-[#CCFF00] text-black px-2 py-0.5 rounded-full inline-block">
@@ -66,7 +72,7 @@
         </div>
 
         <!-- Team B -->
-        <div id="card-team-b" class="p-4 rounded-3xl bg-slate-900/40 border border-slate-800 text-center">
+        <div id="card-team-b" class="p-4 rounded-3xl bg-slate-900/40 border border-slate-800 text-center transition-all">
           <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Team B (Them)</span>
           <span id="score-team-b" class="text-6xl font-black text-slate-300 font-mono my-2 block">0</span>
           <span id="serve-indicator-b" class="text-[10px] font-bold bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full inline-block">
@@ -76,7 +82,7 @@
       </div>
 
       <!-- Who Won the Rally? Buttons -->
-      <div class="space-y-2.5">
+      <div class="space-y-2.5 shrink-0">
         <span class="text-[11px] font-bold text-slate-400 text-center block uppercase tracking-wider">
           Tap Who Won the Last Point:
         </span>
@@ -110,11 +116,13 @@
 
     </div>
 
-    <!-- Match Timer Footer -->
-    <div class="p-3 bg-[#111827] border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+    <!-- Match Timer & Bridge Footer -->
+    <footer class="p-3 bg-[#111827] border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 shrink-0">
       <span>Match Time: <strong id="timer-display" class="text-white font-mono">00:00</strong></span>
-      <span class="text-emerald-400 font-semibold">Game active</span>
-    </div>
+      <button onclick="openAppTab('passport')" class="text-sky-400 font-bold hover:underline">
+        View My Record in Profile →
+      </button>
+    </footer>
 
   </div>
 
@@ -124,12 +132,29 @@
     let serving = 'A';
     let seconds = 0;
 
+    // Standard Parent Navigation Bridge
+    function openAppTab(tabKey) {
+      if (window.parent && typeof window.parent.switchModule === 'function') {
+        window.parent.switchModule(tabKey);
+        return;
+      }
+      const routeFiles = {
+        courts: 'module2.html',
+        pila: 'module3.html',
+        referee: 'module4.html',
+        exchange: 'module7.html',
+        passport: 'passport.html'
+      };
+      if (routeFiles[tabKey]) {
+        window.location.href = routeFiles[tabKey];
+      }
+    }
+
     function addPoint(team) {
       if (team === serving) {
         if (team === 'A') scoreA++;
         else scoreB++;
       } else {
-        // Switch serve if receiver wins rally
         serving = (serving === 'A') ? 'B' : 'A';
       }
       updateUI();
@@ -152,16 +177,16 @@
       const callout = document.getElementById('serving-callout');
 
       if (serving === 'A') {
-        cardA.className = "p-4 rounded-3xl bg-sky-950/30 border-2 border-sky-400 text-center shadow-lg";
-        cardB.className = "p-4 rounded-3xl bg-slate-900/40 border border-slate-800 text-center";
+        cardA.className = "p-4 rounded-3xl bg-sky-950/30 border-2 border-sky-400 text-center shadow-lg transition-all";
+        cardB.className = "p-4 rounded-3xl bg-slate-900/40 border border-slate-800 text-center transition-all";
         indA.className = "text-[10px] font-bold bg-[#CCFF00] text-black px-2 py-0.5 rounded-full inline-block";
         indA.innerText = "⚡ Serving Now";
         indB.className = "text-[10px] font-bold bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full inline-block";
         indB.innerText = "Receiving";
         callout.innerText = "Team A (Us) is Serving!";
       } else {
-        cardB.className = "p-4 rounded-3xl bg-amber-950/30 border-2 border-amber-400 text-center shadow-lg";
-        cardA.className = "p-4 rounded-3xl bg-slate-900/40 border border-slate-800 text-center";
+        cardB.className = "p-4 rounded-3xl bg-amber-950/30 border-2 border-amber-400 text-center shadow-lg transition-all";
+        cardA.className = "p-4 rounded-3xl bg-slate-900/40 border border-slate-800 text-center transition-all";
         indB.className = "text-[10px] font-bold bg-[#CCFF00] text-black px-2 py-0.5 rounded-full inline-block";
         indB.innerText = "⚡ Serving Now";
         indA.className = "text-[10px] font-bold bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full inline-block";
@@ -192,7 +217,7 @@
     }, 1000);
 
     window.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     });
   </script>
 </body>

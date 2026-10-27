@@ -7,7 +7,7 @@
   
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
@@ -55,7 +55,7 @@
     <div class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col">
 
       <!-- ======================================================== -->
-      <!-- SCREEN 1: SIMPLE PHONE LOGIN -->
+      <!-- SCREEN 1: PHONE LOGIN -->
       <!-- ======================================================== -->
       <div id="screen-1" class="flex-1 flex flex-col justify-between px-6 pt-6 pb-6">
         <div class="flex flex-col items-center text-center mt-2">
@@ -123,7 +123,7 @@
 
             <button
               onclick="verifyOtpAndContinue()"
-              class="w-full py-3.5 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer"
+              class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer"
             >
               <span>Continue</span>
               <i data-lucide="arrow-right" class="w-4 h-4"></i>
@@ -151,7 +151,7 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- SCREEN 2: 2-STEP EASY SETUP -->
+      <!-- SCREEN 2: ONBOARDING SETUP -->
       <!-- ======================================================== -->
       <div id="screen-2" class="hidden flex-1 flex flex-col justify-between px-5 pt-4 pb-5">
         <div>
@@ -305,7 +305,7 @@
         <button
           id="btn-onboard-next"
           onclick="nextOnboardStep()"
-          class="w-full py-3.5 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#d8ff33] active:scale-98 transition shadow-lg cursor-pointer"
+          class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#d8ff33] active:scale-98 transition shadow-lg cursor-pointer"
         >
           <span>Continue to Step 2</span>
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
@@ -315,7 +315,7 @@
       <!-- ======================================================== -->
       <!-- SCREEN 3: MY PLAYER CARD (MAIN PROFILE VIEW) -->
       <!-- ======================================================== -->
-      <div id="screen-3" class="hidden flex-1 flex flex-col justify-between px-5 pt-3 pb-4">
+      <div id="screen-3" class="hidden flex-1 flex flex-col justify-between px-5 pt-3 pb-8">
         <div class="space-y-3">
           
           <div class="flex items-center justify-between">
@@ -323,10 +323,15 @@
               My Player Profile
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
             </h2>
-            <button onclick="goToScreen(2)" class="text-xs font-bold text-[#CCFF00] hover:underline flex items-center gap-1">
-              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-              <span>Edit Info</span>
-            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="goToScreen(2)" class="text-xs font-bold text-[#CCFF00] hover:underline flex items-center gap-1">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                <span>Edit</span>
+              </button>
+              <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/80 px-2 py-0.5 rounded-lg border border-slate-700">
+                HQ Admin ↗
+              </a>
+            </div>
           </div>
 
           <!-- Athlete Card -->
@@ -367,8 +372,8 @@
                 <span id="card-hand" class="text-xs font-bold text-white mt-1 block">Righty</span>
               </div>
               <div>
-                <span class="text-[9px] font-bold text-slate-400 uppercase block">Games Played</span>
-                <span class="text-lg font-black text-emerald-400">14</span>
+                <span class="text-[9px] font-bold text-slate-400 uppercase block">Games Logged</span>
+                <span id="card-match-count" class="text-lg font-black text-emerald-400">0</span>
               </div>
             </div>
           </div>
@@ -399,16 +404,26 @@
             </div>
 
             <div id="recent-matches-container" class="space-y-2">
-              <div class="p-3 bg-slate-900/80 rounded-2xl border border-emerald-500/30 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 font-black text-xs flex items-center justify-center">W</span>
-                  <div>
-                    <span class="text-xs font-bold text-white block">Doubles Game · Smash & Drip Pasig</span>
-                    <span class="text-[10px] text-slate-400">Yesterday · Friendly</span>
-                  </div>
-                </div>
-                <span class="text-xs font-black text-[#CCFF00]">11 - 8</span>
+              <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-xs text-slate-500">
+                Loading official matches...
               </div>
+            </div>
+          </div>
+
+          <!-- Danger Zone: Google Play Account & Data Deletion -->
+          <div class="mt-4 p-3.5 rounded-2xl bg-rose-950/20 border border-rose-500/30">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-black text-rose-400 block">Delete Account & Data</span>
+                <p class="text-[10px] text-slate-400">Permanently erase profile, match history, and queue spots.</p>
+              </div>
+              <button 
+                type="button" 
+                onclick="openDeleteAccountModal()" 
+                class="px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold border border-rose-500/30 transition cursor-pointer"
+              >
+                Delete
+              </button>
             </div>
           </div>
 
@@ -416,7 +431,7 @@
 
         <button
           onclick="resetPrototype()"
-          class="w-full mt-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer"
+          class="w-full mt-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer"
         >
           <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
           <span>Switch Account / Log Out</span>
@@ -438,25 +453,66 @@
 
       <div class="space-y-3 text-xs">
         <div>
+          <label class="block text-slate-400 font-semibold mb-1">Pick Venue</label>
+          <select id="modal-match-venue" class="w-full bg-[#0B131E] border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none">
+            <!-- Dynamically populated from venues -->
+          </select>
+        </div>
+
+        <div>
           <label class="block text-slate-400 font-semibold mb-1">Final Score</label>
           <div class="flex items-center gap-2">
-            <input type="number" id="my-score" value="11" placeholder="11" class="w-16 p-2 rounded-xl bg-[#0B131E] border border-slate-700 text-center font-bold text-white" />
+            <input type="number" id="my-score" value="11" min="0" max="30" class="w-16 p-2 rounded-xl bg-[#0B131E] border border-slate-700 text-center font-bold text-white focus:border-[#CCFF00]" />
             <span class="font-bold text-slate-400">to</span>
-            <input type="number" id="their-score" value="8" placeholder="8" class="w-16 p-2 rounded-xl bg-[#0B131E] border border-slate-700 text-center font-bold text-white" />
+            <input type="number" id="their-score" value="8" min="0" max="30" class="w-16 p-2 rounded-xl bg-[#0B131E] border border-slate-700 text-center font-bold text-white focus:border-[#CCFF00]" />
           </div>
         </div>
 
-        <button onclick="saveSimpleMatch()" class="w-full py-2.5 rounded-xl bg-[#CCFF00] text-[#0B131E] font-black uppercase tracking-wider mt-2">
+        <button onclick="saveSimpleMatch()" id="btn-save-match" class="w-full py-2.5 rounded-xl bg-[#CCFF00] text-[#0B131E] font-black uppercase tracking-wider mt-2">
           Save Game
         </button>
       </div>
     </div>
   </div>
 
+  <!-- ACCOUNT DELETION CONFIRMATION MODAL -->
+  <div id="delete-account-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-[#111827] border border-rose-500/40 rounded-3xl p-5 max-w-sm w-full shadow-2xl text-center">
+      <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-rose-500/10 border-2 border-rose-500 flex items-center justify-center text-rose-400">
+        <i data-lucide="trash-2" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-base font-black text-white">Permanently Delete Account?</h3>
+      <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+        This action cannot be undone. All your match records, ratings, booked courts, and partner invites will be permanently erased.
+      </p>
+
+      <div class="space-y-2 mt-4">
+        <button
+          id="btn-confirm-delete"
+          onclick="executeAccountDeletion()"
+          class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer"
+        >
+          Yes, Delete Everything
+        </button>
+        <button
+          onclick="closeDeleteAccountModal()"
+          class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const state = {
       screen: 1,
       onboardingStep: 1,
+      playerId: null, // Dynamic UUID
       fullName: 'Dave Hernandez',
       nickname: 'Dave',
       city: 'BGC / Taguig',
@@ -467,11 +523,75 @@
       cities: ['BGC / Taguig', 'Pasig', 'Makati', 'Quezon City', 'Alabang', 'Cebu City', 'Davao City']
     };
 
+    // Standard Parent Navigation Bridge
+    function openAppTab(tabKey) {
+      if (window.parent && typeof window.parent.switchModule === 'function') {
+        window.parent.switchModule(tabKey);
+        return;
+      }
+      const routeFiles = {
+        courts: 'module2.html',
+        pila: 'module3.html',
+        referee: 'module4.html',
+        exchange: 'module7.html',
+        passport: 'passport.html'
+      };
+      if (routeFiles[tabKey]) {
+        window.location.href = routeFiles[tabKey];
+      }
+    }
+
     function showToast(msg) {
       const toast = document.getElementById('toast');
       document.getElementById('toast-msg').innerText = msg;
       toast.classList.remove('hidden');
       setTimeout(() => toast.classList.add('hidden'), 2500);
+    }
+
+    // Dynamic Player Session Setup
+    async function initUserSession() {
+      let storedId = localStorage.getItem('piklr_player_id');
+
+      if (storedId) {
+        const { data: existingPlayer } = await supabaseClient
+          .from('player_profiles')
+          .select('id, full_name, display_name, city, dupr_doubles, dominant_hand')
+          .eq('id', storedId)
+          .single();
+
+        if (existingPlayer) {
+          bindPlayerState(existingPlayer);
+          return;
+        }
+      }
+
+      try {
+        const { data: firstProfile } = await supabaseClient
+          .from('player_profiles')
+          .select('id, full_name, display_name, city, dupr_doubles, dominant_hand')
+          .limit(1)
+          .single();
+
+        if (firstProfile) {
+          localStorage.setItem('piklr_player_id', firstProfile.id);
+          bindPlayerState(firstProfile);
+        } else {
+          state.playerId = '09111111-0000-0000-0000-000000000001';
+          localStorage.setItem('piklr_player_id', state.playerId);
+        }
+      } catch (e) {
+        state.playerId = '09111111-0000-0000-0000-000000000001';
+        localStorage.setItem('piklr_player_id', state.playerId);
+      }
+    }
+
+    function bindPlayerState(player) {
+      state.playerId = player.id;
+      state.fullName = player.full_name || state.fullName;
+      state.nickname = player.display_name || state.nickname;
+      state.city = player.city || state.city;
+      state.duprRating = parseFloat(player.dupr_doubles) || state.duprRating;
+      state.dominantHand = player.dominant_hand || state.dominantHand;
     }
 
     function goToScreen(screenNumber) {
@@ -483,7 +603,10 @@
       document.getElementById(`screen-${screenNumber}`).classList.remove('hidden');
 
       if (screenNumber === 2) updateOnboardingStepUI();
-      if (screenNumber === 3) syncPassportCard();
+      if (screenNumber === 3) {
+        syncPassportCard();
+        loadPlayerMatchHistory();
+      }
 
       if (window.lucide) lucide.createIcons();
     }
@@ -510,9 +633,9 @@
     }
 
     function verifyOtpAndContinue() {
-      showToast('Welcome back, Dave!');
+      showToast('Welcome back, ' + state.nickname + '!');
       state.onboardingStep = 1;
-      goToScreen(3); // Directly to profile if returning
+      goToScreen(3);
     }
 
     function continueWithGoogle() {
@@ -587,7 +710,7 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    function nextOnboardStep() {
+    async function nextOnboardStep() {
       if (state.onboardingStep === 1) {
         state.fullName = document.getElementById('input-fullname').value || state.fullName;
         state.nickname = document.getElementById('input-nickname').value || state.nickname;
@@ -595,6 +718,18 @@
         state.onboardingStep = 2;
         updateOnboardingStepUI();
       } else {
+        if (state.playerId) {
+          await supabaseClient
+            .from('player_profiles')
+            .update({
+              full_name: state.fullName,
+              display_name: state.nickname,
+              city: state.city,
+              dupr_doubles: state.duprRating,
+              dominant_hand: state.dominantHand
+            })
+            .eq('id', state.playerId);
+        }
         showToast('Profile saved!');
         goToScreen(3);
       }
@@ -611,6 +746,56 @@
       if (window.lucide) lucide.createIcons();
     }
 
+    async function loadPlayerMatchHistory() {
+      const container = document.getElementById('recent-matches-container');
+      const countDisplay = document.getElementById('card-match-count');
+
+      try {
+        const { data: matches, error } = await supabaseClient
+          .from('matches')
+          .select('id, set1_team1, set1_team2, winning_team, played_at, venue:venues(name)')
+          .or(`team1_player1_id.eq.${state.playerId},team2_player1_id.eq.${state.playerId}`)
+          .order('played_at', { ascending: false })
+          .limit(5);
+
+        if (error || !matches || matches.length === 0) {
+          container.innerHTML = `
+            <div class="p-3 bg-slate-900/60 rounded-2xl border border-slate-800 text-center text-xs text-slate-500">
+              No games logged yet. Tap "+ Log Match" above after your game!
+            </div>
+          `;
+          countDisplay.innerText = '0';
+          return;
+        }
+
+        countDisplay.innerText = matches.length.toString();
+        container.innerHTML = matches.map(m => {
+          const won = m.winning_team === 1;
+          const score = `${m.set1_team1 || 11} - ${m.set1_team2 || 8}`;
+          const venue = m.venue?.name || 'Local NCR Court';
+
+          return `
+            <div class="p-3 bg-slate-900/80 rounded-2xl border ${won ? 'border-emerald-500/30' : 'border-slate-800'} flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg ${won ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'} font-black text-xs flex items-center justify-center">
+                  ${won ? 'W' : 'L'}
+                </span>
+                <div>
+                  <span class="text-xs font-bold text-white block">${venue}</span>
+                  <span class="text-[10px] text-slate-400">${new Date(m.played_at).toLocaleDateString()} · Friendly</span>
+                </div>
+              </div>
+              <span class="text-xs font-black ${won ? 'text-[#CCFF00]' : 'text-slate-400'}">${score}</span>
+            </div>
+          `;
+        }).join('');
+
+      } catch (e) {
+        console.warn('Match history error:', e);
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
     function togglePartnerSearch() {
       state.partnerActive = !state.partnerActive;
       const btn = document.getElementById('btn-partner-toggle');
@@ -623,7 +808,14 @@
       }
     }
 
-    function openLogMatchModal() {
+    async function openLogMatchModal() {
+      const select = document.getElementById('modal-match-venue');
+      const { data: venues } = await supabaseClient.from('venues').select('id, name');
+      if (venues && venues.length > 0) {
+        select.innerHTML = venues.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
+      } else {
+        select.innerHTML = '<option value="">Local Court</option>';
+      }
       document.getElementById('log-match-modal').classList.remove('hidden');
     }
 
@@ -631,18 +823,103 @@
       document.getElementById('log-match-modal').classList.add('hidden');
     }
 
-    function saveSimpleMatch() {
-      const myScore = document.getElementById('my-score').value;
-      const theirScore = document.getElementById('their-score').value;
-      closeLogMatchModal();
-      showToast(`Game saved: ${myScore} - ${theirScore}!`);
+    async function saveSimpleMatch() {
+      const myScore = parseInt(document.getElementById('my-score').value, 10) || 11;
+      const theirScore = parseInt(document.getElementById('their-score').value, 10) || 8;
+      const venueId = document.getElementById('modal-match-venue').value || null;
+      const btn = document.getElementById('btn-save-match');
+
+      btn.disabled = true;
+      btn.innerText = 'Saving...';
+
+      try {
+        await supabaseClient.from('matches').insert([{
+          venue_id: venueId,
+          match_type: 'doubles',
+          game_format: '1_to_11',
+          team1_player1_id: state.playerId,
+          set1_team1: myScore,
+          set1_team2: theirScore,
+          winning_team: myScore > theirScore ? 1 : 2,
+          submitted_by: state.playerId,
+          status: 'confirmed'
+        }]);
+
+        closeLogMatchModal();
+        showToast(`Game saved: ${myScore} - ${theirScore}!`);
+        loadPlayerMatchHistory();
+      } catch (e) {
+        showToast('Error saving match: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Save Game';
+      }
+    }
+
+    // Google Play Mandatory User Data Deletion Modal Helpers
+    function openDeleteAccountModal() {
+      document.getElementById('delete-account-modal').classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeDeleteAccountModal() {
+      document.getElementById('delete-account-modal').classList.add('hidden');
+    }
+
+    async function executeAccountDeletion() {
+      const btn = document.getElementById('btn-confirm-delete');
+      btn.disabled = true;
+      btn.innerText = 'Deleting data...';
+
+      try {
+        if (state.playerId) {
+          await supabaseClient
+            .from('match_confirmations')
+            .delete()
+            .eq('confirmer_id', state.playerId);
+
+          await supabaseClient
+            .from('matches')
+            .delete()
+            .or(`team1_player1_id.eq.${state.playerId},team2_player1_id.eq.${state.playerId},submitted_by.eq.${state.playerId}`);
+
+          await supabaseClient
+            .from('pila_queue')
+            .delete()
+            .eq('player_id', state.playerId);
+
+          await supabaseClient
+            .from('player_profiles')
+            .delete()
+            .eq('id', state.playerId);
+        }
+
+        localStorage.removeItem('piklr_player_id');
+        sessionStorage.clear();
+
+        closeDeleteAccountModal();
+        showToast('Your account and data have been permanently erased.');
+        
+        setTimeout(() => {
+          resetPrototype();
+        }, 1500);
+
+      } catch (err) {
+        console.error('Account deletion failed:', err);
+        showToast('Could not complete deletion. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Yes, Delete Everything';
+      }
     }
 
     function resetPrototype() {
+      localStorage.removeItem('piklr_player_id');
       goToScreen(1);
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initUserSession();
       renderCityChips();
       if (window.lucide) lucide.createIcons();
     });

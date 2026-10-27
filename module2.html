@@ -7,7 +7,7 @@
   
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
@@ -73,24 +73,32 @@
             </h1>
           </div>
 
-          <div class="bg-[#111827] border border-slate-800 rounded-xl px-2.5 py-1.5 text-right">
-            <span class="text-[9px] text-slate-400 block font-semibold">GCASH READY</span>
-            <span class="text-xs font-black text-[#005CE6] flex items-center justify-end gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#005CE6] animate-pulse"></span>
-              ₱2,450.00
-            </span>
+          <div class="flex items-center gap-2">
+            <div class="bg-[#111827] border border-slate-800 rounded-xl px-2.5 py-1.5 text-right">
+              <span class="text-[9px] text-slate-400 block font-semibold">GCASH READY</span>
+              <span class="text-xs font-black text-[#005CE6] flex items-center justify-end gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#005CE6] animate-pulse"></span>
+                ₱2,450.00
+              </span>
+            </div>
+            <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/80 px-2 py-1.5 rounded-lg border border-slate-700">
+              Admin ↗
+            </a>
           </div>
         </div>
 
-        <!-- Beginner Tip Callout -->
-        <div class="mb-3 p-3 rounded-2xl bg-gradient-to-r from-emerald-950/40 to-slate-900 border border-emerald-500/30 flex items-center gap-2.5">
-          <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-            <i data-lucide="help-circle" class="w-4 h-4"></i>
+        <!-- Beginner Tip Callout with Cross-Module Navigation -->
+        <div class="mb-3 p-3 rounded-2xl bg-gradient-to-r from-emerald-950/40 to-slate-900 border border-emerald-500/30 flex items-center justify-between gap-2.5">
+          <div class="flex items-center gap-2 text-[11px] text-slate-300">
+            <span class="text-base">🏓</span>
+            <div>
+              <span class="font-bold text-white block">Solo or just getting started?</span>
+              Jump into the friendly open queue line-up!
+            </div>
           </div>
-          <div class="flex-1 text-[11px] text-slate-300">
-            <span class="font-bold text-white block">New to pickleball?</span>
-            No gear needed! Most venues have paddle rentals for ₱100/hour.
-          </div>
+          <button onclick="openAppTab('pila')" class="px-2.5 py-1 rounded-xl bg-[#CCFF00] text-black font-black text-xs shrink-0 cursor-pointer">
+            View Queue →
+          </button>
         </div>
 
         <!-- Search Bar -->
@@ -154,7 +162,7 @@
             </div>
           </div>
 
-          <!-- Date Selector -->
+          <!-- Dynamic 7-Day Date Selector -->
           <div class="mb-4">
             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
               <i data-lucide="calendar" class="w-3.5 h-3.5 text-[#CCFF00]"></i>
@@ -167,7 +175,7 @@
           <div class="mb-4">
             <div class="flex items-center justify-between mb-2">
               <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">2. Choose a Court</label>
-              <span class="text-[10px] text-slate-500 font-semibold">Standard Pickleball Net</span>
+              <span class="text-[10px] text-slate-500 font-semibold">Standard Pickleball Court</span>
             </div>
             <div id="court-picker-container" class="grid grid-cols-3 gap-2"></div>
           </div>
@@ -218,7 +226,7 @@
                 <div>
                   <div class="text-xs font-bold text-white flex items-center gap-1.5">
                     <span>🎾</span>
-                    Can of 3 Official Tournament Balls
+                    Can of 3 Official Balls
                   </div>
                   <span class="text-[10px] text-[#CCFF00] font-semibold">+₱350 (Yours to keep & take home)</span>
                 </div>
@@ -321,7 +329,7 @@
             </div>
           </div>
 
-          <!-- Who Pays? (Split Option) -->
+          <!-- Split Bill Option -->
           <div class="bg-[#111827] border border-[#1E293B] rounded-3xl p-4 mb-4">
             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
               Who is paying?
@@ -411,7 +419,7 @@
                   <div>
                     <div class="text-xs font-bold text-white flex items-center gap-1.5">
                       GCash
-                      <span class="text-[9px] text-[#005CE6] font-extrabold bg-[#005CE6]/20 px-1.5 py-0.2 rounded">RECOMMENDED</span>
+                      <span class="text-[9px] text-[#005CE6] font-extrabold bg-[#005CE6]/20 px-1.5 py-0.2 rounded">POPULAR</span>
                     </div>
                     <span class="text-[11px] text-slate-400">1-Tap Authorization</span>
                   </div>
@@ -508,13 +516,44 @@
     let venues = [];
     let currentFilter = 'All';
 
-    const dates = [
-      { id: 'today', day: 'Today', num: '19' },
-      { id: 'tomorrow', day: 'Tomorrow', num: '20' },
-      { id: 'wed', day: 'Wed', num: '21' },
-      { id: 'thu', day: 'Thu', num: '22' },
-      { id: 'fri', day: 'Fri', num: '23' }
-    ];
+    // Standard Parent Navigation Bridge
+    function openAppTab(tabKey) {
+      if (window.parent && typeof window.parent.switchModule === 'function') {
+        window.parent.switchModule(tabKey);
+        return;
+      }
+      const routeFiles = {
+        courts: 'module2.html',
+        pila: 'module3.html',
+        referee: 'module4.html',
+        exchange: 'module7.html',
+        passport: 'passport.html'
+      };
+      if (routeFiles[tabKey]) {
+        window.location.href = routeFiles[tabKey];
+      }
+    }
+
+    // Dynamic 7-day Date Array Generator
+    function generateDynamicDates() {
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dateList = [];
+      const today = new Date();
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(today.getDate() + i);
+        const dayLabel = i === 0 ? 'Today' : i === 1 ? 'Tmrw' : days[d.getDay()];
+        dateList.push({
+          id: i === 0 ? 'today' : `day-${i}`,
+          day: dayLabel,
+          num: d.getDate().toString()
+        });
+      }
+      return dateList;
+    }
+
+    const dates = generateDynamicDates();
 
     const state = {
       screen: 1,
@@ -567,7 +606,6 @@
           const courts = (v.courts || []).sort((a, b) => a.name.localeCompare(b.name));
           const activeCourts = courts.filter(c => c.is_active);
           const minBase = courts.length > 0 ? Math.min(...courts.map(c => c.base_hourly_rate || 500)) : 500;
-          const maxPeak = courts.length > 0 ? Math.max(...courts.map(c => c.peak_hourly_rate || 750)) : 750;
 
           let typeLabel = 'Covered (Rainproof)';
           if (v.environment === 'indoor_ac') typeLabel = 'Aircon Indoors';
@@ -687,7 +725,8 @@
             </div>
             <a 
               href="https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}" 
-              target="_blank"
+              target="_blank" 
+              rel="noopener noreferrer"
               class="text-[#CCFF00] font-bold flex items-center gap-0.5 hover:underline"
               onclick="event.stopPropagation()"
             >
