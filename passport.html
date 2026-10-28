@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PiklrPH - My Player Profile</title>
-  
+  <title>PiklrPH - Player Passport & Authentication</title>
+
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -12,518 +12,216 @@
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Outfit', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-          },
-          colors: {
-            deep: '#0B131E',
-            surface: '#111827',
-            borderDark: '#1E293B',
-            opticLime: '#CCFF00',
-            emeraldGreen: '#10B981',
-          }
-        }
-      }
-    }
-  </script>
 
-  <!-- Lucide Icons & Supabase JS Client -->
+  <!-- Lucide Icons & Supabase Client -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * { font-family: 'Outfit', sans-serif; user-select: none; }
+    * {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-[#0B131E] text-slate-100 h-screen w-full overflow-hidden antialiased selection:bg-[#CCFF00] selection:text-[#0B131E]">
+<body class="bg-[#0B131E] text-slate-100 min-h-screen flex flex-col justify-between overflow-hidden select-none">
 
-  <!-- Notification Toast -->
-  <div id="toast" class="fixed top-3 z-50 left-1/2 -translate-x-1/2 hidden flex items-center gap-2 bg-[#111827] border border-[#CCFF00]/40 text-slate-100 px-3.5 py-2 rounded-full shadow-2xl text-xs">
-    <div class="w-2 h-2 rounded-full bg-[#CCFF00] animate-pulse"></div>
-    <span id="toast-msg" class="font-medium">Notification</span>
-  </div>
+  <!-- Main Frame Container -->
+  <div class="w-full h-full flex flex-col justify-between overflow-hidden">
+    
+    <!-- Top System Bar -->
+    <div class="pt-3 px-4 pb-2 flex items-center justify-between z-30 shrink-0 bg-[#0B131E] border-b border-slate-800/80">
+      <div class="flex items-center gap-2">
+        <button onclick="openAppTab('courts')" class="p-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white cursor-pointer" title="Back to Courts">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </button>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[#CCFF00] animate-ping"></span>
+          <span class="text-xs font-black uppercase tracking-wider text-white">Player Passport & Auth</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-[#CCFF00] bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700 hover:brightness-125">HQ Admin ↗</a>
+      </div>
+    </div>
 
-  <div class="w-full h-full flex flex-col justify-between overflow-hidden select-none">
+    <!-- MAIN SCROLLABLE CONTENT BODY -->
+    <div class="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4 pb-12">
 
-    <!-- Scrollable Screen Content -->
-    <div class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col">
-
-      <!-- ======================================================== -->
-      <!-- SCREEN 1: PHONE LOGIN -->
-      <!-- ======================================================== -->
-      <div id="screen-1" class="flex-1 flex flex-col justify-between px-6 pt-6 pb-6">
-        <div class="flex flex-col items-center text-center mt-2">
-          <div class="relative group cursor-pointer mb-3">
-            <div class="absolute -inset-2 bg-[#CCFF00]/15 rounded-3xl blur-xl"></div>
-            <img 
-              src="logo.png" 
-              alt="PiklrPH" 
-              class="relative h-32 w-auto object-contain drop-shadow"
-            />
+      <!-- ================= STATE A: AUTHENTICATION CONTAINER (IF LOGGED OUT) ================= -->
+      <div id="auth-section" class="space-y-4 max-w-sm mx-auto pt-4">
+        <div class="text-center space-y-1.5">
+          <div class="w-16 h-16 rounded-3xl bg-[#CCFF00]/10 border border-[#CCFF00]/30 mx-auto flex items-center justify-center text-[#CCFF00] shadow-[0_0_25px_rgba(204,255,0,0.2)]">
+            <i data-lucide="shield-check" class="w-8 h-8"></i>
           </div>
-          <h1 class="text-xl font-black text-white tracking-tight">Your Player Profile</h1>
-          <p class="text-xs text-slate-400 mt-1">Join friendly matches, track court games & find partners</p>
+          <h1 class="text-xl font-black text-white tracking-wide">PiklrPH Secure Access</h1>
+          <p class="text-xs text-slate-400">Sign in securely with your mobile number or Google account.</p>
         </div>
 
-        <!-- Phone Card -->
-        <div class="mt-4 bg-[#111827] border border-[#1E293B] rounded-3xl p-5 shadow-xl">
-          <div class="mb-4">
-            <label class="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
-              Mobile Number
-            </label>
-            <div class="flex items-center bg-[#0B131E] border border-slate-700/80 rounded-2xl overflow-hidden focus-within:border-[#CCFF00]">
-              <div class="flex items-center gap-1 px-3 py-3 bg-slate-800/80 border-r border-slate-700 text-white font-bold text-sm">
-                <span>🇵🇭 +63</span>
+        <!-- Google OAuth Button -->
+        <button onclick="loginWithGoogle()" class="w-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-black text-xs tracking-wider flex items-center justify-center gap-2.5 shadow-md transition active:scale-98 cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.15C3.15 21.32 7.23 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.18C.43 8.13 0 9.83 0 12s.43 3.87 1.18 5.39l4.09-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.15 2.68 1.18 6.61l4.09 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
+          </svg>
+          <span>CONTINUE WITH GOOGLE</span>
+        </button>
+
+        <div class="relative flex py-1 items-center">
+          <div class="flex-grow border-t border-slate-800"></div>
+          <span class="flex-shrink mx-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Or Mobile SMS OTP</span>
+          <div class="flex-grow border-t border-slate-800"></div>
+        </div>
+
+        <!-- Phone OTP Form Box -->
+        <div class="p-4 rounded-3xl bg-[#111827] border border-[#1E293B] shadow-xl space-y-3">
+          <!-- Step 1: Phone Input -->
+          <div id="phone-input-group" class="space-y-2">
+            <label class="text-[11px] font-bold text-slate-300">Philippine Mobile Number:</label>
+            <div class="flex items-center gap-2">
+              <span class="px-3 py-3 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-slate-300">+63</span>
+              <input id="phone-number-input" type="tel" placeholder="9171234567" class="flex-1 p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-[#CCFF00]" />
+            </div>
+            <button onclick="sendPhoneOtp()" id="send-otp-btn" class="w-full py-3 px-4 rounded-xl bg-[#CCFF00] text-black font-black text-xs tracking-wider flex items-center justify-center gap-1.5 hover:brightness-110 active:scale-98 transition cursor-pointer">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              <span>SEND 4-DIGIT CODE</span>
+            </button>
+          </div>
+
+          <!-- Step 2: OTP Verification Input (Hidden by default) -->
+          <div id="otp-verify-group" class="space-y-2 hidden">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-bold text-slate-300">Enter Verification Code:</label>
+              <button onclick="resetOtpForm()" class="text-[10px] text-[#CCFF00] hover:underline">Change Number</button>
+            </div>
+            <input id="otp-code-input" type="text" placeholder="1234" maxlength="6" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-center font-mono text-base tracking-widest text-white focus:outline-none focus:border-[#CCFF00]" />
+            <button onclick="verifyPhoneOtp()" id="verify-otp-btn" class="w-full py-3 px-4 rounded-xl bg-emerald-400 text-black font-black text-xs tracking-wider flex items-center justify-center gap-1.5 hover:brightness-110 active:scale-98 transition cursor-pointer">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+              <span>VERIFY & LOGIN</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= STATE B: LOGGED IN PLAYER PASSPORT (HIDDEN UNTIL AUTH) ================= -->
+      <div id="passport-section" class="space-y-4 hidden">
+        
+        <!-- Player ID Header Card -->
+        <div class="p-4 rounded-3xl bg-gradient-to-br from-[#111827] via-[#111d2e] to-[#111827] border border-[#CCFF00]/40 shadow-xl space-y-3">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div id="player-avatar" class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#CCFF00] to-emerald-400 text-black font-black text-xl flex items-center justify-center shadow-lg">
+                DH
               </div>
-              <input
-                id="phone-input"
-                type="tel"
-                value="917 555 1829"
-                placeholder="917 123 4567"
-                class="w-full bg-transparent px-3 py-3 text-white font-medium text-sm focus:outline-none"
-              />
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <h2 id="player-name" class="text-base font-black text-white">Dave H.</h2>
+                  <span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Verified</span>
+                </div>
+                <p id="player-contact" class="text-xs text-slate-400 font-medium">+63 917 ••• •459</p>
+              </div>
             </div>
-            <p class="text-[11px] text-slate-500 mt-1.5">
-              We send a free 4-digit code to log you in instantly.
-            </p>
-          </div>
 
-          <!-- Step A: Send Code -->
-          <div id="auth-send-step">
-            <button
-              onclick="sendOtp()"
-              class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d8ff33] active:scale-[0.98] transition shadow-lg cursor-pointer"
-            >
-              <span>Send 4-Digit Code</span>
-              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            <button onclick="logoutUser()" class="p-2 rounded-xl bg-slate-800/80 text-rose-400 hover:bg-rose-500/20 border border-slate-700 transition cursor-pointer" title="Log Out">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
             </button>
           </div>
 
-          <!-- Step B: Verify PIN Box -->
-          <div id="auth-verify-step" class="hidden space-y-3">
-            <div class="flex items-center justify-between text-xs">
-              <label class="font-semibold text-slate-300">Enter Code</label>
-              <button onclick="quickFillOtp()" class="font-bold text-[#CCFF00] text-[11px]">
-                Auto-fill (8492)
-              </button>
+          <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/80 text-center">
+            <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
+              <span class="text-[9px] text-slate-400 block font-bold uppercase">DUPR</span>
+              <span class="text-sm font-black text-[#CCFF00]">3.50</span>
             </div>
-
-            <div class="grid grid-cols-4 gap-2">
-              <input id="pin-0" type="text" maxlength="1" inputmode="numeric" oninput="handlePinInput(0)" class="h-12 text-center text-lg font-bold bg-[#0B131E] border border-slate-700 rounded-xl text-white focus:border-[#CCFF00] focus:outline-none" />
-              <input id="pin-1" type="text" maxlength="1" inputmode="numeric" oninput="handlePinInput(1)" class="h-12 text-center text-lg font-bold bg-[#0B131E] border border-slate-700 rounded-xl text-white focus:border-[#CCFF00] focus:outline-none" />
-              <input id="pin-2" type="text" maxlength="1" inputmode="numeric" oninput="handlePinInput(2)" class="h-12 text-center text-lg font-bold bg-[#0B131E] border border-slate-700 rounded-xl text-white focus:border-[#CCFF00] focus:outline-none" />
-              <input id="pin-3" type="text" maxlength="1" inputmode="numeric" oninput="handlePinInput(3)" class="h-12 text-center text-lg font-bold bg-[#0B131E] border border-slate-700 rounded-xl text-white focus:border-[#CCFF00] focus:outline-none" />
+            <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
+              <span class="text-[9px] text-slate-400 block font-bold uppercase">Matches</span>
+              <span class="text-sm font-black text-white">24</span>
             </div>
-
-            <button
-              onclick="verifyOtpAndContinue()"
-              class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer"
-            >
-              <span>Continue</span>
-              <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </button>
+            <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
+              <span class="text-[9px] text-slate-400 block font-bold uppercase">Win Rate</span>
+              <span class="text-sm font-black text-emerald-400">71%</span>
+            </div>
           </div>
+        </div>
 
-          <div class="relative my-4 flex items-center justify-center">
-            <div class="w-full border-t border-slate-800"></div>
-            <span class="absolute bg-[#111827] px-2 text-[10px] text-slate-500 uppercase">OR</span>
+        <!-- Commercialization Reset Utility (Admin / Data Wipe) -->
+        <div class="p-4 rounded-3xl bg-rose-950/20 border border-rose-500/30 space-y-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400">
+              <i data-lucide="database" class="w-3.5 h-3.5"></i>
+            </span>
+            <span class="text-xs font-black uppercase tracking-wider text-rose-400">Commercial Data Reset</span>
           </div>
-
-          <button
-            onclick="continueWithGoogle()"
-            class="w-full py-2.5 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium text-xs flex items-center justify-center gap-2 cursor-pointer transition"
-          >
-            <span>Continue with Google</span>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            Wipe all test queues, tournament brackets, bookings, and user records. This preserves your core <strong class="text-white">venues</strong> and <strong class="text-white">courts</strong> tables.
+          </p>
+          <button onclick="openResetModal()" class="w-full py-2.5 px-4 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-black text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-md transition cursor-pointer">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            <span>RESET APP DATA (KEEP COURTS)</span>
           </button>
         </div>
 
-        <div class="text-center mt-3">
-          <p class="text-[10px] text-slate-500">
-            Free forever. Fair play guaranteed.
-          </p>
-        </div>
-      </div>
-
-      <!-- ======================================================== -->
-      <!-- SCREEN 2: ONBOARDING SETUP -->
-      <!-- ======================================================== -->
-      <div id="screen-2" class="hidden flex-1 flex flex-col justify-between px-5 pt-4 pb-5">
-        <div>
-          <!-- Header -->
-          <div class="flex items-center justify-between mb-4">
-            <button onclick="goToScreen(1)" class="p-1.5 rounded-xl bg-[#111827] border border-slate-800 text-slate-400 hover:text-white">
-              <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            </button>
-            <div class="text-center">
-              <span id="onboard-step-pill" class="text-[10px] font-black text-[#CCFF00] uppercase tracking-wider">
-                Step 1 of 2
-              </span>
-              <h2 id="onboard-step-title" class="text-sm font-bold text-white">
-                Who are you on the court?
-              </h2>
-            </div>
-            <button onclick="goToScreen(3)" class="text-xs text-slate-500 hover:text-slate-300">
-              Skip
-            </button>
-          </div>
-
-          <!-- Progress Bar -->
-          <div class="grid grid-cols-2 gap-1.5 h-1.5 mb-4">
-            <div id="prog-1" class="h-full rounded-full bg-[#CCFF00]"></div>
-            <div id="prog-2" class="h-full rounded-full bg-slate-800"></div>
-          </div>
-
-          <!-- Step 1: Name, Nickname & Location -->
-          <div id="step-content-1" class="space-y-3">
-            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-3.5">
-              <label class="block text-xs font-semibold text-slate-400 mb-1">Your Real Name</label>
-              <input
-                id="input-fullname"
-                type="text"
-                value="Dave Hernandez"
-                placeholder="e.g. Dave Hernandez"
-                class="w-full bg-[#0B131E] border border-slate-800 rounded-xl px-3 py-2 text-white font-medium text-xs focus:outline-none focus:border-[#CCFF00]"
-              />
-            </div>
-
-            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-3.5">
-              <label class="block text-xs font-semibold text-slate-400 mb-1">Court Nickname (Tawag sa'yo)</label>
-              <input
-                id="input-nickname"
-                type="text"
-                value="Dave"
-                placeholder="e.g. Dave or Smash Dave"
-                class="w-full bg-[#0B131E] border border-slate-800 rounded-xl px-3 py-2 text-[#CCFF00] font-bold text-xs focus:outline-none focus:border-[#CCFF00]"
-              />
-            </div>
-
-            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-3.5">
-              <label class="block text-xs font-semibold text-slate-400 mb-2">Where do you usually play?</label>
-              <div id="city-chips" class="flex flex-wrap gap-1.5 mb-2"></div>
-              <input
-                id="custom-city-input"
-                type="text"
-                value="BGC / Taguig"
-                placeholder="Or type custom city (e.g. Davao, Iloilo, Pampanga)"
-                class="w-full bg-[#0B131E] border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-[#CCFF00]"
-              />
-            </div>
-          </div>
-
-          <!-- Step 2: Experience Level & Gear -->
-          <div id="step-content-2" class="hidden space-y-3">
-            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-4">
-              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                What is your experience level?
-              </label>
-
-              <div class="space-y-2">
-                <!-- Beginner -->
-                <button
-                  type="button"
-                  onclick="selectSkillLevel('Beginner', 2.5)"
-                  id="level-beginner"
-                  class="w-full text-left p-3 rounded-2xl border border-slate-800 bg-[#0B131E] hover:border-slate-700 transition flex items-center justify-between"
-                >
-                  <div class="flex items-center gap-2.5">
-                    <span class="text-xl">🟢</span>
-                    <div>
-                      <div class="text-xs font-black text-white">Beginner (Just Starting)</div>
-                      <div class="text-[10px] text-slate-400">Learning the rules, serves, and basic rallies</div>
-                    </div>
-                  </div>
-                  <span class="text-[10px] font-bold text-emerald-400">DUPR 2.5</span>
-                </button>
-
-                <!-- Casual Intermediate -->
-                <button
-                  type="button"
-                  onclick="selectSkillLevel('Intermediate', 3.5)"
-                  id="level-intermediate"
-                  class="w-full text-left p-3 rounded-2xl border border-[#CCFF00] bg-[#0B131E] shadow-sm transition flex items-center justify-between"
-                >
-                  <div class="flex items-center gap-2.5">
-                    <span class="text-xl">🔵</span>
-                    <div>
-                      <div class="text-xs font-black text-white">Casual (Play on Weekends)</div>
-                      <div class="text-[10px] text-slate-400">Can sustain kitchen rallies and directional shots</div>
-                    </div>
-                  </div>
-                  <span class="text-[10px] font-bold text-[#CCFF00]">DUPR 3.5</span>
-                </button>
-
-                <!-- Advanced -->
-                <button
-                  type="button"
-                  onclick="selectSkillLevel('Advanced', 4.0)"
-                  id="level-advanced"
-                  class="w-full text-left p-3 rounded-2xl border border-slate-800 bg-[#0B131E] hover:border-slate-700 transition flex items-center justify-between"
-                >
-                  <div class="flex items-center gap-2.5">
-                    <span class="text-xl">🟡</span>
-                    <div>
-                      <div class="text-xs font-black text-white">Advanced (Tournament Ready)</div>
-                      <div class="text-[10px] text-slate-400">High game IQ, fast resets, spin and power control</div>
-                    </div>
-                  </div>
-                  <span class="text-[10px] font-bold text-amber-400">DUPR 4.0+</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Handedness -->
-            <div class="bg-[#111827] border border-[#1E293B] rounded-2xl p-3.5">
-              <label class="block text-xs font-semibold text-slate-400 mb-2">Dominant Hand</label>
-              <div class="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  id="btn-hand-right"
-                  onclick="selectHand('Right')"
-                  class="py-2.5 rounded-xl text-xs font-bold bg-[#CCFF00] text-[#0B131E] transition"
-                >
-                  Right-Handed
-                </button>
-                <button
-                  type="button"
-                  id="btn-hand-left"
-                  onclick="selectHand('Left')"
-                  class="py-2.5 rounded-xl text-xs font-bold bg-[#0B131E] border border-slate-800 text-slate-300 transition"
-                >
-                  Left-Handed (Lefty)
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button
-          id="btn-onboard-next"
-          onclick="nextOnboardStep()"
-          class="w-full py-3.5 px-4 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#d8ff33] active:scale-98 transition shadow-lg cursor-pointer"
-        >
-          <span>Continue to Step 2</span>
-          <i data-lucide="arrow-right" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <!-- ======================================================== -->
-      <!-- SCREEN 3: MY PLAYER CARD (MAIN PROFILE VIEW) -->
-      <!-- ======================================================== -->
-      <div id="screen-3" class="hidden flex-1 flex flex-col justify-between px-5 pt-3 pb-8">
-        <div class="space-y-3">
-          
-          <div class="flex items-center justify-between">
-            <h2 class="text-base font-black text-white flex items-center gap-1.5">
-              My Player Profile
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            </h2>
-            <div class="flex items-center gap-2">
-              <button onclick="goToScreen(2)" class="text-xs font-bold text-[#CCFF00] hover:underline flex items-center gap-1">
-                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                <span>Edit</span>
-              </button>
-              <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/80 px-2 py-0.5 rounded-lg border border-slate-700">
-                HQ Admin ↗
-              </a>
-            </div>
-          </div>
-
-          <!-- Athlete Card -->
-          <div class="relative rounded-3xl bg-gradient-to-b from-[#16202E] to-[#0D141F] border border-slate-700/80 p-5 shadow-2xl overflow-hidden">
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex items-center gap-3">
-                <div class="w-14 h-14 rounded-2xl bg-[#0B131E] border-2 border-[#CCFF00] flex items-center justify-center text-2xl font-black text-[#CCFF00]">
-                  <span id="card-avatar-initial">D</span>
-                </div>
-                <div>
-                  <h3 id="card-fullname" class="text-base font-black text-white leading-tight">Dave Hernandez</h3>
-                  <div id="card-nickname" class="text-xs font-bold text-[#CCFF00]">"Dave"</div>
-                  <div class="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
-                    <i data-lucide="map-pin" class="w-3 h-3 text-slate-500"></i>
-                    <span id="card-city">BGC / Taguig, PH</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="text-right">
-                <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  VERIFIED PLAYER
-                </span>
-                <span id="card-tier-label" class="text-[10px] text-slate-300 block font-bold mt-1">
-                  Intermediate
-                </span>
-              </div>
-            </div>
-
-            <!-- Stats Bar -->
-            <div class="grid grid-cols-3 gap-2 bg-[#0B131E]/90 border border-slate-800 rounded-2xl p-2.5 text-center">
-              <div>
-                <span class="text-[9px] font-bold text-slate-400 uppercase block">Skill Rating</span>
-                <span id="card-dupr" class="text-lg font-black text-[#CCFF00]">3.50</span>
-              </div>
-              <div class="border-x border-slate-800">
-                <span class="text-[9px] font-bold text-slate-400 uppercase block">Hand</span>
-                <span id="card-hand" class="text-xs font-bold text-white mt-1 block">Righty</span>
-              </div>
-              <div>
-                <span class="text-[9px] font-bold text-slate-400 uppercase block">Games Logged</span>
-                <span id="card-match-count" class="text-lg font-black text-emerald-400">0</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Partner Search Switch -->
-          <div class="p-3.5 rounded-2xl bg-[#111827] border border-slate-800 flex items-center justify-between">
-            <div class="pr-2">
-              <span class="text-xs font-black text-white block">Looking for a Doubles Partner?</span>
-              <p class="text-[11px] text-slate-400 mt-0.5">Allow other players in your city to invite you to games</p>
-            </div>
-            <button
-              type="button"
-              id="btn-partner-toggle"
-              onclick="togglePartnerSearch()"
-              class="w-10 h-6 rounded-full bg-[#CCFF00] p-0.5 transition flex items-center justify-end cursor-pointer"
-            >
-              <span id="toggle-circle" class="w-5 h-5 rounded-full bg-[#0B131E] shadow"></span>
-            </button>
-          </div>
-
-          <!-- Recent Matches -->
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Games</span>
-              <button onclick="openLogMatchModal()" class="text-[11px] font-bold text-[#CCFF00] hover:underline">
-                + Log Match
-              </button>
-            </div>
-
-            <div id="recent-matches-container" class="space-y-2">
-              <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-xs text-slate-500">
-                Loading official matches...
-              </div>
-            </div>
-          </div>
-
-          <!-- Danger Zone: Google Play Account & Data Deletion -->
-          <div class="mt-4 p-3.5 rounded-2xl bg-rose-950/20 border border-rose-500/30">
-            <div class="flex items-center justify-between">
-              <div>
-                <span class="text-xs font-black text-rose-400 block">Delete Account & Data</span>
-                <p class="text-[10px] text-slate-400">Permanently erase profile, match history, and queue spots.</p>
-              </div>
-              <button 
-                type="button" 
-                onclick="openDeleteAccountModal()" 
-                class="px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold border border-rose-500/30 transition cursor-pointer"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-        <button
-          onclick="resetPrototype()"
-          class="w-full mt-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer"
-        >
-          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-          <span>Switch Account / Log Out</span>
-        </button>
       </div>
 
     </div>
-  </div>
 
-  <!-- Easy Log Match Modal -->
-  <div id="log-match-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-[#111827] border border-slate-800 rounded-3xl p-5 max-w-sm w-full shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-        <h3 class="text-sm font-black text-white">Record a Game Score</h3>
-        <button onclick="closeLogMatchModal()" class="text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
+    <!-- Bottom Status Bar -->
+    <div class="p-3 bg-[#111827] border-t border-[#1E293B] flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-[10px] font-black text-slate-300 uppercase tracking-wider">
+          Supabase Auth Connected
+        </span>
       </div>
 
-      <div class="space-y-3 text-xs">
-        <div>
-          <label class="block text-slate-400 font-semibold mb-1">Pick Venue</label>
-          <select id="modal-match-venue" class="w-full bg-[#0B131E] border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none">
-            <!-- Dynamically populated from venues -->
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-slate-400 font-semibold mb-1">Final Score</label>
-          <div class="flex items-center gap-2">
-            <input type="number" id="my-score" value="11" min="0" max="30" class="w-16 p-2 rounded-xl bg-[#0B131E] border border-slate-700 text-center font-bold text-white focus:border-[#CCFF00]" />
-            <span class="font-bold text-slate-400">to</span>
-            <input type="number" id="their-score" value="8" min="0" max="30" class="w-16 p-2 rounded-xl bg-[#0B131E] border border-slate-700 text-center font-bold text-white focus:border-[#CCFF00]" />
-          </div>
-        </div>
-
-        <button onclick="saveSimpleMatch()" id="btn-save-match" class="w-full py-2.5 rounded-xl bg-[#CCFF00] text-[#0B131E] font-black uppercase tracking-wider mt-2">
-          Save Game
-        </button>
-      </div>
+      <button onclick="openAppTab('courts')" class="text-xs font-bold text-[#CCFF00] hover:underline flex items-center gap-1 cursor-pointer">
+        <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+        <span>Explore Courts</span>
+      </button>
     </div>
-  </div>
 
-  <!-- ACCOUNT DELETION CONFIRMATION MODAL -->
-  <div id="delete-account-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-[#111827] border border-rose-500/40 rounded-3xl p-5 max-w-sm w-full shadow-2xl text-center">
-      <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-rose-500/10 border-2 border-rose-500 flex items-center justify-center text-rose-400">
-        <i data-lucide="trash-2" class="w-6 h-6"></i>
+    <!-- RESET CONFIRMATION MODAL -->
+    <div id="reset-modal" class="fixed inset-0 bg-black/9ul0 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center transition-all bg-black/85">
+      <div class="w-16 h-16 rounded-full bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center text-rose-400 mb-3 shadow-[0_0_30px_rgba(244,63,94,0.4)]">
+        <i data-lucide="alert-triangle" class="w-8 h-8"></i>
       </div>
-      <h3 class="text-base font-black text-white">Permanently Delete Account?</h3>
-      <p class="text-xs text-slate-400 mt-1 leading-relaxed">
-        This action cannot be undone. All your match records, ratings, booked courts, and partner invites will be permanently erased.
+      <span class="text-[10px] uppercase tracking-widest font-black text-rose-400">Destructive Action</span>
+      <h2 class="text-lg font-black text-white mt-1">Confirm Data Reset?</h2>
+      <p class="text-xs text-slate-300 mt-1 max-w-[280px]">
+        All test queues, match scores, and user profiles will be erased. Venues & courts will remain intact.
       </p>
 
-      <div class="space-y-2 mt-4">
-        <button
-          id="btn-confirm-delete"
-          onclick="executeAccountDeletion()"
-          class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer"
-        >
-          Yes, Delete Everything
-        </button>
-        <button
-          onclick="closeDeleteAccountModal()"
-          class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer"
-        >
+      <div class="grid grid-cols-2 gap-2 w-full mt-4">
+        <button onclick="closeResetModal()" class="py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs cursor-pointer">
           Cancel
+        </button>
+        <button onclick="executeCommercialReset()" id="confirm-reset-btn" class="py-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-black text-xs tracking-wider shadow-lg cursor-pointer">
+          WIPE TEST DATA
         </button>
       </div>
     </div>
+
+    <!-- Floating Toast Notification -->
+    <div id="toast" class="fixed top-3 z-50 left-1/2 -translate-x-1/2 hidden flex items-center gap-2 bg-[#111827] border border-[#CCFF00]/40 text-slate-100 px-3.5 py-2 rounded-full shadow-2xl text-xs">
+      <div class="w-2 h-2 rounded-full bg-[#CCFF00] animate-pulse"></div>
+      <span id="toast-text" class="font-medium">Notification</span>
+    </div>
+
   </div>
 
+  <!-- JavaScript Authentication & Reset Logic -->
   <script>
     const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const state = {
-      screen: 1,
-      onboardingStep: 1,
-      playerId: null, // Dynamic UUID
-      fullName: 'Dave Hernandez',
-      nickname: 'Dave',
-      city: 'BGC / Taguig',
-      skillLevel: 'Intermediate',
-      duprRating: 3.5,
-      dominantHand: 'Right',
-      partnerActive: true,
-      cities: ['BGC / Taguig', 'Pasig', 'Makati', 'Quezon City', 'Alabang', 'Cebu City', 'Davao City']
-    };
+    let pendingPhone = '';
 
-    // Standard Parent Navigation Bridge
+    // Standard Cross-Module Bridge to app.html
     function openAppTab(tabKey) {
       if (window.parent && typeof window.parent.switchModule === 'function') {
         window.parent.switchModule(tabKey);
@@ -534,393 +232,183 @@
         pila: 'module3.html',
         referee: 'module4.html',
         exchange: 'module7.html',
-        passport: 'passport.html'
+        passport: 'passport.html',
+        tournaments: 'module5.html',
+        coaches: 'module6.html',
+        community: 'module8.html'
       };
       if (routeFiles[tabKey]) {
         window.location.href = routeFiles[tabKey];
       }
     }
 
-    function showToast(msg) {
+    function showToast(text, duration = 2500) {
       const toast = document.getElementById('toast');
-      document.getElementById('toast-msg').innerText = msg;
+      const toastText = document.getElementById('toast-text');
+      toastText.innerText = text;
       toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 2500);
+
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, duration);
     }
 
-    // Dynamic Player Session Setup
-    async function initUserSession() {
-      let storedId = localStorage.getItem('piklr_player_id');
-
-      if (storedId) {
-        const { data: existingPlayer } = await supabaseClient
-          .from('player_profiles')
-          .select('id, full_name, display_name, city, dupr_doubles, dominant_hand')
-          .eq('id', storedId)
-          .single();
-
-        if (existingPlayer) {
-          bindPlayerState(existingPlayer);
-          return;
-        }
-      }
-
-      try {
-        const { data: firstProfile } = await supabaseClient
-          .from('player_profiles')
-          .select('id, full_name, display_name, city, dupr_doubles, dominant_hand')
-          .limit(1)
-          .single();
-
-        if (firstProfile) {
-          localStorage.setItem('piklr_player_id', firstProfile.id);
-          bindPlayerState(firstProfile);
-        } else {
-          state.playerId = '09111111-0000-0000-0000-000000000001';
-          localStorage.setItem('piklr_player_id', state.playerId);
-        }
-      } catch (e) {
-        state.playerId = '09111111-0000-0000-0000-000000000001';
-        localStorage.setItem('piklr_player_id', state.playerId);
-      }
-    }
-
-    function bindPlayerState(player) {
-      state.playerId = player.id;
-      state.fullName = player.full_name || state.fullName;
-      state.nickname = player.display_name || state.nickname;
-      state.city = player.city || state.city;
-      state.duprRating = parseFloat(player.dupr_doubles) || state.duprRating;
-      state.dominantHand = player.dominant_hand || state.dominantHand;
-    }
-
-    function goToScreen(screenNumber) {
-      state.screen = screenNumber;
-      document.getElementById('screen-1').classList.add('hidden');
-      document.getElementById('screen-2').classList.add('hidden');
-      document.getElementById('screen-3').classList.add('hidden');
-
-      document.getElementById(`screen-${screenNumber}`).classList.remove('hidden');
-
-      if (screenNumber === 2) updateOnboardingStepUI();
-      if (screenNumber === 3) {
-        syncPassportCard();
-        loadPlayerMatchHistory();
-      }
-
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function sendOtp() {
-      document.getElementById('auth-send-step').classList.add('hidden');
-      document.getElementById('auth-verify-step').classList.remove('hidden');
-      showToast('Code sent to +63 ' + document.getElementById('phone-input').value);
-      document.getElementById('pin-0').focus();
-    }
-
-    function quickFillOtp() {
-      ['8', '4', '9', '2'].forEach((d, i) => {
-        document.getElementById(`pin-${i}`).value = d;
-      });
-      showToast('Code 8492 auto-filled');
-    }
-
-    function handlePinInput(idx) {
-      const input = document.getElementById(`pin-${idx}`);
-      const val = input.value.replace(/[^0-9]/g, '');
-      input.value = val;
-      if (val && idx < 3) document.getElementById(`pin-${idx + 1}`).focus();
-    }
-
-    function verifyOtpAndContinue() {
-      showToast('Welcome back, ' + state.nickname + '!');
-      state.onboardingStep = 1;
-      goToScreen(3);
-    }
-
-    function continueWithGoogle() {
-      showToast('Signed in via Google');
-      goToScreen(3);
-    }
-
-    function renderCityChips() {
-      const container = document.getElementById('city-chips');
-      if (!container) return;
-      container.innerHTML = '';
-      state.cities.forEach(city => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.onclick = () => {
-          state.city = city;
-          document.getElementById('custom-city-input').value = city;
-          renderCityChips();
-        };
-        const isSelected = state.city === city;
-        btn.className = isSelected
-          ? 'px-2.5 py-1 rounded-xl text-xs font-bold bg-[#CCFF00] text-[#0B131E]'
-          : 'px-2.5 py-1 rounded-xl text-xs font-semibold bg-[#0B131E] text-slate-300 border border-slate-800';
-        btn.innerText = city;
-        container.appendChild(btn);
-      });
-    }
-
-    function selectSkillLevel(level, dupr) {
-      state.skillLevel = level;
-      state.duprRating = dupr;
-      ['beginner', 'intermediate', 'advanced'].forEach(l => {
-        const el = document.getElementById(`level-${l}`);
-        if (l === level.toLowerCase()) {
-          el.className = 'w-full text-left p-3 rounded-2xl border border-[#CCFF00] bg-[#0B131E] shadow-sm flex items-center justify-between';
-        } else {
-          el.className = 'w-full text-left p-3 rounded-2xl border border-slate-800 bg-[#0B131E] flex items-center justify-between';
-        }
-      });
-    }
-
-    function selectHand(hand) {
-      state.dominantHand = hand;
-      const rightBtn = document.getElementById('btn-hand-right');
-      const leftBtn = document.getElementById('btn-hand-left');
-      if (hand === 'Right') {
-        rightBtn.className = 'py-2.5 rounded-xl text-xs font-bold bg-[#CCFF00] text-[#0B131E]';
-        leftBtn.className = 'py-2.5 rounded-xl text-xs font-bold bg-[#0B131E] border border-slate-800 text-slate-300';
+    // Check Active Session on Load
+    async function checkUserSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session && session.user) {
+        renderLoggedInState(session.user);
       } else {
-        leftBtn.className = 'py-2.5 rounded-xl text-xs font-bold bg-[#CCFF00] text-[#0B131E]';
-        rightBtn.className = 'py-2.5 rounded-xl text-xs font-bold bg-[#0B131E] border border-slate-800 text-slate-300';
+        renderLoggedOutState();
       }
     }
 
-    function updateOnboardingStepUI() {
-      const step = state.onboardingStep;
-      document.getElementById('onboard-step-pill').innerText = `Step ${step} of 2`;
-      document.getElementById('onboard-step-title').innerText = step === 1 ? 'Who are you on the court?' : 'Your Experience Level & Hand';
+    function renderLoggedInState(user) {
+      document.getElementById('auth-section').classList.add('hidden');
+      document.getElementById('passport-section').classList.remove('hidden');
 
-      document.getElementById('prog-1').className = 'h-full rounded-full bg-[#CCFF00]';
-      document.getElementById('prog-2').className = step === 2 ? 'h-full rounded-full bg-[#CCFF00]' : 'h-full rounded-full bg-slate-800';
-
-      document.getElementById('step-content-1').classList.toggle('hidden', step !== 1);
-      document.getElementById('step-content-2').classList.toggle('hidden', step !== 2);
-
-      const nextBtn = document.getElementById('btn-onboard-next');
-      nextBtn.innerHTML = step === 1 
-        ? '<span>Continue to Step 2</span><i data-lucide="arrow-right" class="w-4 h-4"></i>'
-        : '<span>Done (View My Card)</span><i data-lucide="check" class="w-4 h-4"></i>';
-
-      renderCityChips();
-      if (window.lucide) lucide.createIcons();
+      const identifier = user.phone || user.email || user.id.slice(0, 8);
+      document.getElementById('player-name').innerText = user.user_metadata?.full_name || 'Verified Player';
+      document.getElementById('player-contact').innerText = identifier;
+      document.getElementById('player-avatar').innerText = (user.user_metadata?.full_name || 'VP').split(' ').map(n=>n[0]).slice(0,2).join('');
     }
 
-    async function nextOnboardStep() {
-      if (state.onboardingStep === 1) {
-        state.fullName = document.getElementById('input-fullname').value || state.fullName;
-        state.nickname = document.getElementById('input-nickname').value || state.nickname;
-        state.city = document.getElementById('custom-city-input').value || state.city;
-        state.onboardingStep = 2;
-        updateOnboardingStepUI();
-      } else {
-        if (state.playerId) {
-          await supabaseClient
-            .from('player_profiles')
-            .update({
-              full_name: state.fullName,
-              display_name: state.nickname,
-              city: state.city,
-              dupr_doubles: state.duprRating,
-              dominant_hand: state.dominantHand
-            })
-            .eq('id', state.playerId);
-        }
-        showToast('Profile saved!');
-        goToScreen(3);
-      }
+    function renderLoggedOutState() {
+      document.getElementById('auth-section').classList.remove('hidden');
+      document.getElementById('passport-section').classList.add('hidden');
     }
 
-    function syncPassportCard() {
-      document.getElementById('card-fullname').innerText = state.fullName;
-      document.getElementById('card-nickname').innerText = `"${state.nickname}"`;
-      document.getElementById('card-city').innerText = `${state.city}, PH`;
-      document.getElementById('card-dupr').innerText = state.duprRating.toFixed(2);
-      document.getElementById('card-hand').innerText = `${state.dominantHand} Hand`;
-      document.getElementById('card-tier-label').innerText = state.skillLevel;
-      document.getElementById('card-avatar-initial').innerText = state.nickname.charAt(0).toUpperCase();
-      if (window.lucide) lucide.createIcons();
-    }
-
-    async function loadPlayerMatchHistory() {
-      const container = document.getElementById('recent-matches-container');
-      const countDisplay = document.getElementById('card-match-count');
-
+    // Google OAuth Login
+    async function loginWithGoogle() {
       try {
-        const { data: matches, error } = await supabaseClient
-          .from('matches')
-          .select('id, set1_team1, set1_team2, winning_team, played_at, venue:venues(name)')
-          .or(`team1_player1_id.eq.${state.playerId},team2_player1_id.eq.${state.playerId}`)
-          .order('played_at', { ascending: false })
-          .limit(5);
-
-        if (error || !matches || matches.length === 0) {
-          container.innerHTML = `
-            <div class="p-3 bg-slate-900/60 rounded-2xl border border-slate-800 text-center text-xs text-slate-500">
-              No games logged yet. Tap "+ Log Match" above after your game!
-            </div>
-          `;
-          countDisplay.innerText = '0';
-          return;
-        }
-
-        countDisplay.innerText = matches.length.toString();
-        container.innerHTML = matches.map(m => {
-          const won = m.winning_team === 1;
-          const score = `${m.set1_team1 || 11} - ${m.set1_team2 || 8}`;
-          const venue = m.venue?.name || 'Local NCR Court';
-
-          return `
-            <div class="p-3 bg-slate-900/80 rounded-2xl border ${won ? 'border-emerald-500/30' : 'border-slate-800'} flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-6 h-6 rounded-lg ${won ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'} font-black text-xs flex items-center justify-center">
-                  ${won ? 'W' : 'L'}
-                </span>
-                <div>
-                  <span class="text-xs font-bold text-white block">${venue}</span>
-                  <span class="text-[10px] text-slate-400">${new Date(m.played_at).toLocaleDateString()} · Friendly</span>
-                </div>
-              </div>
-              <span class="text-xs font-black ${won ? 'text-[#CCFF00]' : 'text-slate-400'}">${score}</span>
-            </div>
-          `;
-        }).join('');
-
-      } catch (e) {
-        console.warn('Match history error:', e);
-      }
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function togglePartnerSearch() {
-      state.partnerActive = !state.partnerActive;
-      const btn = document.getElementById('btn-partner-toggle');
-      if (state.partnerActive) {
-        btn.className = 'w-10 h-6 rounded-full bg-[#CCFF00] p-0.5 transition flex items-center justify-end cursor-pointer';
-        showToast('Visible to other players looking for a partner!');
-      } else {
-        btn.className = 'w-10 h-6 rounded-full bg-slate-700 p-0.5 transition flex items-center justify-start cursor-pointer';
-        showToast('Hidden from partner discovery');
-      }
-    }
-
-    async function openLogMatchModal() {
-      const select = document.getElementById('modal-match-venue');
-      const { data: venues } = await supabaseClient.from('venues').select('id, name');
-      if (venues && venues.length > 0) {
-        select.innerHTML = venues.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
-      } else {
-        select.innerHTML = '<option value="">Local Court</option>';
-      }
-      document.getElementById('log-match-modal').classList.remove('hidden');
-    }
-
-    function closeLogMatchModal() {
-      document.getElementById('log-match-modal').classList.add('hidden');
-    }
-
-    async function saveSimpleMatch() {
-      const myScore = parseInt(document.getElementById('my-score').value, 10) || 11;
-      const theirScore = parseInt(document.getElementById('their-score').value, 10) || 8;
-      const venueId = document.getElementById('modal-match-venue').value || null;
-      const btn = document.getElementById('btn-save-match');
-
-      btn.disabled = true;
-      btn.innerText = 'Saving...';
-
-      try {
-        await supabaseClient.from('matches').insert([{
-          venue_id: venueId,
-          match_type: 'doubles',
-          game_format: '1_to_11',
-          team1_player1_id: state.playerId,
-          set1_team1: myScore,
-          set1_team2: theirScore,
-          winning_team: myScore > theirScore ? 1 : 2,
-          submitted_by: state.playerId,
-          status: 'confirmed'
-        }]);
-
-        closeLogMatchModal();
-        showToast(`Game saved: ${myScore} - ${theirScore}!`);
-        loadPlayerMatchHistory();
-      } catch (e) {
-        showToast('Error saving match: ' + e.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Save Game';
-      }
-    }
-
-    // Google Play Mandatory User Data Deletion Modal Helpers
-    function openDeleteAccountModal() {
-      document.getElementById('delete-account-modal').classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function closeDeleteAccountModal() {
-      document.getElementById('delete-account-modal').classList.add('hidden');
-    }
-
-    async function executeAccountDeletion() {
-      const btn = document.getElementById('btn-confirm-delete');
-      btn.disabled = true;
-      btn.innerText = 'Deleting data...';
-
-      try {
-        if (state.playerId) {
-          await supabaseClient
-            .from('match_confirmations')
-            .delete()
-            .eq('confirmer_id', state.playerId);
-
-          await supabaseClient
-            .from('matches')
-            .delete()
-            .or(`team1_player1_id.eq.${state.playerId},team2_player1_id.eq.${state.playerId},submitted_by.eq.${state.playerId}`);
-
-          await supabaseClient
-            .from('pila_queue')
-            .delete()
-            .eq('player_id', state.playerId);
-
-          await supabaseClient
-            .from('player_profiles')
-            .delete()
-            .eq('id', state.playerId);
-        }
-
-        localStorage.removeItem('piklr_player_id');
-        sessionStorage.clear();
-
-        closeDeleteAccountModal();
-        showToast('Your account and data have been permanently erased.');
-        
-        setTimeout(() => {
-          resetPrototype();
-        }, 1500);
-
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.href
+          }
+        });
+        if (error) throw error;
       } catch (err) {
-        console.error('Account deletion failed:', err);
-        showToast('Could not complete deletion. Please try again.');
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Yes, Delete Everything';
+        alert('Google login error: ' + err.message);
       }
     }
 
-    function resetPrototype() {
-      localStorage.removeItem('piklr_player_id');
-      goToScreen(1);
+    // Step 1: Send SMS OTP
+    async function sendPhoneOtp() {
+      const rawPhone = document.getElementById('phone-number-input').value.trim();
+      if (!rawPhone || rawPhone.length < 9) {
+        alert('Please enter a valid Philippine mobile number (e.g., 9171234567)');
+        return;
+      }
+
+      pendingPhone = '+63' + rawPhone.replace(/^0+/, '');
+      const btn = document.getElementById('send-otp-btn');
+      btn.disabled = true;
+      btn.innerText = 'Sending code...';
+
+      try {
+        const { error } = await supabaseClient.auth.signInWithOtp({
+          phone: pendingPhone
+        });
+
+        if (error) throw error;
+
+        showToast('Verification code sent to ' + pendingPhone);
+        document.getElementById('phone-input-group').classList.add('hidden');
+        document.getElementById('otp-verify-group').classList.remove('hidden');
+      } catch (err) {
+        alert('SMS OTP error: ' + err.message + '\n\nNote: Ensure Phone Auth is enabled in your Supabase project settings.');
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5"></i> <span>SEND 4-DIGIT CODE</span>`;
+      }
+      if (window.lucide) lucide.createIcons();
     }
 
-    window.addEventListener('DOMContentLoaded', async () => {
-      await initUserSession();
-      renderCityChips();
+    // Step 2: Verify SMS OTP
+    async function verifyPhoneOtp() {
+      const token = document.getElementById('otp-code-input').value.trim();
+      if (!token || token.length < 4) {
+        alert('Please enter the 4 or 6-digit code received via SMS.');
+        return;
+      }
+
+      try {
+        const { data, error } = await supabaseClient.auth.verifyOtp({
+          phone: pendingPhone,
+          token: token,
+          type: 'sms'
+        });
+
+        if (error) throw error;
+
+        showToast('Login successful!');
+        checkUserSession();
+      } catch (err) {
+        alert('Invalid verification code: ' + err.message);
+      }
+    }
+
+    function resetOtpForm() {
+      document.getElementById('phone-input-group').classList.remove('hidden');
+      document.getElementById('otp-verify-group').classList.add('hidden');
+      document.getElementById('send-otp-btn').disabled = false;
+      document.getElementById('send-otp-btn').innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5"></i> <span>SEND 4-DIGIT CODE</span>`;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    async function logoutUser() {
+      await supabaseClient.auth.signOut();
+      showToast('Logged out successfully');
+      checkUserSession();
+    }
+
+    // Commercial Data Reset (Preserves venues & courts)
+    function openResetModal() {
+      document.getElementById('reset-modal').classList.remove('hidden');
+      document.getElementById('reset-modal').classList.add('flex');
+    }
+
+    function closeResetModal() {
+      document.getElementById('reset-modal').classList.add('hidden');
+      document.getElementById('reset-modal').classList.remove('flex');
+    }
+
+    async function executeCommercialReset() {
+      const btn = document.getElementById('confirm-reset-btn');
+      btn.disabled = true;
+      btn.innerText = 'Wiping data...';
+
+      try {
+        // Tables to clear for commercial launch (Keeping venues & courts)
+        const tablesToClear = [
+          'pila_queue',
+          'match_confirmations',
+          'matches',
+          'tournament_matches',
+          'tournaments',
+          'clinic_bookings',
+          'partner_invites',
+          'player_profiles'
+        ];
+
+        for (const table of tablesToClear) {
+          await supabaseClient.from(table).delete().neq('id', 0);
+        }
+
+        showToast('App data successfully reset for commercial launch!');
+        closeResetModal();
+        setTimeout(() => {
+          window.location.reload();
+        }, 1200);
+      } catch (err) {
+        alert('Reset error: ' + err.message);
+        btn.disabled = false;
+        btn.innerText = 'WIPE TEST DATA';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkUserSession();
       if (window.lucide) lucide.createIcons();
     });
   </script>
