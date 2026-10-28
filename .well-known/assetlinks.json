@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "app.vercel.piklr_ph.twa",
-        "sha256_cert_fingerprints": ["F0:EC:4E:DF:4F:EB:19:58:9B:29:71:0A:73:1D:F6:8C:87:07:55:54:43:3B:7D:0B:6A:9E:EE:F2:A0:10:2C:6B"]
+        "sha256_cert_fingerprints": ["82:4D:1E:14:C2:24:A6:28:BD:C9:68:EF:AA:E3:C4:28:2E:16:75:9F:DC:63:13:31:8C:0B:A0:DD:B8:7F:E3:28"]
       }
     }]
