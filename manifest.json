@@ -1,15 +1,33 @@
 {
-  "name": "PiklrPH",
-  "short_name": "Piklr",
+  "id": "ph.piklr.app",
+  "name": "PiklrPH — The Home Court of Philippine Pickleball",
+  "short_name": "PiklrPH",
+  "description": "Your community pickleball web app for Metro Manila and the Philippines. Find courts, join open play queues, and log matches.",
   "start_url": "/app.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0B131E",
   "theme_color": "#CCFF00",
   "icons": [
     {
       "src": "logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ],
   "categories": [
