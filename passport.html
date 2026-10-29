@@ -49,20 +49,20 @@
     </div>
 
     <!-- MAIN SCROLLABLE CONTENT BODY -->
-    <div class="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4 pb-12">
+    <div class="flex-1 overflow-y-auto no-scrollbar px-4 py-6 space-y-6">
 
       <!-- ================= STATE A: AUTHENTICATION CONTAINER (IF LOGGED OUT) ================= -->
-      <div id="auth-section" class="space-y-4 max-w-sm mx-auto pt-4">
-        <div class="text-center space-y-1.5">
+      <div id="auth-section" class="space-y-6 max-w-sm mx-auto pt-8">
+        <div class="text-center space-y-2">
           <div class="w-16 h-16 rounded-3xl bg-[#CCFF00]/10 border border-[#CCFF00]/30 mx-auto flex items-center justify-center text-[#CCFF00] shadow-[0_0_25px_rgba(204,255,0,0.2)]">
             <i data-lucide="shield-check" class="w-8 h-8"></i>
           </div>
-          <h1 class="text-xl font-black text-white tracking-wide">PiklrPH Secure Access</h1>
-          <p class="text-xs text-slate-400">Sign in securely with your mobile number or Google account.</p>
+          <h1 class="text-xl font-black text-white tracking-wide">PiklrPH Pro Access</h1>
+          <p class="text-xs text-slate-400">Sign in securely with your Google account to access your player profile, queues, and matches.</p>
         </div>
 
         <!-- Google OAuth Button -->
-        <button onclick="loginWithGoogle()" class="w-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-black text-xs tracking-wider flex items-center justify-center gap-2.5 shadow-md transition active:scale-98 cursor-pointer">
+        <button onclick="loginWithGoogle()" class="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-black text-xs tracking-wider flex items-center justify-center gap-2.5 shadow-lg transition active:scale-98 cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
             <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.15C3.15 21.32 7.23 24 12 24z"/>
@@ -72,39 +72,9 @@
           <span>CONTINUE WITH GOOGLE</span>
         </button>
 
-        <div class="relative flex py-1 items-center">
-          <div class="flex-grow border-t border-slate-800"></div>
-          <span class="flex-shrink mx-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Or Mobile SMS OTP</span>
-          <div class="flex-grow border-t border-slate-800"></div>
-        </div>
-
-        <!-- Phone OTP Form Box -->
-        <div class="p-4 rounded-3xl bg-[#111827] border border-[#1E293B] shadow-xl space-y-3">
-          <!-- Step 1: Phone Input -->
-          <div id="phone-input-group" class="space-y-2">
-            <label class="text-[11px] font-bold text-slate-300">Philippine Mobile Number:</label>
-            <div class="flex items-center gap-2">
-              <span class="px-3 py-3 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-slate-300">+63</span>
-              <input id="phone-number-input" type="tel" placeholder="9171234567" class="flex-1 p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-[#CCFF00]" />
-            </div>
-            <button onclick="sendPhoneOtp()" id="send-otp-btn" class="w-full py-3 px-4 rounded-xl bg-[#CCFF00] text-black font-black text-xs tracking-wider flex items-center justify-center gap-1.5 hover:brightness-110 active:scale-98 transition cursor-pointer">
-              <i data-lucide="send" class="w-3.5 h-3.5"></i>
-              <span>SEND 4-DIGIT CODE</span>
-            </button>
-          </div>
-
-          <!-- Step 2: OTP Verification Input (Hidden by default) -->
-          <div id="otp-verify-group" class="space-y-2 hidden">
-            <div class="flex items-center justify-between">
-              <label class="text-[11px] font-bold text-slate-300">Enter Verification Code:</label>
-              <button onclick="resetOtpForm()" class="text-[10px] text-[#CCFF00] hover:underline">Change Number</button>
-            </div>
-            <input id="otp-code-input" type="text" placeholder="1234" maxlength="6" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-center font-mono text-base tracking-widest text-white focus:outline-none focus:border-[#CCFF00]" />
-            <button onclick="verifyPhoneOtp()" id="verify-otp-btn" class="w-full py-3 px-4 rounded-xl bg-emerald-400 text-black font-black text-xs tracking-wider flex items-center justify-center gap-1.5 hover:brightness-110 active:scale-98 transition cursor-pointer">
-              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-              <span>VERIFY & LOGIN</span>
-            </button>
-          </div>
+        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-center space-y-1">
+          <p class="text-[11px] text-slate-400">Ad-less Pro Version ($0.99)</p>
+          <p class="text-[10px] text-slate-500">Secure cloud authentication powered by Supabase.</p>
         </div>
       </div>
 
@@ -120,10 +90,10 @@
               </div>
               <div>
                 <div class="flex items-center gap-1.5">
-                  <h2 id="player-name" class="text-base font-black text-white">Dave H.</h2>
-                  <span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Verified</span>
+                  <h2 id="player-name" class="text-base font-black text-white">Player Name</h2>
+                  <span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">PRO</span>
                 </div>
-                <p id="player-contact" class="text-xs text-slate-400 font-medium">+63 917 ••• •459</p>
+                <p id="player-contact" class="text-xs text-slate-400 font-medium">player@gmail.com</p>
               </div>
             </div>
 
@@ -139,11 +109,11 @@
             </div>
             <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
               <span class="text-[9px] text-slate-400 block font-bold uppercase">Matches</span>
-              <span class="text-sm font-black text-white">24</span>
+              <span class="text-sm font-black text-white">0</span>
             </div>
             <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
               <span class="text-[9px] text-slate-400 block font-bold uppercase">Win Rate</span>
-              <span class="text-sm font-black text-emerald-400">71%</span>
+              <span class="text-sm font-black text-emerald-400">0%</span>
             </div>
           </div>
         </div>
@@ -174,7 +144,7 @@
       <div class="flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
         <span class="text-[10px] font-black text-slate-300 uppercase tracking-wider">
-          Supabase Auth Connected
+          Google Auth Active
         </span>
       </div>
 
@@ -185,7 +155,7 @@
     </div>
 
     <!-- RESET CONFIRMATION MODAL -->
-    <div id="reset-modal" class="fixed inset-0 bg-black/9ul0 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center transition-all bg-black/85">
+    <div id="reset-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center transition-all">
       <div class="w-16 h-16 rounded-full bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center text-rose-400 mb-3 shadow-[0_0_30px_rgba(244,63,94,0.4)]">
         <i data-lucide="alert-triangle" class="w-8 h-8"></i>
       </div>
@@ -218,8 +188,6 @@
     const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let pendingPhone = '';
 
     // Standard Cross-Module Bridge to app.html
     function openAppTab(tabKey) {
@@ -267,10 +235,12 @@
       document.getElementById('auth-section').classList.add('hidden');
       document.getElementById('passport-section').classList.remove('hidden');
 
-      const identifier = user.phone || user.email || user.id.slice(0, 8);
-      document.getElementById('player-name').innerText = user.user_metadata?.full_name || 'Verified Player';
-      document.getElementById('player-contact').innerText = identifier;
-      document.getElementById('player-avatar').innerText = (user.user_metadata?.full_name || 'VP').split(' ').map(n=>n[0]).slice(0,2).join('');
+      const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Pro Player';
+      const email = user.email || 'connected@google.com';
+      
+      document.getElementById('player-name').innerText = fullName;
+      document.getElementById('player-contact').innerText = email;
+      document.getElementById('player-avatar').innerText = fullName.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
     }
 
     function renderLoggedOutState() {
@@ -291,69 +261,6 @@
       } catch (err) {
         alert('Google login error: ' + err.message);
       }
-    }
-
-    // Step 1: Send SMS OTP
-    async function sendPhoneOtp() {
-      const rawPhone = document.getElementById('phone-number-input').value.trim();
-      if (!rawPhone || rawPhone.length < 9) {
-        alert('Please enter a valid Philippine mobile number (e.g., 9171234567)');
-        return;
-      }
-
-      pendingPhone = '+63' + rawPhone.replace(/^0+/, '');
-      const btn = document.getElementById('send-otp-btn');
-      btn.disabled = true;
-      btn.innerText = 'Sending code...';
-
-      try {
-        const { error } = await supabaseClient.auth.signInWithOtp({
-          phone: pendingPhone
-        });
-
-        if (error) throw error;
-
-        showToast('Verification code sent to ' + pendingPhone);
-        document.getElementById('phone-input-group').classList.add('hidden');
-        document.getElementById('otp-verify-group').classList.remove('hidden');
-      } catch (err) {
-        alert('SMS OTP error: ' + err.message + '\n\nNote: Ensure Phone Auth is enabled in your Supabase project settings.');
-        btn.disabled = false;
-        btn.innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5"></i> <span>SEND 4-DIGIT CODE</span>`;
-      }
-      if (window.lucide) lucide.createIcons();
-    }
-
-    // Step 2: Verify SMS OTP
-    async function verifyPhoneOtp() {
-      const token = document.getElementById('otp-code-input').value.trim();
-      if (!token || token.length < 4) {
-        alert('Please enter the 4 or 6-digit code received via SMS.');
-        return;
-      }
-
-      try {
-        const { data, error } = await supabaseClient.auth.verifyOtp({
-          phone: pendingPhone,
-          token: token,
-          type: 'sms'
-        });
-
-        if (error) throw error;
-
-        showToast('Login successful!');
-        checkUserSession();
-      } catch (err) {
-        alert('Invalid verification code: ' + err.message);
-      }
-    }
-
-    function resetOtpForm() {
-      document.getElementById('phone-input-group').classList.remove('hidden');
-      document.getElementById('otp-verify-group').classList.add('hidden');
-      document.getElementById('send-otp-btn').disabled = false;
-      document.getElementById('send-otp-btn').innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5"></i> <span>SEND 4-DIGIT CODE</span>`;
-      if (window.lucide) lucide.createIcons();
     }
 
     async function logoutUser() {
