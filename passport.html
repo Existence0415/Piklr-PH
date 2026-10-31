@@ -248,21 +248,24 @@
       document.getElementById('passport-section').classList.add('hidden');
     }
 
-    // Google OAuth Login
     async function loginWithGoogle() {
       try {
-        const { error } = await supabaseClient.auth.signInWithOAuth({
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: 'https://piklr-ph.vercel.app/passport.html'
+            redirectTo: 'https://piklr-ph.vercel.app/passport.html',
+            skipBrowserRedirect: true
           }
         });
         if (error) throw error;
+        if (data?.url) {
+          window.top.location.href = data.url;
+        }
       } catch (err) {
         alert('Google login error: ' + err.message);
       }
     }
-    
+
     async function logoutUser() {
       await supabaseClient.auth.signOut();
       showToast('Logged out successfully');
