@@ -38,12 +38,6 @@
         <div class="w-2.5 h-2.5 rounded-full bg-[#CCFF00] animate-pulse"></div>
         <span class="text-xs font-black uppercase tracking-wider text-white">PIKLR EXCHANGE</span>
       </div>
-      <div class="flex items-center gap-2">
-        <!-- Safe Breakout Admin Link -->
-        <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-[#CCFF00] bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700 hover:brightness-125">
-          HQ Admin ↗
-        </a>
-      </div>
     </header>
 
     <!-- Top App Bar (Title, Search, & List Gear Button) -->
@@ -143,7 +137,7 @@
           <div class="w-24 h-32 bg-gradient-to-b from-slate-800 to-black rounded-xl border-2 border-slate-600 flex flex-col items-center justify-center relative shadow-2xl">
             <span id="detail-brand-badge" class="text-xs font-black tracking-widest text-[#CCFF00]">JOOLA</span>
             <span id="detail-model-badge" class="text-[9px] font-bold text-slate-400">PERSEUS</span>
-            <span id="detail-core-badge" class="text-[8px] text-slate-500">16MM CORE</span>
+            <span id="detail-core-badge" class="text-[8px] font-slate-500">16MM CORE</span>
             <div class="absolute bottom-2 w-5 h-7 bg-amber-600 rounded-sm border border-black shadow"></div>
           </div>
         </div>
@@ -448,7 +442,6 @@
     let chosenOfferedGear = 'Selkirk Vanguard 2.0 (16mm)';
     let chosenTopUp = 0;
 
-    // Standard Parent Navigation Bridge
     function openAppTab(tabKey) {
       if (window.parent && typeof window.parent.switchModule === 'function') {
         window.parent.switchModule(tabKey);

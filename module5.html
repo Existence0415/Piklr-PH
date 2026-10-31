@@ -40,16 +40,13 @@
     <!-- Top System / Header Bar -->
     <div class="pt-3 px-4 pb-2 flex items-center justify-between z-30 shrink-0 bg-[#0B131E] border-b border-slate-800/80">
       <div class="flex items-center gap-2">
-        <button onclick="openAppTab('referee')" class="p-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white" title="Back to Scorer">
+        <button onclick="openAppTab('referee')" class="p-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white cursor-pointer" title="Back to Scorer">
           <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
         <div class="flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-[#CCFF00] animate-ping"></span>
           <span class="text-xs font-black uppercase tracking-wider text-white">Tournament Desk</span>
         </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-[#CCFF00] bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700 hover:brightness-125">HQ Admin ↗</a>
       </div>
     </div>
 
@@ -316,7 +313,7 @@
             <h2 class="text-xs font-black uppercase tracking-wider text-white">Live Tournament Courts</h2>
             <p id="dispatch-venue-sub" class="text-[10px] text-slate-400">Loading courts from Supabase...</p>
           </div>
-          <button onclick="openAppTab('courts')" class="text-[10px] font-black px-2 py-1 rounded-lg bg-[#CCFF00] text-black flex items-center gap-1">
+          <button onclick="openAppTab('courts')" class="text-[10px] font-black px-2 py-1 rounded-lg bg-[#CCFF00] text-black flex items-center gap-1 cursor-pointer">
             <i data-lucide="plus" class="w-3 h-3"></i>
             <span>Book Warmup</span>
           </button>
@@ -341,7 +338,7 @@
               </div>
               <span class="text-[10px] text-emerald-400 font-medium">✓ Checked in & Ready for assignment</span>
             </div>
-            <button onclick="openAppTab('referee')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-[#CCFF00] rounded text-[10px] font-bold">
+            <button onclick="openAppTab('referee')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-[#CCFF00] rounded text-[10px] font-bold cursor-pointer">
               Score Match →
             </button>
           </div>
@@ -505,7 +502,6 @@
 
   </div>
 
-  <!-- JavaScript Controller -->
   <script>
     const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
@@ -513,7 +509,6 @@
 
     let currentTournament = null;
 
-    // Standard Cross-Module Bridge to app.html
     function openAppTab(tabKey) {
       if (window.parent && typeof window.parent.switchModule === 'function') {
         window.parent.switchModule(tabKey);

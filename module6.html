@@ -40,16 +40,13 @@
     <!-- Top System Bar -->
     <div class="pt-3 px-4 pb-2 flex items-center justify-between z-30 shrink-0 bg-[#0B131E] border-b border-slate-800/80">
       <div class="flex items-center gap-2">
-        <button onclick="openAppTab('courts')" class="p-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white" title="Back to Courts">
+        <button onclick="openAppTab('courts')" class="p-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white cursor-pointer" title="Back to Courts">
           <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
         <div class="flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-[#CCFF00] animate-ping"></span>
           <span class="text-xs font-black uppercase tracking-wider text-white">Community & Coaches</span>
         </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-[#CCFF00] bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700 hover:brightness-125">HQ Admin ↗</a>
       </div>
     </div>
 
@@ -370,7 +367,6 @@
 
   </div>
 
-  <!-- JavaScript Community Hub Logic with Supabase -->
   <script>
     const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
@@ -378,7 +374,6 @@
 
     let venuesList = [];
 
-    // Standard Cross-Module Bridge to app.html
     function openAppTab(tabKey) {
       if (window.parent && typeof window.parent.switchModule === 'function') {
         window.parent.switchModule(tabKey);

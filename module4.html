@@ -34,13 +34,9 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="resetMatch()" class="text-[10px] font-bold text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">
+        <button onclick="resetMatch()" class="text-[10px] font-bold text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800 cursor-pointer">
           Reset
         </button>
-        <!-- Safe Breakout Admin Link -->
-        <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-[#CCFF00] bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700 hover:brightness-125">
-          HQ Admin ↗
-        </a>
       </div>
     </header>
 
@@ -119,7 +115,7 @@
     <!-- Match Timer & Bridge Footer -->
     <footer class="p-3 bg-[#111827] border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 shrink-0">
       <span>Match Time: <strong id="timer-display" class="text-white font-mono">00:00</strong></span>
-      <button onclick="openAppTab('passport')" class="text-sky-400 font-bold hover:underline">
+      <button onclick="openAppTab('passport')" class="text-sky-400 font-bold hover:underline cursor-pointer">
         View My Record in Profile →
       </button>
     </footer>
@@ -132,7 +128,6 @@
     let serving = 'A';
     let seconds = 0;
 
-    // Standard Parent Navigation Bridge
     function openAppTab(tabKey) {
       if (window.parent && typeof window.parent.switchModule === 'function') {
         window.parent.switchModule(tabKey);

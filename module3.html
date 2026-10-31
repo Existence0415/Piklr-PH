@@ -51,9 +51,6 @@
           <button onclick="loadPilaQueue()" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white cursor-pointer" title="Refresh Queue">
             <i data-lucide="refresh-cw" class="w-4 h-4"></i>
           </button>
-          <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-[#CCFF00] bg-slate-800/80 px-2 py-1.5 rounded-lg border border-slate-700 hover:brightness-125">
-            HQ Admin ↗
-          </a>
         </div>
       </div>
 
@@ -244,7 +241,6 @@
     }
 
     async function openJoinModal() {
-      // Verify login status before opening join modal
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session || !session.user) {
         showToast('Please sign in via Profile first!');
@@ -320,7 +316,6 @@
       document.getElementById('count-est-wait').innerText = `~${Math.max(5, waiting.length * 3)} mins`;
       document.getElementById('rack-total-count').innerText = `${waiting.length} in line`;
 
-      // 1. On Court
       const onCourtEl = document.getElementById('on-court-container');
       onCourtEl.innerHTML = onCourt.map(item => `
         <div class="p-2 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 flex items-center gap-2">
@@ -334,7 +329,6 @@
         </div>
       `).join('');
 
-      // 2. Up Next
       const onDeckEl = document.getElementById('on-deck-container');
       onDeckEl.innerHTML = onDeck.map(item => `
         <div class="p-2.5 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex items-center justify-between">
@@ -351,7 +345,6 @@
         </div>
       `).join('');
 
-      // 3. Waiting Rack
       const waitEl = document.getElementById('waiting-rack-container');
       if (waiting.length === 0) {
         waitEl.innerHTML = `
@@ -371,7 +364,6 @@
         `).join('');
       }
 
-      // Current User Line Status
       const userItem = items.find(i => i.user_id === currentUserId);
       const userStatusBox = document.getElementById('user-queue-status');
       const joinBtn = document.getElementById('btn-join-pila');
