@@ -250,6 +250,13 @@
       setTimeout(() => toast.classList.add('hidden'), 2500);
     }
 
+    // Helper to extract first name cleanly
+    function getFirstName(fullNameOrEmail) {
+      if (!fullNameOrEmail) return 'Player';
+      const clean = fullNameOrEmail.includes('@') ? fullNameOrEmail.split('@')[0] : fullNameOrEmail;
+      return clean.trim().split(' ')[0];
+    }
+
     async function openJoinModal() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session || !session.user) {
@@ -316,7 +323,7 @@
       } else {
         onCourtEl.innerHTML = onCourt.map(item => `
           <div class="p-2.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between">
-            <span class="text-xs font-bold text-white">${item.player_name || item.user_id || 'Player'}</span>
+            <span class="text-xs font-bold text-white">${getFirstName(item.player_name || item.user_id)}</span>
             <span class="text-[9px] text-emerald-400 font-semibold bg-emerald-400/10 px-2 py-0.5 rounded-full">PLAYING</span>
           </div>
         `).join('');
@@ -331,7 +338,7 @@
           <div class="p-2.5 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="w-6 h-6 rounded-lg bg-amber-400/20 text-amber-400 flex items-center justify-center font-black text-xs">#${item.queue_position || '1'}</span>
-              <span class="text-xs font-bold text-white">${item.player_name || 'Player'}</span>
+              <span class="text-xs font-bold text-white">${getFirstName(item.player_name)}</span>
             </div>
             <span class="text-[9px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full">WARMING UP</span>
           </div>
@@ -351,7 +358,7 @@
           <div class="p-2.5 rounded-2xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
             <div class="flex items-center gap-2.5">
               <span class="font-mono font-bold text-xs text-[#CCFF00] w-6">#${item.queue_position || '1'}</span>
-              <span class="text-xs font-bold text-slate-200">${item.player_name || 'Player'} ${item.duo_partner_name ? `+ ${item.duo_partner_name}` : ''}</span>
+              <span class="text-xs font-bold text-slate-200">${getFirstName(item.player_name)} ${item.duo_partner_name ? `+ ${getFirstName(item.duo_partner_name)}` : ''}</span>
             </div>
             <span class="text-[10px] text-slate-400 font-semibold">${item.paddle_tier || 'Beginner'}</span>
           </div>
@@ -359,7 +366,7 @@
       }
 
       // Check if current logged-in user is in line
-      const userItem = items.find(i => i.user_id === currentUserId || (currentUserId && i.user_id === currentUserId));
+      const userItem = items.find(i => i.user_id === currentUserId);
       const userBanner = document.getElementById('user-queue-banner');
       const joinBtn = document.getElementById('btn-join-pila');
 
