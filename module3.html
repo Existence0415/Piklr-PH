@@ -48,7 +48,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <button onclick="loadPilaQueue()" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white" title="Refresh Queue">
+          <button onclick="loadPilaQueue()" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white cursor-pointer" title="Refresh Queue">
             <i data-lucide="refresh-cw" class="w-4 h-4"></i>
           </button>
           <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-[#CCFF00] bg-slate-800/80 px-2 py-1.5 rounded-lg border border-slate-700 hover:brightness-125">
@@ -83,7 +83,7 @@
           <span class="text-[10px] font-black uppercase text-[#CCFF00] tracking-wider block">
             💡 How Open Play (Pila) Works
           </span>
-          <button onclick="openAppTab('courts')" class="text-[10px] text-sky-400 font-bold hover:underline">
+          <button onclick="openAppTab('courts')" class="text-[10px] text-sky-400 font-bold hover:underline cursor-pointer">
             Prefer a private court? Book here →
           </button>
         </div>
@@ -168,7 +168,7 @@
           <h3 class="text-sm font-black text-white">Join Open Play Line</h3>
           <p class="text-[10px] text-slate-400">We'll pair you with other friendly players!</p>
         </div>
-        <button onclick="closeJoinModal()" class="text-slate-400 hover:text-white p-1">
+        <button onclick="closeJoinModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
@@ -177,10 +177,10 @@
         <div>
           <label class="block text-slate-400 font-semibold mb-1">Are you alone or with a friend?</label>
           <div class="grid grid-cols-2 gap-2">
-            <button type="button" id="btn-type-solo" onclick="setQueueType('solo')" class="py-2.5 rounded-xl font-bold bg-[#CCFF00] text-[#0B131E]">
+            <button type="button" id="btn-type-solo" onclick="setQueueType('solo')" class="py-2.5 rounded-xl font-bold bg-[#CCFF00] text-[#0B131E] cursor-pointer">
               Solo (Find me 3 others)
             </button>
-            <button type="button" id="btn-type-duo" onclick="setQueueType('duo')" class="py-2.5 rounded-xl font-bold bg-[#0B131E] text-slate-300 border border-slate-800">
+            <button type="button" id="btn-type-duo" onclick="setQueueType('duo')" class="py-2.5 rounded-xl font-bold bg-[#0B131E] text-slate-300 border border-slate-800 cursor-pointer">
               Duo (With my friend)
             </button>
           </div>
@@ -201,7 +201,7 @@
         </div>
 
         <div class="pt-2">
-          <button onclick="submitPaddleToRack()" id="btn-confirm-rack" class="w-full py-3 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider hover:bg-[#d8ff33]">
+          <button onclick="submitPaddleToRack()" id="btn-confirm-rack" class="w-full py-3 rounded-2xl bg-[#CCFF00] text-[#0B131E] font-black text-xs uppercase tracking-wider hover:bg-[#d8ff33] cursor-pointer">
             Confirm & Join Line
           </button>
         </div>
@@ -215,9 +215,9 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const HARDCODED_SESSION_ID = 'e1111111-0000-0000-0000-000000000001';
-    const CURRENT_PLAYER_ID = '09111111-0000-0000-0000-000000000001';
 
     let queueType = 'solo';
+    let cachedUserSession = null;
 
     function openAppTab(tabKey) {
       if (window.parent && typeof window.parent.switchModule === 'function') {
@@ -243,7 +243,15 @@
       setTimeout(() => toast.classList.add('hidden'), 2500);
     }
 
-    function openJoinModal() {
+    async function openJoinModal() {
+      // Verify login status before opening join modal
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session || !session.user) {
+        showToast('Please sign in via Profile first!');
+        setTimeout(() => openAppTab('passport'), 1000);
+        return;
+      }
+      cachedUserSession = session;
       document.getElementById('join-pila-modal').classList.remove('hidden');
     }
 
@@ -258,22 +266,26 @@
       const partnerGroup = document.getElementById('duo-partner-group');
 
       if (type === 'solo') {
-        soloBtn.className = 'py-2.5 rounded-xl font-bold bg-[#CCFF00] text-[#0B131E]';
-        duoBtn.className = 'py-2.5 rounded-xl font-bold bg-[#0B131E] text-slate-300 border border-slate-800';
+        soloBtn.className = 'py-2.5 rounded-xl font-bold bg-[#CCFF00] text-[#0B131E] cursor-pointer';
+        duoBtn.className = 'py-2.5 rounded-xl font-bold bg-[#0B131E] text-slate-300 border border-slate-800 cursor-pointer';
         partnerGroup.classList.add('hidden');
       } else {
-        duoBtn.className = 'py-2.5 rounded-xl font-bold bg-[#CCFF00] text-[#0B131E]';
-        soloBtn.className = 'py-2.5 rounded-xl font-bold bg-[#0B131E] text-slate-300 border border-slate-800';
+        duoBtn.className = 'py-2.5 rounded-xl font-bold bg-[#CCFF00] text-[#0B131E] cursor-pointer';
+        soloBtn.className = 'py-2.5 rounded-xl font-bold bg-[#0B131E] text-slate-300 border border-slate-800 cursor-pointer';
         partnerGroup.classList.remove('hidden');
       }
     }
 
     async function loadPilaQueue() {
       try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        cachedUserSession = session;
+
         const { data: queue, error } = await supabaseClient
           .from('pila_queue')
           .select(`
             id,
+            user_id,
             paddle_tier,
             group_type,
             duo_partner_name,
@@ -292,13 +304,13 @@
           .order('queue_position', { ascending: true });
 
         if (error) throw error;
-        renderQueueUI(queue || []);
+        renderQueueUI(queue || [], session?.user?.id);
       } catch (err) {
         console.error('Error loading queue:', err);
       }
     }
 
-    function renderQueueUI(items) {
+    function renderQueueUI(items, currentUserId) {
       const onCourt = items.filter(i => i.status === 'on_court');
       const onDeck = items.filter(i => i.status === 'on_deck');
       const waiting = items.filter(i => i.status === 'waiting');
@@ -316,7 +328,7 @@
             <img src="${item.player?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" class="w-full h-full object-cover" />
           </div>
           <div class="min-w-0">
-            <span class="text-xs font-bold text-white block truncate">${item.player?.display_name || item.player?.full_name}</span>
+            <span class="text-xs font-bold text-white block truncate">${item.player?.display_name || item.player?.full_name || 'Player'}</span>
             <span class="text-[9px] text-emerald-400 font-semibold block">On Court</span>
           </div>
         </div>
@@ -331,7 +343,7 @@
               #${item.queue_position}
             </div>
             <div>
-              <span class="text-xs font-bold text-white block">${item.player?.display_name || item.player?.full_name}</span>
+              <span class="text-xs font-bold text-white block">${item.player?.display_name || item.player?.full_name || 'Player'}</span>
               <span class="text-[10px] text-slate-400">Up Next — Get Ready!</span>
             </div>
           </div>
@@ -352,7 +364,7 @@
           <div class="p-2.5 rounded-2xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="font-mono font-bold text-xs text-slate-500 w-5">#${item.queue_position}</span>
-              <span class="text-xs font-bold text-slate-200">${item.player?.display_name || item.player?.full_name} ${item.duo_partner_name ? `+ ${item.duo_partner_name}` : ''}</span>
+              <span class="text-xs font-bold text-slate-200">${item.player?.display_name || item.player?.full_name || 'Player'} ${item.duo_partner_name ? `+ ${item.duo_partner_name}` : ''}</span>
             </div>
             <span class="text-[10px] text-slate-400">Position #${item.queue_position}</span>
           </div>
@@ -360,7 +372,7 @@
       }
 
       // Current User Line Status
-      const userItem = items.find(i => i.player?.id === CURRENT_PLAYER_ID);
+      const userItem = items.find(i => i.user_id === currentUserId);
       const userStatusBox = document.getElementById('user-queue-status');
       const joinBtn = document.getElementById('btn-join-pila');
 
@@ -386,6 +398,11 @@
       confirmBtn.innerText = 'Joining Line...';
 
       try {
+        if (!cachedUserSession || !cachedUserSession.user) {
+          throw new Error('Please sign in via Profile first.');
+        }
+
+        const userId = cachedUserSession.user.id;
         const tier = document.getElementById('select-skill-bracket').value;
         const partner = queueType === 'duo' ? document.getElementById('input-partner-name').value.trim() : null;
 
@@ -402,7 +419,8 @@
           .from('pila_queue')
           .insert({
             session_id: HARDCODED_SESSION_ID,
-            player_id: CURRENT_PLAYER_ID,
+            user_id: userId,
+            player_id: userId,
             paddle_tier: tier,
             group_type: queueType,
             duo_partner_name: partner,
@@ -415,7 +433,7 @@
         closeJoinModal();
         loadPilaQueue();
       } catch (err) {
-        showToast('Failed to join queue.');
+        showToast('Failed to join queue: ' + err.message);
       } finally {
         confirmBtn.disabled = false;
         confirmBtn.innerText = 'Confirm & Join Line';
