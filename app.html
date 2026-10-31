@@ -39,6 +39,11 @@
         </span>
       </div>
       <div class="flex items-center gap-2">
+        <!-- Logged-in User Badge (Hidden by default until auth session is active) -->
+        <div id="top-user-display" class="hidden items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#CCFF00]"></span>
+          <span id="top-username" class="text-[10px] font-black text-white truncate max-w-[100px]">User</span>
+        </div>
         <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700">HQ Admin ↗</a>
         <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
       </div>
@@ -90,6 +95,10 @@
   </div>
 
   <script>
+    const SUPABASE_URL = 'https://rnkblqsvwgtxkzqyrjku.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJua2JscXN2d2d0eGt6cXlyamt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMzY0MzcsImV4cCI6MjEwNzkxMjQzN30.f8DVFgKNbtlb_VLKw6I3jMUZ4nQVRjJ4e9KoTkT07FY';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     function navigateTab(moduleUrl, btnElement) {
       const viewport = document.getElementById('app-viewport');
       if (viewport) {
@@ -131,6 +140,37 @@
       }
     };
 
+    // Update Top Right Header Display with Authenticated User Name
+    async function updateTopHeaderAuth() {
+      try {
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          if (accessToken && refreshToken) {
+            await supabaseClient.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        }
+
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const userDisplay = document.getElementById('top-user-display');
+        const usernameSpan = document.getElementById('top-username');
+
+        if (session && session.user) {
+          const name = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+          usernameSpan.innerText = name;
+          userDisplay.classList.remove('hidden');
+          userDisplay.classList.add('flex');
+        } else {
+          userDisplay.classList.add('hidden');
+          userDisplay.classList.remove('flex');
+        }
+      } catch (err) {
+        console.error('Header auth update error:', err);
+      }
+    }
+
     // Listen for auth state sync messages from iframe modules
     window.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'SWITCH_TAB') {
@@ -140,6 +180,11 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       if (window.lucide) lucide.createIcons();
+      updateTopHeaderAuth();
+
+      supabaseClient.auth.onAuthStateChange(() => {
+        updateTopHeaderAuth();
+      });
 
       // If returning from Google OAuth redirect with tokens, auto-open the Profile tab
       if (window.location.hash && window.location.hash.includes('access_token')) {
