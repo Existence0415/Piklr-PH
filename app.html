@@ -89,7 +89,7 @@
     </nav>
   </div>
 
-  <script>
+<script>
     function navigateTab(moduleUrl, btnElement) {
       const viewport = document.getElementById('app-viewport');
       if (viewport) {
@@ -119,7 +119,6 @@
         referee: { url: 'module4.html', id: 'tab-btn-referee' },
         exchange: { url: 'module7.html', id: 'tab-btn-exchange' },
         passport: { url: 'passport.html', id: 'tab-btn-passport' },
-        // Secondary modules accessible via in-app links:
         tournaments: { url: 'module5.html', id: 'tab-btn-referee' },
         coaches: { url: 'module6.html', id: 'tab-btn-courts' },
         community: { url: 'module8.html', id: 'tab-btn-exchange' }
@@ -132,11 +131,18 @@
       }
     };
 
+    // Listen for auth state sync messages from iframe modules
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'SWITCH_TAB') {
+        window.switchModule(event.data.tab);
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
       if (window.lucide) lucide.createIcons();
     });
   </script>
-
+  
   <script>
   // Register Service Worker for PWA & Android TWA offline readiness
   if ('serviceWorker' in navigator) {
