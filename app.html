@@ -39,12 +39,11 @@
         </span>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Logged-in User Badge (Hidden by default until auth session is active) -->
-        <div id="top-user-display" class="hidden items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700">
+        <!-- Logged-in User Badge -->
+        <div id="top-user-display" class="hidden items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700">
           <span class="w-1.5 h-1.5 rounded-full bg-[#CCFF00]"></span>
-          <span id="top-username" class="text-[10px] font-black text-white truncate max-w-[100px]">User</span>
+          <span id="top-username" class="text-[10px] font-black text-white truncate max-w-[110px]">User</span>
         </div>
-        <a href="admin.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700">HQ Admin ↗</a>
         <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
       </div>
     </header>
@@ -120,7 +119,6 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // Standardized Global Shell Bridge for all child modules
     window.switchModule = function(moduleName) {
       const routeMap = {
         courts: { url: 'module2.html', id: 'tab-btn-courts' },
@@ -140,7 +138,6 @@
       }
     };
 
-    // Update Top Right Header Display with Authenticated User Name
     async function updateTopHeaderAuth() {
       try {
         if (window.location.hash && window.location.hash.includes('access_token')) {
@@ -171,7 +168,6 @@
       }
     }
 
-    // Listen for auth state sync messages from iframe modules
     window.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'SWITCH_TAB') {
         window.switchModule(event.data.tab);
@@ -186,27 +182,10 @@
         updateTopHeaderAuth();
       });
 
-      // If returning from Google OAuth redirect with tokens, auto-open the Profile tab
       if (window.location.hash && window.location.hash.includes('access_token')) {
         window.switchModule('passport');
       }
     });
-  </script>
-  
-  <script>
-  // Register Service Worker for PWA & Android TWA offline readiness
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker
-        .register('./sw.js')
-        .then((reg) => {
-          console.log('[PWA] Service Worker registered successfully:', reg.scope);
-        })
-        .catch((err) => {
-          console.warn('[PWA] Service Worker registration failed:', err);
-        });
-    });
-  }
   </script>
 </body>
 </html>
