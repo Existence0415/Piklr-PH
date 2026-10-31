@@ -254,7 +254,7 @@
         const { error } = await supabaseClient.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: window.location.href
+            redirectTo: 'https://piklr-ph.vercel.app/passport.html'
           }
         });
         if (error) throw error;
@@ -262,7 +262,7 @@
         alert('Google login error: ' + err.message);
       }
     }
-
+    
     async function logoutUser() {
       await supabaseClient.auth.signOut();
       showToast('Logged out successfully');
