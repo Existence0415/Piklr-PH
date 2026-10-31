@@ -223,10 +223,14 @@
 
     // Check Active Session on Load
     async function checkUserSession() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session && session.user) {
-        renderLoggedInState(session.user);
-      } else {
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session && session.user) {
+          renderLoggedInState(session.user);
+        } else {
+          renderLoggedOutState();
+        }
+      } catch (e) {
         renderLoggedOutState();
       }
     }
@@ -289,7 +293,6 @@
       btn.innerText = 'Wiping data...';
 
       try {
-        // Tables to clear for commercial launch (Keeping venues & courts)
         const tablesToClear = [
           'pila_queue',
           'match_confirmations',
@@ -319,6 +322,16 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       checkUserSession();
+
+      // Listen for auth state changes to dynamically update UI when tokens resolve
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (session && session.user) {
+          renderLoggedInState(session.user);
+        } else {
+          renderLoggedOutState();
+        }
+      });
+
       if (window.lucide) lucide.createIcons();
     });
   </script>

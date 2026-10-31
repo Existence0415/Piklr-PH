@@ -89,7 +89,7 @@
     </nav>
   </div>
 
-<script>
+  <script>
     function navigateTab(moduleUrl, btnElement) {
       const viewport = document.getElementById('app-viewport');
       if (viewport) {
@@ -140,6 +140,11 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       if (window.lucide) lucide.createIcons();
+
+      // If returning from Google OAuth redirect with tokens, auto-open the Profile tab
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        window.switchModule('passport');
+      }
     });
   </script>
   
@@ -158,6 +163,5 @@
     });
   }
   </script>
-  
 </body>
 </html>
