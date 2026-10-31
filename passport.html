@@ -253,7 +253,7 @@
         const { data, error } = await supabaseClient.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: 'https://piklr-ph.vercel.app/passport.html',
+            redirectTo: 'https://piklr-ph.vercel.app/app.html',
             skipBrowserRedirect: true
           }
         });
