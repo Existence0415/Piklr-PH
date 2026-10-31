@@ -221,9 +221,25 @@
       }, duration);
     }
 
-    // Check Active Session on Load
+    // Check Active Session on Load (Supports iframe parent hash sync)
     async function checkUserSession() {
       try {
+        // If parent window captured the OAuth hash tokens, let Supabase pick them up
+        if (window.parent && window.parent.location.hash && window.parent.location.hash.includes('access_token')) {
+          const hashParams = new URLSearchParams(window.parent.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          
+          if (accessToken && refreshToken) {
+            await supabaseClient.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+            // Clear the parent hash to keep URL clean
+            window.parent.history.replaceState(null, '', window.parent.location.pathname);
+          }
+        }
+
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session && session.user) {
           renderLoggedInState(session.user);
