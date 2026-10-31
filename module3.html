@@ -58,21 +58,35 @@
       <div class="grid grid-cols-3 gap-2 pt-1 text-center">
         <div class="p-2 rounded-xl bg-[#0B131E] border border-slate-800">
           <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">ON COURT NOW</span>
-          <span id="count-on-court" class="text-xs font-black text-emerald-400">4 Playing</span>
+          <span id="count-on-court" class="text-xs font-black text-emerald-400">0 Playing</span>
         </div>
         <div class="p-2 rounded-xl bg-[#0B131E] border border-slate-800">
           <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">UP NEXT</span>
-          <span id="count-on-deck" class="text-xs font-black text-amber-400">4 Ready</span>
+          <span id="count-on-deck" class="text-xs font-black text-amber-400">0 Ready</span>
         </div>
         <div class="p-2 rounded-xl bg-[#0B131E] border border-slate-800">
           <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">EST. WAIT</span>
-          <span id="count-est-wait" class="text-xs font-black text-[#CCFF00]">~10 mins</span>
+          <span id="count-est-wait" class="text-xs font-black text-[#CCFF00]">~0 mins</span>
         </div>
       </div>
     </header>
 
     <!-- Scrollable Content with Safe Padding for Sticky Bottom CTA -->
     <main class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-28">
+
+      <!-- Active User Queue Status Banner (Visible When Joined) -->
+      <div id="user-queue-banner" class="hidden p-3.5 rounded-2xl bg-[#CCFF00]/10 border border-[#CCFF00]/40 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-[#CCFF00] text-black flex items-center justify-center font-black text-xs" id="user-banner-pos">#1</div>
+          <div>
+            <span class="text-xs font-black text-white block">You are in line!</span>
+            <span id="user-banner-status" class="text-[10px] text-[#CCFF00] font-bold">Status: Waiting in queue</span>
+          </div>
+        </div>
+        <button onclick="leaveQueueDirectly()" class="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-bold hover:bg-rose-500/30 cursor-pointer">
+          Leave Line
+        </button>
+      </div>
 
       <!-- Beginner Guide Banner -->
       <div class="p-3 rounded-2xl bg-gradient-to-r from-slate-900 to-[#111e30] border border-slate-700/80">
@@ -109,7 +123,7 @@
           </span>
           <span class="text-[10px] text-slate-500">First to 11 points</span>
         </div>
-        <div id="on-court-container" class="grid grid-cols-2 gap-2"></div>
+        <div id="on-court-container" class="space-y-2"></div>
       </div>
 
       <!-- SECTION 2: GET READY (UP NEXT) -->
@@ -140,11 +154,6 @@
 
     <!-- Sticky Bottom Join Queue Action Bar -->
     <footer class="p-3.5 bg-[#111827]/95 backdrop-blur-md border-t border-slate-800 shadow-2xl shrink-0 z-20">
-      <div id="user-queue-status" class="hidden mb-2 text-center text-xs">
-        <span class="text-slate-400">You are in line at position:</span>
-        <span id="user-pos-display" class="font-black text-[#CCFF00] ml-1">#5</span>
-      </div>
-
       <button
         id="btn-join-pila"
         onclick="openJoinModal()"
@@ -215,6 +224,7 @@
 
     let queueType = 'solo';
     let cachedUserSession = null;
+    let currentUserQueueId = null;
 
     function openAppTab(tabKey) {
       if (window.parent && typeof window.parent.switchModule === 'function') {
@@ -279,24 +289,7 @@
 
         const { data: queue, error } = await supabaseClient
           .from('pila_queue')
-          .select(`
-            id,
-            user_id,
-            paddle_tier,
-            group_type,
-            duo_partner_name,
-            status,
-            queue_position,
-            player:player_profiles (
-              id,
-              full_name,
-              display_name,
-              dupr_doubles,
-              preferred_paddle,
-              avatar_url
-            )
-          `)
-          .eq('session_id', HARDCODED_SESSION_ID)
+          .select('*')
           .order('queue_position', { ascending: true });
 
         if (error) throw error;
@@ -307,44 +300,45 @@
     }
 
     function renderQueueUI(items, currentUserId) {
-      const onCourt = items.filter(i => i.status === 'on_court');
-      const onDeck = items.filter(i => i.status === 'on_deck');
-      const waiting = items.filter(i => i.status === 'waiting');
+      const onCourt = items.filter(i => i.status === 'on_court' || i.status === 'playing');
+      const onDeck = items.filter(i => i.status === 'on_deck' || i.status === 'warming_up');
+      const waiting = items.filter(i => i.status === 'waiting' || (!i.status || i.status === ''));
 
       document.getElementById('count-on-court').innerText = `${onCourt.length} Playing`;
-      document.getElementById('count-on-deck').innerText = `${onDeck.length} Next`;
+      document.getElementById('count-on-deck').innerText = `${onDeck.length} Ready`;
       document.getElementById('count-est-wait').innerText = `~${Math.max(5, waiting.length * 3)} mins`;
-      document.getElementById('rack-total-count').innerText = `${waiting.length} in line`;
+      document.getElementById('rack-total-count').innerText = `${waiting.length} players waiting`;
 
+      // 1. On Court
       const onCourtEl = document.getElementById('on-court-container');
-      onCourtEl.innerHTML = onCourt.map(item => `
-        <div class="p-2 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl overflow-hidden bg-slate-800 shrink-0 border border-emerald-400">
-            <img src="${item.player?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" class="w-full h-full object-cover" />
+      if (onCourt.length === 0) {
+        onCourtEl.innerHTML = `<div class="p-3 bg-slate-900/50 rounded-2xl border border-slate-800 text-xs text-slate-500 text-center">Court is open! First group in line will be called.</div>`;
+      } else {
+        onCourtEl.innerHTML = onCourt.map(item => `
+          <div class="p-2.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between">
+            <span class="text-xs font-bold text-white">${item.player_name || item.user_id || 'Player'}</span>
+            <span class="text-[9px] text-emerald-400 font-semibold bg-emerald-400/10 px-2 py-0.5 rounded-full">PLAYING</span>
           </div>
-          <div class="min-w-0">
-            <span class="text-xs font-bold text-white block truncate">${item.player?.display_name || item.player?.full_name || 'Player'}</span>
-            <span class="text-[9px] text-emerald-400 font-semibold block">On Court</span>
-          </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
+      // 2. Up Next
       const onDeckEl = document.getElementById('on-deck-container');
-      onDeckEl.innerHTML = onDeck.map(item => `
-        <div class="p-2.5 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-7 h-7 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center font-black text-xs">
-              #${item.queue_position}
+      if (onDeck.length === 0) {
+        onDeckEl.innerHTML = `<div class="p-3 bg-slate-900/50 rounded-2xl border border-slate-800 text-xs text-slate-500 text-center">No players currently warming up.</div>`;
+      } else {
+        onDeckEl.innerHTML = onDeck.map(item => `
+          <div class="p-2.5 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-amber-400/20 text-amber-400 flex items-center justify-center font-black text-xs">#${item.queue_position || '1'}</span>
+              <span class="text-xs font-bold text-white">${item.player_name || 'Player'}</span>
             </div>
-            <div>
-              <span class="text-xs font-bold text-white block">${item.player?.display_name || item.player?.full_name || 'Player'}</span>
-              <span class="text-[10px] text-slate-400">Up Next — Get Ready!</span>
-            </div>
+            <span class="text-[9px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full">WARMING UP</span>
           </div>
-          <span class="text-[9px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full">WARMING UP</span>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
+      // 3. Waiting Rack
       const waitEl = document.getElementById('waiting-rack-container');
       if (waiting.length === 0) {
         waitEl.innerHTML = `
@@ -355,28 +349,33 @@
       } else {
         waitEl.innerHTML = waiting.map(item => `
           <div class="p-2.5 rounded-2xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="font-mono font-bold text-xs text-slate-500 w-5">#${item.queue_position}</span>
-              <span class="text-xs font-bold text-slate-200">${item.player?.display_name || item.player?.full_name || 'Player'} ${item.duo_partner_name ? `+ ${item.duo_partner_name}` : ''}</span>
+            <div class="flex items-center gap-2.5">
+              <span class="font-mono font-bold text-xs text-[#CCFF00] w-6">#${item.queue_position || '1'}</span>
+              <span class="text-xs font-bold text-slate-200">${item.player_name || 'Player'} ${item.duo_partner_name ? `+ ${item.duo_partner_name}` : ''}</span>
             </div>
-            <span class="text-[10px] text-slate-400">Position #${item.queue_position}</span>
+            <span class="text-[10px] text-slate-400 font-semibold">${item.paddle_tier || 'Beginner'}</span>
           </div>
         `).join('');
       }
 
-      const userItem = items.find(i => i.user_id === currentUserId);
-      const userStatusBox = document.getElementById('user-queue-status');
+      // Check if current logged-in user is in line
+      const userItem = items.find(i => i.user_id === currentUserId || (currentUserId && i.user_id === currentUserId));
+      const userBanner = document.getElementById('user-queue-banner');
       const joinBtn = document.getElementById('btn-join-pila');
 
       if (userItem) {
-        userStatusBox.classList.remove('hidden');
-        document.getElementById('user-pos-display').innerText = `#${userItem.queue_position} (${userItem.status === 'on_court' ? 'ON COURT' : userItem.status === 'on_deck' ? 'UP NEXT!' : 'IN LINE'})`;
-        joinBtn.className = 'w-full py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition';
-        joinBtn.innerHTML = '<i data-lucide="log-out" class="w-4 h-4"></i><span>Leave Line</span>';
-        joinBtn.onclick = () => leavePilaQueue(userItem.id);
+        currentUserQueueId = userItem.id;
+        userBanner.classList.remove('hidden');
+        document.getElementById('user-banner-pos').innerText = `#${userItem.queue_position || '1'}`;
+        document.getElementById('user-banner-status').innerText = `Status: ${userItem.status ? userItem.status.toUpperCase() : 'WAITING IN LINE'}`;
+
+        joinBtn.className = 'w-full py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition border border-slate-700';
+        joinBtn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4 text-[#CCFF00]"></i><span>You Are In Line (Tap to Refresh)</span>';
+        joinBtn.onclick = loadPilaQueue;
       } else {
-        userStatusBox.classList.add('hidden');
-        joinBtn.className = 'w-full py-3 rounded-2xl bg-[#CCFF00] hover:bg-[#d8ff33] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition shadow-lg shadow-[#CCFF00]/20';
+        currentUserQueueId = null;
+        userBanner.classList.add('hidden');
+        joinBtn.className = 'w-full py-3 rounded-2xl bg-[#CCFF00] hover:bg-[#d8ff33] text-[#0B131E] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 active:scale-98 transition shadow-lg shadow-[#CCFF00]/20 cursor-pointer';
         joinBtn.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4 stroke-[2.5]"></i><span>Put My Paddle in Line (Join Queue)</span>';
         joinBtn.onclick = openJoinModal;
       }
@@ -394,25 +393,25 @@
           throw new Error('Please sign in via Profile first.');
         }
 
-        const userId = cachedUserSession.user.id;
+        const user = cachedUserSession.user;
+        const userId = user.id;
+        const playerName = user.user_metadata?.full_name || user.email.split('@')[0];
         const tier = document.getElementById('select-skill-bracket').value;
         const partner = queueType === 'duo' ? document.getElementById('input-partner-name').value.trim() : null;
 
         const { data: highest } = await supabaseClient
           .from('pila_queue')
           .select('queue_position')
-          .eq('session_id', HARDCODED_SESSION_ID)
           .order('queue_position', { ascending: false })
           .limit(1);
 
-        const nextPos = (highest && highest.length > 0) ? (highest[0].queue_position + 1) : 1;
+        const nextPos = (highest && highest.length > 0 && highest[0].queue_position) ? (highest[0].queue_position + 1) : 1;
 
         const { error } = await supabaseClient
           .from('pila_queue')
           .insert({
-            session_id: HARDCODED_SESSION_ID,
             user_id: userId,
-            player_id: userId,
+            player_name: playerName,
             paddle_tier: tier,
             group_type: queueType,
             duo_partner_name: partner,
@@ -421,7 +420,7 @@
           });
 
         if (error) throw error;
-        showToast('You are in line! We will alert you when ready.');
+        showToast('You are in line! Position #' + nextPos);
         closeJoinModal();
         loadPilaQueue();
       } catch (err) {
@@ -432,11 +431,22 @@
       }
     }
 
-    async function leavePilaQueue(queueId) {
+    async function leaveQueueDirectly() {
       if (!confirm('Leave the court line?')) return;
-      await supabaseClient.from('pila_queue').delete().eq('id', queueId);
-      showToast('You left the line.');
-      loadPilaQueue();
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || !session.user) return;
+
+        await supabaseClient
+          .from('pila_queue')
+          .delete()
+          .eq('user_id', session.user.id);
+
+        showToast('You left the line.');
+        loadPilaQueue();
+      } catch (err) {
+        showToast('Error leaving line: ' + err.message);
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
